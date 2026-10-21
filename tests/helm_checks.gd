@@ -67,6 +67,13 @@ func checks() -> void:
 	check(helm.lever_value==1,"Throttle persists after finger release")
 	helm.update_lever(helm.rail_center()+Vector2(0,4))
 	check(helm.lever_value==0,"Lever snaps at neutral")
+	var off_drive=preload("res://scripts/boat_drive.gd").new()
+	off_drive.set_lever(1)
+	off_drive.step(2,0,0)
+	var moving_speed=off_drive.speed
+	off_drive.engine_running=false
+	off_drive.step(1,0,0)
+	check(off_drive.gear==1 and off_drive.lever==1 and off_drive.rpm==0 and off_drive.speed<moving_speed,"Cutoff preserves gear and throttle but removes thrust and coasts down")
 	helm.queue_free()
 	var audio = preload("res://scripts/engine_audio.gd").new()
 	root.add_child(audio)
@@ -76,6 +83,8 @@ func checks() -> void:
 	check(audio.players[2].volume_db>audio.players[0].volume_db,"Full throttle blends to the high-RPM layer")
 	audio.update_audio(0.1,1,12,true,false)
 	check(not audio.players[0].playing and not audio.players[2].playing,"Sound toggle stops engine playback")
+	audio.update_audio(0.1,0,0,true,true,false)
+	check(not audio.players[0].playing and not audio.players[2].playing,"Engine cutoff silences motor layers")
 	audio.queue_free()
 	await create_timer(0.3).timeout
 	if failures.is_empty():

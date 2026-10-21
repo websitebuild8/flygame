@@ -34,6 +34,7 @@ func run_checks() -> void:
 	game._physics_process(0.1)
 	check(game.tension < tension_before,"Releasing lowers tension")
 	for i in range(3):
+		if i>0: game.cast()
 		game.land_fish()
 		game.close_catch()
 	check(game.inventory.size() == 3 and game.unlocked,"Catches fill icebox and unlock waters")

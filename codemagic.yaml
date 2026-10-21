@@ -35,6 +35,11 @@ workflows:
           set -eu
           /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/ocean_checks.gd
 
+      - name: Check species-specific fish models
+        script: |
+          set -eu
+          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/fish_checks.gd
+
   android-test:
     name: Ishaq's Fishing Trip - Android test APK
     instance_type: mac_mini_m2
@@ -58,7 +63,7 @@ workflows:
           GODOT=/tmp/ishaq-android-godot/Godot.app/Contents/MacOS/Godot
           "$GODOT" --headless --path "$CM_BUILD_DIR" --script res://tools/check-mobile-config.gd
           "$GODOT" --headless --path "$CM_BUILD_DIR" --editor --import --quit
-          for suite in trip_smoke helm_checks gear_checks ocean_checks; do
+          for suite in trip_smoke helm_checks gear_checks ocean_checks fish_checks; do
             "$GODOT" --headless --path "$CM_BUILD_DIR" --script "res://tests/${suite}.gd"
           done
       - name: Export installable Android APK

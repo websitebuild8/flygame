@@ -15,7 +15,7 @@ func _ready() -> void:
 		add_child(player)
 		players.append(player)
 
-func update_audio(delta: float, rpm: float, speed: float, active: bool, sound: bool) -> void:
+func update_audio(delta: float, rpm: float, speed: float, active: bool, sound: bool, engine_on: bool=true) -> void:
 	mix_rpm = lerpf(mix_rpm,rpm,1-exp(-delta*3))
 	mix_speed = lerpf(mix_speed,absf(speed),1-exp(-delta*2))
 	if not active or not sound:
@@ -25,9 +25,12 @@ func update_audio(delta: float, rpm: float, speed: float, active: bool, sound: b
 	var weights = [0.6*(1-mix_rpm*0.8),sin(mix_rpm*PI)*0.55,smoothstep(0.5,1,mix_rpm)*0.6,clampf(mix_speed/18,0,1)*0.65]
 	for i in range(players.size()):
 		var player = players[i]
+		if i<3 and not engine_on:
+			player.stop()
+			continue
 		if not player.playing:
 			player.play()
-		player.pitch_scale = lerpf(0.9,1.2,mix_rpm) if i<3 else lerpf(0.85,1.08,clampf(mix_speed/25,0,1))
+		player.pitch_scale = lerpf(0.92,1.08,mix_rpm) if i<3 else lerpf(0.85,1.08,clampf(mix_speed/25,0,1))
 		player.volume_db = linear_to_db(maxf(float(weights[i]),0.001))-12
 
 func _exit_tree() -> void:

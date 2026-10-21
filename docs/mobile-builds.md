@@ -14,7 +14,7 @@ same version (currently 4.5.1).
 ## Android test APK
 
 The `android-test` workflow now builds an ARM64 debug APK using Godot 4.5.1,
-Java 17 and Android SDK 35. It imports the project, runs four check suites,
+Java 17 and Android SDK 35. It imports the project, runs five check suites,
 then collects `build/android/ishaqs-fishing-trip.apk` as a downloadable artifact.
 
 1. Commit and push the current project, including `codemagic.yaml`,

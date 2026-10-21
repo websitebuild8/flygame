@@ -25,6 +25,8 @@ var map_visible=false
 var map_panel: PanelContainer
 var map_chart: Control
 var mini_map: Button
+var engine_button: Button
+var put_fish_button: Button
 var map_button: Button
 var camera_button: Button
 var route_label: Label
@@ -43,10 +45,13 @@ const MINT = Color("8bdecb")
 
 func panel_style(color: Color, radius: int = 22) -> StyleBoxFlat:
 	var style = StyleBoxFlat.new()
-	style.bg_color = color
+	style.bg_color = Color(color,color.a*0.76)
 	style.set_corner_radius_all(radius)
 	style.set_border_width_all(1)
-	style.border_color = Color(0.68,0.88,0.91,0.16)
+	style.border_color = Color(0.86,0.96,1.0,0.38)
+	style.shadow_color=Color(0.01,0.03,0.04,0.22)
+	style.shadow_size=8
+	style.shadow_offset=Vector2(0,4)
 	style.content_margin_left = 18
 	style.content_margin_right = 18
 	style.content_margin_top = 14
@@ -67,19 +72,19 @@ func action(parent: Control, title: String, callback: Callable, primary: bool = 
 	item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	item.focus_mode = Control.FOCUS_ALL
 	item.add_theme_font_size_override("font_size",18)
-	item.add_theme_color_override("font_color",INK if primary else WHITE)
-	item.add_theme_color_override("font_hover_color",INK if primary else WHITE)
-	item.add_theme_color_override("font_pressed_color",INK if primary else WHITE)
+	item.add_theme_color_override("font_color",WHITE)
+	item.add_theme_color_override("font_hover_color",WHITE)
+	item.add_theme_color_override("font_pressed_color",WHITE)
 	item.add_theme_color_override("font_disabled_color",Color("8caaaf"))
-	var normal = panel_style(MINT if primary else Color(0.025,0.085,0.12,0.94),18)
+	var normal = panel_style(Color(0.25,0.68,0.59,0.54) if primary else Color(0.14,0.24,0.29,0.58),18)
 	normal.content_margin_top = 8
 	normal.content_margin_bottom = 8
 	item.add_theme_stylebox_override("normal",normal)
 	var hover = normal.duplicate()
-	hover.bg_color = Color("b0edde") if primary else Color("244c5e")
+	hover.bg_color = Color(0.45,0.85,0.76,0.65) if primary else Color(0.35,0.53,0.60,0.65)
 	item.add_theme_stylebox_override("hover",hover)
 	var pressed = normal.duplicate()
-	pressed.bg_color = Color("66bca8") if primary else Color("306477")
+	pressed.bg_color = Color(0.26,0.65,0.56,0.75) if primary else Color(0.35,0.55,0.62,0.75)
 	item.add_theme_stylebox_override("pressed",pressed)
 	var disabled = normal.duplicate()
 	disabled.bg_color = Color(0.04,0.12,0.16,0.8)
@@ -110,7 +115,7 @@ func build(owner_game: Node3D) -> void:
 	margin.add_child(stage)
 	var header=PanelContainer.new()
 	header.size=Vector2(390,126)
-	header.add_theme_stylebox_override("panel",panel_style(Color(0.025,0.085,0.12,0.94)))
+	header.add_theme_stylebox_override("panel",panel_style(Color(0.14,0.24,0.29,0.58)))
 	stage.add_child(header)
 	var head_column=VBoxContainer.new()
 	head_column.add_theme_constant_override("separation",6)
@@ -178,16 +183,17 @@ func build(owner_game: Node3D) -> void:
 	game.fish_button=action(actions,"Start fishing",func(): pass,true)
 	cast_normal=game.fish_button.get_theme_stylebox("normal").duplicate()
 	cast_pressed=game.fish_button.get_theme_stylebox("pressed").duplicate()
-	cast_round=panel_style(Color("f0bd78"),80)
+	cast_round=panel_style(Color(0.80,0.62,0.32,0.55),80)
 	cast_round.set_border_width_all(4)
 	cast_round.border_color=Color("f8dfb0")
 	cast_round_pressed=cast_round.duplicate()
-	cast_round_pressed.bg_color=Color("d99b55")
+	cast_round_pressed.bg_color=Color(0.8,0.55,0.2,0.7)
 	game.fish_button.button_down.connect(func():
 		if not game.fishing: game.cast()
 		game.reeling=true
 	)
 	game.fish_button.button_up.connect(func(): game.reeling=false)
+	put_fish_button=action(actions,"Put fish on boat",game.put_fish_on_boat,true)
 	var navigation=HBoxContainer.new()
 	navigation.add_theme_constant_override("separation",8)
 	actions.add_child(navigation)
@@ -231,6 +237,12 @@ func build(owner_game: Node3D) -> void:
 	mini_map.offset_top=66
 	mini_map.offset_bottom=246
 	mini_map.pressed.connect(toggle_map)
+	engine_button=action(stage,"⏻ Engine off",game.toggle_engine)
+	engine_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	engine_button.offset_left=-175
+	engine_button.offset_right=-5
+	engine_button.offset_top=-295
+	engine_button.offset_bottom=-239
 	build_market()
 	build_menu()
 	build_catch()
@@ -238,6 +250,7 @@ func build(owner_game: Node3D) -> void:
 	build_preview_card()
 	build_map()
 	build_intro()
+	apply_glass(body)
 	refresh()
 
 func build_market() -> void:
@@ -393,17 +406,30 @@ func refresh() -> void:
 	var at_spot=spot_distance<14 and game.catches>=int(nearest.unlock)
 	mini_map.visible = driving and not menu_visible and not map_visible
 	game.driving_controls.visible = driving and not menu_visible and not map_visible
-	game.fish_button.visible = not game.market_mode and not game.shop_mode and not (game.fishing and game.fight.landing_lift>0.55)
-	game.fish_button.disabled = driving and (not at_spot or absf(game.speed)>1 or game.drive.gear!=0)
+	game.fish_button.visible = not game.market_mode and not game.shop_mode and not game.can_put_fish_on_boat() and not game.landing_to_boat
+	game.fish_button.disabled = driving and (not at_spot or absf(game.speed)>1 or (game.drive.engine_running and game.drive.gear!=0))
+	var stopped_safe=absf(game.speed)<1 and (not game.drive.engine_running or game.drive.gear==0)
+	engine_button.visible=driving and not menu_visible and not map_visible
+	engine_button.text="⏻ Cut engine" if game.drive.engine_running else "⏻ Start engine"
+	put_fish_button.visible=game.can_put_fish_on_boat()
+	put_fish_button.custom_minimum_size.y=70
+	game.market_button.disabled=not stopped_safe
+	tackle_button.disabled=not stopped_safe
+	workshop_button.disabled=not stopped_safe
 	game.market_button.visible = driving and at_dock
 	tackle_button.visible = driving and at_dock
 	workshop_button.visible = driving and at_dock
-	game.drive_button.visible = game.fishing_view and not game.shop_mode
+	game.drive_button.visible = game.fishing_view and not game.shop_mode and not game.landing_to_boat
 	game.drive_button.text = "Leave market" if game.market_mode else "Back to helm"
 	game.market_action.visible = game.market_mode and not game.shop_mode
 	market_panel.visible=game.market_mode
 	preview_card.visible=game.shop_mode
-	if game.first_person_driving and driving:
+	if game.fishing_view and not game.market_mode:
+		action_stack.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+		action_stack.offset_left=-255
+		action_stack.offset_right=-10
+		action_stack.offset_top=-250
+	elif game.first_person_driving and driving:
 		action_stack.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 		action_stack.offset_left=0
 		action_stack.offset_right=380
@@ -632,3 +658,10 @@ func build_preview_card() -> void:
 	action(row,"−",func(): game.shop.zoom=clampf(game.shop.zoom-0.15,0.7,1.5))
 	action(row,"+",func(): game.shop.zoom=clampf(game.shop.zoom+0.15,0.7,1.5))
 	preview_card.visible=false
+
+func apply_glass(root: Node) -> void:
+	if root is PanelContainer:
+		var glass=ShaderMaterial.new()
+		glass.shader=preload("res://shaders/ui_glass.gdshader")
+		root.material=glass
+	for child in root.get_children(): apply_glass(child)

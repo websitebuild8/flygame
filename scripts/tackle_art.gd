@@ -29,8 +29,8 @@ static func reel(parent: Node3D, kind: String, model: String = "island_reel") ->
 	var root = Node3D.new()
 	parent.add_child(root)
 	var silver = Color("b3c5c7")
-	var dark = Color("263542")
-	var gold = Color("b7a26a") if model!="fathom" else Color("b29447")
+	var dark = {"island_reel":Color("1e7090"),"saragosa":Color("6d8294"),"pursuit":Color("342d43"),"ocea":Color("8babbc"),"fathom":Color("25282d")}.get(model,Color("24445c"))
+	var gold = Color("d0ac49") if model!="ocea" else Color("568cb9")
 	var line_color = Color("7ab7a2")
 	var rotor = Node3D.new()
 	root.add_child(rotor)
@@ -82,6 +82,11 @@ static func reel(parent: Node3D, kind: String, model: String = "island_reel") ->
 	Art.pole(crank,Vector3.ZERO,Vector3(side*0.03,-0.13,0),0.012,silver)
 	Art.pole(crank,Vector3(side*0.03,-0.13,0),Vector3(side*0.10,-0.13,0),0.014,gold)
 	Art.oval(crank,Vector3(side*0.11,-0.13,0),Vector3(0.07,0.075,0.12),dark)
+	for i in range(8):
+		if kind=="overhead":
+			ring(rotor,Vector3(-0.085+i*0.024,0,0),0.083,0.0015,line_color.lightened(0.15),Vector3.RIGHT)
+		else:
+			ring(root,Vector3(0,0,-0.145+i*0.012),0.086,0.0015,line_color.lightened(0.15),Vector3.FORWARD)
 	root.set_meta("crank",crank)
 	root.set_meta("rotor",rotor)
 	root.set_meta("spool",spool)
@@ -92,14 +97,17 @@ static func rod(parent: Node3D, kind: String, reel_id: String, rod_id: String, b
 	var root = Node3D.new()
 	parent.add_child(root)
 	var segments: Array[MeshInstance3D] = []
+	var rod_color={"island_rod":Color("237b99"),"grappler":Color("613c8f"),"offshore_rod":Color("b9523c")}.get(rod_id,Color("2b7665"))
 	Art.pole(root,Vector3(0,-0.04,0.38),Vector3(0,0.10,-0.05),0.035,Color("233640"))
 	for i in range(4):
 		ring(root,Vector3(0,0.03-i*0.025,0.12+i*0.06),0.034,0.003,Color("b39c60"),Vector3(0,0.14,-0.43).normalized())
 	for i in range(9):
 		var start = Vector3(0,0.1+i*0.13,-i*0.22)
 		var end = start+Vector3(0,0.13,-0.22)
-		var segment = Art.pole(root,start,end,0.014-i*0.0011,Color("203b4a") if rod_id!="grappler" else Color("354052"))
+		var segment = Art.pole(root,start,end,0.014-i*0.0011,rod_color)
 		segments.append(segment)
+		var wrap=ring(segment,Vector3(0,0.06,0),0.015-i*0.0011,0.002,Color("d9ad54"))
+		wrap.name="ThreadWrap"
 		var guide = ring(segment,Vector3(0,0.1,0.018),0.022-i*0.0015,0.0025,Color("aebdbe"))
 		guide.name = "Guide"
 	var equipment = reel(root,kind,reel_id)

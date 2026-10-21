@@ -7,10 +7,10 @@ static func build(root: Node3D,id: String) -> Node3D:
 	visual.name="Visual"
 	root.add_child(visual)
 	Art.dinghy(visual)
-	var colors={"dinghy":Color("4b9e9f"),"skiff":Color("3f8dcc"),"runner":Color("d48c43"),"launch":Color("c3ab70")}
+	var colors={"dinghy":Color("259d99"),"skiff":Color("315bca"),"runner":Color("d35540"),"launch":Color("e6bd55")}
 	for child in visual.get_children():
 		if child is MeshInstance3D and child.mesh is ArrayMesh:
-			(child.material_override as StandardMaterial3D).albedo_color=Color("e7eee5") if id!="runner" else Color("2e485b")
+			(child.material_override as StandardMaterial3D).albedo_color=colors[id]
 	var wheel=visual.get_node("HelmWheel")
 	for child in wheel.get_children():
 		if child is MeshInstance3D and child.mesh is CylinderMesh:
@@ -18,6 +18,7 @@ static func build(root: Node3D,id: String) -> Node3D:
 			child.queue_free()
 		elif child is MeshInstance3D and child.mesh is TorusMesh:
 			(child.material_override as StandardMaterial3D).albedo_color=Color("8e6447") if id=="launch" else (Color("e0e8e5") if id=="skiff" else colors[id])
+	wheel.scale=Vector3.ONE*1.65
 	var spokes=6 if id=="launch" else (5 if id=="skiff" else 3)
 	for i in range(spokes):
 		var a=float(i)*TAU/spokes

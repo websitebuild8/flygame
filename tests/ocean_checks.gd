@@ -99,6 +99,39 @@ func checks() -> void:
 	game._physics_process(0.1)
 	check(game.fish_actor.visible and game.line_target().is_equal_approx(game.fight.position+Vector3.UP*0.5*game.fight.landing_lift),"Line endpoint follows the actual hooked fish")
 	check(game.feedback.bend_amount>0,"Rod bends under fish load")
+	game.fight.progress=0.94
+	game.fight.step(.1,false,1,1,1,1)
+	game._physics_process(.1)
+	game.interface.refresh()
+	check(game.progress<1 and game.can_put_fish_on_boat() and game.interface.put_fish_button.visible,"Manual landing is offered before the bar is full")
+	var before_catch=game.catches
+	game.put_fish_on_boat()
+	game.put_fish_on_boat()
+	check(game.landing_to_boat,"Putting aboard starts a guarded landing animation")
+	await create_timer(.9).timeout
+	check(game.catches==before_catch+1,"Manual landing stores exactly one catch on repeated presses")
+	game.close_catch()
+	game.return_home()
+	game.drive.gear=1
+	game.drive.engine_running=false
+	game.driving_controls.lever_value=1
+	game.interface.refresh()
+	check(not game.market_button.disabled and not game.interface.workshop_button.disabled,"Engine cutoff enables stopped harbour actions with gear engaged")
+	game.open_shop("Boat")
+	check(game.shop_mode,"Cutoff allows entering harbour shops with gear engaged")
+	game.leave_fishing()
+	game.boat.position=game.SPOT
+	game.drive.gear=1
+	game.driving_controls.lever_value=1
+	game.cast()
+	check(game.fishing and not game.drive.engine_running,"Stopped boat can fish with engine off and forward selected")
+	game.leave_fishing()
+	game.driving_controls.lever_value=1
+	game.toggle_engine()
+	check(not game.drive.engine_running,"Restart requires neutral")
+	game.driving_controls.neutral()
+	game.toggle_engine()
+	check(game.drive.engine_running,"Engine restarts in neutral")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(game.save_path))
 	game.queue_free()
 	await create_timer(0.3).timeout

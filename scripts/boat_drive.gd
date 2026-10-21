@@ -1,6 +1,7 @@
 extends RefCounted
 ## Game-scale outboard approximation: persistent lever, neutral detent,
 ## in-gear idle, limited reverse, inertia and a low-speed direction interlock.
+var engine_running = true
 var lever = 0.0
 var gear = 0
 var throttle = 0.0
@@ -32,6 +33,13 @@ func reset() -> void:
 	shift_waiting = false
 
 func step(delta: float, wheel: float, level: int) -> void:
+	if not engine_running:
+		speed*=exp(-delta*0.95)
+		if absf(speed)<0.025: speed=0
+		rpm=0
+		throttle=0
+		steering=lerpf(steering,clampf(wheel,-1,1),1-exp(-delta*7))
+		return
 	var requested = 0 if lever == 0 else (1 if lever > 0 else -1)
 	shift_delay = maxf(0,shift_delay-delta)
 	shift_waiting = requested != 0 and speed * requested < -0.8

@@ -22,6 +22,7 @@ var unlocked = false
 var speed = 0.0
 var elapsed = 0.0
 var fishing = false
+var landing_to_boat=false
 var fish_timer = 0.0
 var progress = 0.0
 var tension = 0.0
@@ -294,6 +295,10 @@ func _physics_process(delta: float) -> void:
 	var pulling = (reeling or space_down) and fishing and fish_timer >= 2.5
 	if fishing:
 		speed = 0
+		if landing_to_boat:
+			feedback.update_feedback(delta,true,false,tension,line_target())
+			interface.refresh()
+			return
 		fish_timer += delta
 		if fish_timer < 2.5:
 			message = "Bait in the water… wait for a bite."
@@ -311,14 +316,13 @@ func _physics_process(delta: float) -> void:
 			update_hooked_fish(delta)
 			message = "%s · %s · %d m away" % [active_species.get("name","Fish"),"MAKING A RUN" if fight.running else "Hold to reel",int(fight.position.distance_to(boat.position))]
 			if fight.landing_lift>0.55:
-				message="Lifting %s clear of the water…" % active_species.name
+				message="%s is clear of the water. Put fish on boat." % active_species.name
 			if tension >= 1:
 				fishing = false
 				feedback.finish(false,line_target())
 				clear_hooked_fish()
 				message = "The line snapped. Ease off the reel next time."
-			elif progress >= 1 and fight.landing_age>=1.6:
-				land_fish()
+
 	elif not fishing_view and not market_mode and not shop_mode:
 		var keyboard_steer = float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT))-float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT))
 		var keyboard_throttle = float(Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP))-float(Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN))
@@ -350,7 +354,7 @@ func _physics_process(delta: float) -> void:
 	boat.rotation.z = lerpf(boat.rotation.z,-drive.steering*absf(speed)*0.009+sin(elapsed*1.1)*day_cycle.roughness*0.035,1-exp(-delta*3))
 	boat.rotation.x = lerpf(boat.rotation.x,-clampf(absf(speed)/12,0,1)*0.035,1-exp(-delta*2))
 	var driving = not fishing_view and not market_mode and not shop_mode
-	engine_audio.update_audio(delta,drive.rpm,speed,driving,feedback.sound_enabled)
+	engine_audio.update_audio(delta,drive.rpm,speed,driving,feedback.sound_enabled,drive.engine_running)
 	wake.update_wake(delta,boat.global_position,boat.basis.z,speed if driving else 0)
 	driving_controls.wheel_display = drive.steering
 	driving_controls.shown_speed = absf(speed)
@@ -375,8 +379,8 @@ func _physics_process(delta: float) -> void:
 		var view_target=camera.position+forward*12+Vector3(0,-0.6,0)
 		camera.look_at(view_target)
 	elif first_person_driving:
-		camera.position=boat_visual.to_global(Vector3(0.65,1.42,1.95))
-		camera.look_at(boat.position-boat.basis.z*35+Vector3(0,1.4,0))
+		camera.position=boat_visual.to_global(Vector3(0.53,1.30,1.37))
+		camera.look_at(boat.position-boat.basis.z*35+Vector3(0,1.13,0))
 	else:
 		var desired = boat.position + boat.basis.z * 12 + Vector3(0, 7, 0)
 		camera.position = camera.position.lerp(desired, 1 - exp(-delta * 3))
@@ -386,6 +390,9 @@ func _physics_process(delta: float) -> void:
 	if driving_controls.pov:
 		var transform=driving_controls.get_global_transform_with_canvas().affine_inverse()
 		driving_controls.pov_wheel=transform*camera.unproject_position(boat_visual.get_node("HelmWheel").global_position)
+		var wheel_node=boat_visual.get_node("HelmWheel")
+		var wheel_edge=camera.unproject_position(wheel_node.global_position+camera.global_basis.x*wheel_node.global_basis.x.length()*0.18)
+		driving_controls.pov_wheel_radius=maxf(87,(transform*wheel_edge).distance_to(driving_controls.pov_wheel))
 		driving_controls.pov_lever=transform*camera.unproject_position(boat_visual.get_node("ThrottleLever").global_position)
 	feedback.update_feedback(delta, fishing_view and not market_mode, pulling, tension if fishing else 0.0, line_target())
 	interface.refresh()
@@ -403,11 +410,15 @@ func cast() -> void:
 	if catches<int(active_spot.unlock):
 		message="%s unlocks after %d catches." % [active_spot.name,active_spot.unlock]
 		return
-	if absf(speed) > 1 or drive.gear != 0:
+	if absf(speed) > 1 or (drive.engine_running and drive.gear != 0):
 		message = "Select neutral and let the dinghy slow before casting."
 		return
-	drive.reset()
-	driving_controls.neutral()
+	if drive.engine_running:
+		drive.reset()
+		driving_controls.neutral()
+	else:
+		drive.speed=0
+		speed=0
 	var species_index=int(active_spot.fish[rng.randi_range(0,active_spot.fish.size()-1)])
 	active_species=World.FISH[species_index]
 	fight=preload("res://scripts/fish_fight.gd").new()
@@ -425,7 +436,38 @@ func cast() -> void:
 	progress = 0
 	tension = 0
 
+func can_put_fish_on_boat() -> bool:
+	return fishing and not landing_to_boat and bite_announced and fight.landing_lift>=0.65 and fight.position.y>0.1
+
+func put_fish_on_boat() -> void:
+	if not can_put_fish_on_boat(): return
+	landing_to_boat=true
+	reeling=false
+	message="Bringing your catch aboard…"
+	interface.refresh()
+	var target=boat_visual.to_global(Vector3(-0.3,0.7,-0.8))
+	var tween=create_tween()
+	tween.tween_property(fish_actor,"position",target,0.65).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	tween.parallel().tween_property(fish_actor,"rotation:x",0.2,0.65)
+	tween.tween_callback(func():
+		landing_to_boat=false
+		land_fish()
+	)
+
+func toggle_engine() -> void:
+	if fishing_view or shop_mode or market_mode: return
+	if drive.engine_running:
+		drive.engine_running=false
+		message="Engine off. Let the boat stop before fishing or entering harbour."
+	elif absf(driving_controls.lever_value)>drive.NEUTRAL_DETENT:
+		message="Select neutral before starting the engine."
+	else:
+		drive.engine_running=true
+		message="Engine started."
+	interface.refresh()
+
 func land_fish() -> void:
+	if not fishing: return
 	fishing = false
 	reeling = false
 	feedback.finish(true, line_target())
@@ -465,7 +507,7 @@ func sell() -> void:
 	if boat.position.distance_to(DOCK) > 18:
 		message = "Return to the home dock to visit the fish market."
 		return
-	if absf(speed)>1 or drive.gear!=0:
+	if absf(speed)>1 or (drive.engine_running and drive.gear!=0):
 		message = "Select neutral and slow down before entering the market."
 		return
 	leave_fishing()
@@ -510,11 +552,14 @@ func buy_upgrade() -> void:
 		save_trip()
 
 func line_target() -> Vector3:
+	if landing_to_boat and fish_actor:
+		return fish_actor.position
 	if fishing and bite_announced and fish_actor:
 		return fight.position+Vector3.UP*0.5*fight.landing_lift
 	return Vector3(boat.position.x, -0.52, boat.position.z) - boat.basis.z * 18.0
 
 func leave_fishing() -> void:
+	if landing_to_boat: return
 	clear_hooked_fish()
 	drive.reset()
 	driving_controls.neutral()
@@ -637,7 +682,7 @@ func apply_equipment() -> void:
 		feedback.equip(str(equipped.Reels),str(equipped.Rods),str(equipped.Line))
 
 func open_shop(category: String = "Reels") -> void:
-	if fishing or catch_overlay.visible or boat.position.distance_to(DOCK)>18 or absf(speed)>1 or drive.gear!=0:
+	if fishing or catch_overlay.visible or boat.position.distance_to(DOCK)>18 or absf(speed)>1 or (drive.engine_running and drive.gear!=0):
 		message = "Dock at home in neutral to visit the island shops."
 		return
 	leave_fishing()
@@ -738,7 +783,7 @@ func update_outboards(delta: float) -> void:
 		if boat_visual.has_node(node_name):
 			var motor=boat_visual.get_node(node_name)
 			motor.rotation.y=lerpf(motor.rotation.y,drive.steering*0.52,1-exp(-delta*7))
-			motor.get_node("Propeller").rotation.z+=delta*drive.rpm*35*drive.gear
+			motor.get_node("Propeller").rotation.z+=delta*drive.rpm*35*drive.gear*(1 if drive.engine_running else 0)
 	boat_visual.get_node("ThrottleLever").rotation.x=driving_controls.lever_value*0.8
 	if boat_visual.has_node("ThrottleLever2"):
 		boat_visual.get_node("ThrottleLever2").rotation.x=driving_controls.lever_value*0.8

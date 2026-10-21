@@ -10,6 +10,7 @@ var shift_waiting = false
 var skin="dinghy"
 var pov=false
 var pov_wheel=Vector2.ZERO
+var pov_wheel_radius=87.0
 var pov_lever=Vector2.ZERO
 var rim_color=Color("729097")
 var spokes=3
@@ -58,7 +59,7 @@ func _input(event: InputEvent) -> void:
 
 func pointer(id: int, point: Vector2, down: bool) -> void:
 	if down:
-		if point.distance_to(wheel_center()) < 87 and wheel_pointer == -99:
+		if point.distance_to(wheel_center()) < (pov_wheel_radius if pov else 87.0) and wheel_pointer == -99:
 			wheel_pointer = id
 			previous_angle = (point-wheel_center()).angle()
 			get_viewport().set_input_as_handled()
@@ -92,10 +93,10 @@ func update_lever(point: Vector2) -> void:
 
 func panel(rect: Rect2) -> void:
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.025,0.085,0.12,0.90)
+	style.bg_color = Color(0.11,0.20,0.24,0.47)
 	style.set_corner_radius_all(24)
 	style.set_border_width_all(1)
-	style.border_color = Color(0.65,0.88,0.88,0.16)
+	style.border_color = Color(0.85,0.96,1.0,0.38)
 	draw_style_box(style,rect)
 
 func text_at(text: String, position: Vector2, font_size: int, color: Color) -> void:
@@ -111,7 +112,7 @@ func set_skin(id: String) -> void:
 func _draw() -> void:
 	if pov:
 		var wheel=wheel_center()
-		draw_arc(wheel,77,-PI*.85,-PI*.15,30,Color(accent,0.5),2,true)
+		draw_arc(wheel,pov_wheel_radius*.9,-PI*.85,-PI*.15,30,Color(accent,0.5),2,true)
 		text_at("DRAG WHEEL",wheel+Vector2(-45,100),12,accent)
 		var lever=rail_center()
 		text_at("F",lever+Vector2(38,-72),16,accent)

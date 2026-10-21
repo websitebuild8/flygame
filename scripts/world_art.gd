@@ -131,7 +131,10 @@ static func dinghy(root: Node3D) -> void:
 	arrays[Mesh.ARRAY_INDEX] = indices
 	var mesh = ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	var hull = mesh_node(root, mesh, Vector3.ZERO, Color("e5efdf"))
+	var surface=SurfaceTool.new()
+	surface.create_from(mesh,0)
+	surface.generate_normals()
+	var hull = mesh_node(root, surface.commit(), Vector3.ZERO, Color("e5efdf"))
 	(hull.material_override as StandardMaterial3D).cull_mode = BaseMaterial3D.CULL_DISABLED
 	block(root, Vector3(0,0.08,0.4), Vector3(1.85,0.18,3.8), Color("c7b48c"))
 	for i in range(5):

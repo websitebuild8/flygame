@@ -1,8 +1,8 @@
 # Ishaq's Fishing Trip
 
 An offline landscape Godot 4.5.1 / GDScript fishing prototype. Geometry, shaders,
-cloud textures are original procedural work. Audio combines original synthesized
-engines with free CC0 reel, splash and wave recordings (see docs/audio-credits.md). No Blender or purchased
+cloud textures are original procedural work. Audio combines free CC0 real outboard,
+reel, splash and wave recordings (see docs/audio-credits.md). No Blender or purchased
 assets are required to run this version.
 
 ## Launch and controls
@@ -127,8 +127,10 @@ marble grouper, great barracuda and kawakawa. Species references:
 https://www.mrc.gov.mv/assets/Uploads/May-2008-Review-of-the-Reef-Fishery-of-Maldives.pdf .
 Sizes, value, distribution and fighting difficulty are game balancing values.
 
-The final retrieve raises the rod while its tip stays bent, lifts the fish beside
-the bow and pauses before the catch result. Large catches currently share this
+The final retrieve raises the rod while its tip stays bent and lifts the fish
+beside the bow. The right-side **Put fish on boat** button becomes available
+before the progress bar is full. Tap it to bring the catch aboard; it does not
+automatically land. The whole rod and reel also move with retrieval and load. Large catches currently share this
 simplified landing animation; landing nets and gaff handling are not simulated.
 
 Sunny, cloudy, rainy and rough weather transition every 150 seconds, independently
@@ -136,3 +138,38 @@ of the 20-minute day/night cycle. Pause → Change weather cycles conditions for
 preview (allow several seconds for the blend). Clouds, rain, fog, sea ripples,
 whitecaps and boat bob respond to weather. Rain is hidden indoors. Weather is
 simulated rather than downloaded live.
+
+
+### Engine power and revised helm
+
+The power button above the throttle cuts the engine while preserving the lever
+and gear selection. The boat coasts down. At low speed, either neutral or engine
+off allows fishing, market and shop actions. To restart, put the lever in neutral.
+POV uses a closer camera and larger physical wheel, with touch targeting scaled
+to its visible size. Boat hulls are teal, blue, coral-red and gold; rods and reels
+use model-specific finishes, thread wraps and visible spool windings.
+
+The HUD uses translucent buttons, frosted background panels and soft borders.
+The glass shader uses a blurred screen sample; phone performance still needs
+on-device testing. It is a custom glass-inspired style.
+
+
+### Species-specific fish art
+
+Fish models use original procedural geometry and shading, guided by species
+identification features rather than the trout shown in the visual reference.
+Tuna have finlets and crescent tails; trevally have deeper foreheads and tail
+scutes; groupers have broad heads, a continuous dorsal fin and rounded tails;
+mahi-mahi have a long dorsal fin; barracuda are slender with rear-set fins.
+Bluefin trevally have blue fins/spots, while yellowfin have yellow finlets.
+The models remain approximations, not photographic scans or anatomical models.
+No photos or third-party mesh assets were copied into the game.
+
+Species references:
+- Maldives Marine Research Centre reef fish review (local species context): https://www.mrc.gov.mv/assets/Uploads/May-2008-Review-of-the-Reef-Fishery-of-Maldives.pdf
+- Yellowfin tuna: https://fishesofaustralia.net.au/home/species/731
+- Giant trevally: https://fishesofaustralia.net.au/home/species/4268
+- Bluefin trevally: https://fishesofaustralia.net.au/home/species/1652
+- Marble grouper: https://fishesofaustralia.net.au/Home/species/4670
+- Mahi-mahi: https://www.floridamuseum.ufl.edu/discover-fish/species-profiles/dolphinfish/
+- Great barracuda: https://www.floridamuseum.ufl.edu/discover-fish/species-profiles/great-barracuda/

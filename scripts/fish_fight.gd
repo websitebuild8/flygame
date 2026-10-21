@@ -28,7 +28,9 @@ func step(delta: float, reeling: bool, retrieve: float, drag: float, rod: float,
 	running = sin(age*1.0)>0.65
 	var run = 1.0 if running else 0.0
 	tension=clampf(tension+delta*((0.26+run*0.22)*difficulty/(drag*line_strength) if reeling else -0.48),0,1)
+	var previous_progress=progress
 	progress=clampf(progress+delta*(0.13*retrieve*rod*(1-run*0.35) if reeling else -(0.012+run*0.015)),0,1)
+	if landing_lift>=0.65: progress=maxf(progress,previous_progress)
 	landing_lift=smoothstep(0.78,0.98,progress)
 	if progress>=1.0: landing_age+=delta
 	var distance=lerpf(18.0,4.5,progress)

@@ -148,6 +148,9 @@ func update_feedback(delta: float, active: bool, pulling: bool, tension: float, 
 		var dt=minf(delta,0.04)
 		bend_velocity+=((desired-bend_amount)*65-bend_velocity*14)*dt
 		bend_amount=clampf(bend_amount+bend_velocity*dt,0,1)
+		var pump=sin(cast_age*3.4)*(0.018+0.055*tension)*(1-landing*0.7)
+		rig.position=Vector3(-0.55,-0.18+pump,-1.25+pump*0.3)
+		rig.rotation.x+=pump*0.65
 		rig.rotation.z=sin(Time.get_ticks_msec()*0.004)*0.015*bend_amount
 		if overhead and pulling:
 			rig.rotation.x += sin(Time.get_ticks_msec()*0.009)*0.05
