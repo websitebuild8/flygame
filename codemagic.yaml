@@ -1,5 +1,4 @@
-# First-stage CI: validates the Godot project on the same OS used for iOS exports.
-# Device packages are added after export presets and signing are configured.
+# Manual workflows: validation and an Android debug APK for device testing.
 workflows:
   godot-validate:
     name: Ishaq's Fishing Trip - validate
@@ -17,7 +16,7 @@ workflows:
       - name: Import and check project
         script: |
           set -eu
-          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --editor --import
+          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --editor --import --quit
           /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --quit-after 120
       - name: Check fishing and market transactions
         script: |
@@ -35,3 +34,37 @@ workflows:
         script: |
           set -eu
           /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/ocean_checks.gd
+
+  android-test:
+    name: Ishaq's Fishing Trip - Android test APK
+    instance_type: mac_mini_m2
+    max_build_duration: 40
+    environment:
+      java: 17
+      vars:
+        GODOT_VERSION: 4.5.1
+    scripts:
+      - name: Install Godot and Android export template
+        script: |
+          set -eu
+          mkdir -p /tmp/ishaq-android-godot
+          curl -fL --retry 3 "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_macos.universal.zip" -o /tmp/ishaq-editor.zip
+          unzip -q /tmp/ishaq-editor.zip -d /tmp/ishaq-android-godot
+          curl -fL --retry 3 "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz" -o /tmp/ishaq-templates.zip
+          bash "$CM_BUILD_DIR/tools/ci-android.sh" setup
+      - name: Import and run game checks
+        script: |
+          set -eu
+          GODOT=/tmp/ishaq-android-godot/Godot.app/Contents/MacOS/Godot
+          "$GODOT" --headless --path "$CM_BUILD_DIR" --editor --import --quit
+          for suite in trip_smoke helm_checks gear_checks ocean_checks; do
+            "$GODOT" --headless --path "$CM_BUILD_DIR" --script "res://tests/${suite}.gd"
+          done
+      - name: Export installable Android APK
+        script: |
+          set -eu
+          mkdir -p "$CM_BUILD_DIR/build/android"
+          /tmp/ishaq-android-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --export-debug "Android Test" "$CM_BUILD_DIR/build/android/ishaqs-fishing-trip.apk"
+          test -s "$CM_BUILD_DIR/build/android/ishaqs-fishing-trip.apk"
+    artifacts:
+      - build/android/*.apk

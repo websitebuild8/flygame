@@ -11,13 +11,32 @@ same version (currently 4.5.1).
 3. Confirm the project's final unique application ID before creating store
    records or signing profiles. No final identifier has been assigned yet.
 
-## Android device build (next stage)
+## Android test APK
 
-Install matching Godot export templates, a compatible JDK and Android SDK on
-the runner, configure Godot's SDK paths, and add an Android export preset.
-A debug APK can be used for development. Release APK/AAB builds need a private
-Android keystore kept in Codemagic secrets. Store publishing also requires a
-Google Play developer account. Add artifact collection only once exports work.
+The `android-test` workflow now builds an ARM64 debug APK using Godot 4.5.1,
+Java 17 and Android SDK 35. It imports the project, runs four check suites,
+then collects `build/android/ishaqs-fishing-trip.apk` as a downloadable artifact.
+
+1. Commit and push the current project, including `codemagic.yaml`,
+   `export_presets.cfg`, `tools/ci-android.sh`, assets and scripts to your GitHub
+   repository (`websitebuild8/flygame`). Do not include `.godot/` or signing keys.
+2. In Codemagic choose **Add application**, connect GitHub and select this repo.
+   Choose the **Other** project type if asked; use YAML configuration.
+3. Select the branch containing these files. Check for `codemagic.yaml`.
+4. Start a new build with workflow **android-test** (Android test APK).
+5. After success, download the APK from the build's **Artifacts** section.
+6. Open it on an ARM64 Android phone and allow installation from that download
+   source when Android asks. This does not require a Google Play account.
+
+This configuration has been checked locally, but its first Codemagic run is still
+required to verify the hosted runner and generated APK. It uses the development
+package ID `com.ishaq.fishingtrip.dev`; it does not publish to any store.
+The runner uses a debug key. If later builds use a different debug key, Android
+may require uninstalling the old app first (which removes its local saved game).
+Keep a stable private signing key when moving to regular distribution.
+
+Release APK/AAB builds need a private Android keystore kept in Codemagic secrets.
+Google Play publishing requires a developer account and a final application ID.
 
 ## iPhone device build (next stage)
 
@@ -28,9 +47,9 @@ an IPA using Codemagic's signing tools. Device distribution needs a matching
 certificate and provisioning profile. TestFlight/App Store distribution needs
 Apple Developer Program membership. Store credentials in Codemagic, never in Git.
 
-The initial validation workflow deliberately does not upload to stores or
-pretend to produce a signed device build. We still need export configuration,
-credentials and an actual successful CI run before calling mobile builds ready.
+The Android test workflow does not upload to stores. iOS still needs export
+configuration and signing credentials. An actual successful cloud build and
+phone test are required before calling either mobile build verified.
 
 ## Costs
 

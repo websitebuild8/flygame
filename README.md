@@ -109,8 +109,8 @@ inertia, steering, touch ownership and audio; purchases/loadouts; map routes,
 land avoidance, locks, boats, POV and linked motors; fish movement/jumps/splashes;
 rod/line feedback; day/night rollover and persistence. They use separate saves.
 
-Codemagic runs validation. Signed Android/iOS packages still need export/signing
-setup: see `docs/mobile-builds.md`. Research references are in
+Codemagic includes validation and an Android test APK workflow. Store releases
+and iOS still need signing setup: see `docs/mobile-builds.md`. Research references are in
 `docs/design-research.md`; keep credentials out of Git.
 
 
