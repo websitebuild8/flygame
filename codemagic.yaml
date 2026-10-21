@@ -19,3 +19,19 @@ workflows:
           set -eu
           /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --editor --import
           /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --quit-after 120
+      - name: Check fishing and market transactions
+        script: |
+          set -eu
+          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/trip_smoke.gd
+      - name: Check helm physics and touch ownership
+        script: |
+          set -eu
+          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/helm_checks.gd
+      - name: Check gear purchases and loadouts
+        script: |
+          set -eu
+          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/gear_checks.gd
+      - name: Check expanded ocean systems
+        script: |
+          set -eu
+          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/ocean_checks.gd

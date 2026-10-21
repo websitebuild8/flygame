@@ -43,3 +43,9 @@ References:
 - https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_android.html
 - https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_ios.html
 - https://docs.codemagic.io/yaml-basic-configuration/yaml-getting-started/
+
+## Fishing feedback
+
+Enable `permissions/vibrate` in the Android export preset before device builds.
+Godot's `Input.vibrate_handheld` supports Android/iOS; actual feedback depends on
+hardware and device settings. Desktop testing does not validate phone haptics.

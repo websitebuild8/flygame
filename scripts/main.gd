@@ -1,6 +1,11 @@
 extends Node3D
 
+const Art = preload("res://scripts/world_art.gd")
+const World = preload("res://scripts/world_data.gd")
+const Catalog = preload("res://scripts/gear_catalog.gd")
+
 const SAVE_PATH = "user://trip.json"
+var save_path = SAVE_PATH
 const DOCK = Vector3(0, 0, 12)
 const SPOT = Vector3(0, 0, -45)
 var boat: Node3D
@@ -8,7 +13,7 @@ var camera: Camera3D
 var status: Label
 var info: Label
 var fish_button: Button
-var message = "Welcome, Ishaq. Follow the golden buoy to fish."
+var message = "Set your course for the golden fishing buoy."
 var coins = 0
 var catches = 0
 var hold_value = 0
@@ -21,14 +26,83 @@ var fish_timer = 0.0
 var progress = 0.0
 var tension = 0.0
 var reeling = false
-var touch = {"forward": false, "back": false, "left": false, "right": false}
 var rng = RandomNumberGenerator.new()
+var fishing_view = false
+var bite_announced = false
+var space_was_down = false
+var feedback: Node3D
+var driving_controls: Control
+var tension_bar: ProgressBar
+var landing_bar: ProgressBar
+var fishing_meters: VBoxContainer
+var hint_label: Label
+var inventory: Array = []
+var pending_payment = 0
+var market_mode = false
+var market: Node3D
+var market_button: Button
+var upgrade_button: Button
+var drive_button: Button
+var home_button: Button
+var market_action: Button
+var catch_overlay: PanelContainer
+var catch_text: Label
+var catch_model: Node3D
+var intro: PanelContainer
+var intro_visible = true
+var hud: Control
+var drive = preload("res://scripts/boat_drive.gd").new()
+var interface: CanvasLayer
+var engine_audio: Node
+var wake: Node3D
+var owned_items: Array = ["island_reel","island_rod","mono"]
+var equipped = {"Reels":"island_reel","Rods":"island_rod","Line":"mono"}
+var boat_parts: Array = []
+var shop_mode = false
+var shop: Node3D
+var app_active = true
+var navigation=preload("res://scripts/sea_navigation.gd").new()
+var day_cycle: Node
+var saved_hours=8.0
+var saved_waypoint: Array=[]
+var route_tick=0.0
+var autosave_tick=0.0
+var owned_boats: Array=["dinghy"]
+var equipped_boat="dinghy"
+var boat_visual: Node3D
+var first_person_driving=false
+var active_spot: Dictionary={}
+var active_species: Dictionary={}
+var fight=preload("res://scripts/fish_fight.gd").new()
+var fish_actor: Node3D
+var fish_splash_timer=0.0
+var waypoint_marker: Node3D
 
 func _ready() -> void:
 	rng.randomize()
 	load_trip()
 	build_world()
 	build_ui()
+	feedback = load("res://scripts/fishing_feedback.gd").new()
+	add_child(feedback)
+	feedback.attach_camera(camera)
+	apply_equipment()
+	hud.visible = false
+	market = load("res://scripts/market.gd").new()
+	add_child(market)
+	catch_model = Art.fish(camera, 0.8)
+	catch_model.position = Vector3(0, -0.1, -3)
+	catch_model.basis = Basis(Vector3(0,0,1),-PI/2) * Basis(Vector3.UP,PI/2)
+	catch_model.visible = false
+	engine_audio = preload("res://scripts/engine_audio.gd").new()
+	add_child(engine_audio)
+	wake = preload("res://scripts/boat_wake.gd").new()
+	add_child(wake)
+	shop = preload("res://scripts/island_shop.gd").new()
+	add_child(shop)
+	navigation.configure(unlocked)
+	if saved_waypoint.size()==2:
+		set_waypoint(Vector2(float(saved_waypoint[0]),float(saved_waypoint[1])),"Saved waypoint")
 
 func material(color: Color) -> StandardMaterial3D:
 	var mat = StandardMaterial3D.new()
@@ -46,225 +120,660 @@ func box(parent: Node3D, pos: Vector3, size: Vector3, color: Color) -> MeshInsta
 	node.position = pos
 	return node
 
-func island(center: Vector3, radius: float) -> void:
-	var sand = MeshInstance3D.new()
-	var mesh = CylinderMesh.new()
-	mesh.top_radius = radius
-	mesh.bottom_radius = radius + 4.0
-	mesh.height = 2.0
-	mesh.radial_segments = 32
-	sand.mesh = mesh
-	sand.material_override = material(Color("ead8a1"))
-	add_child(sand)
-	sand.position = center
-	for i in range(7):
-		var angle = float(i) * TAU / 7.0
-		var point = center + Vector3(cos(angle) * radius * 0.55, 3.5, sin(angle) * radius * 0.55)
-		box(self, point, Vector3(0.5, 5, 0.5), Color("846443"))
-		for j in range(3):
-			var leaf = box(self, point + Vector3(0, 2.4, 0), Vector3(5, 0.25, 1.1), Color("357a59"))
-			leaf.rotation.y = float(j) * PI / 3.0
-
 func build_world() -> void:
 	var environment = WorldEnvironment.new()
 	environment.environment = Environment.new()
-	environment.environment.background_mode = Environment.BG_COLOR
-	environment.environment.background_color = Color("8bcbdc")
+	environment.environment.background_mode = Environment.BG_SKY
+	environment.environment.sky = Sky.new()
+	var sky = ProceduralSkyMaterial.new()
+	sky.sky_top_color = Color("367eb6")
+	sky.sky_horizon_color = Color("f1d5b3")
+	sky.ground_horizon_color = Color("f1d5b3")
+	sky.ground_bottom_color = Color("548c9b")
+	environment.environment.sky.sky_material = sky
+	environment.environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	environment.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	environment.environment.ambient_light_color = Color.WHITE
-	environment.environment.ambient_light_energy = 0.65
+	environment.environment.ambient_light_energy = 0.4
+	environment.environment.fog_enabled=true
+	environment.environment.fog_density=0.0011
 	add_child(environment)
 	var sun = DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-50, -30, 0)
+	sun.rotation_degrees = Vector3(-25, -40, 0)
+	sun.light_color = Color("ffdfaf")
+	sun.light_energy = 0.95
+	sun.shadow_enabled=true
+	sun.directional_shadow_max_distance=110
 	add_child(sun)
-	box(self, Vector3(0, -1.1, 0), Vector3(700, 1, 700), Color("139da7"))
-	island(Vector3(-25, -0.4, 30), 19)
-	island(Vector3(85, -0.4, -80), 24)
-	box(self, Vector3(-8, 0.5, 14), Vector3(19, 0.6, 4), Color("8b6749"))
-	box(self, SPOT + Vector3(0, 1, 0), Vector3(1, 2.5, 1), Color("f6c96b"))
+	var ocean = MeshInstance3D.new()
+	var plane = PlaneMesh.new()
+	plane.size = Vector2(700,700)
+	plane.subdivide_width = 100
+	plane.subdivide_depth = 100
+	ocean.mesh = plane
+	var water = ShaderMaterial.new()
+	water.shader = load("res://shaders/ocean.gdshader")
+	ocean.material_override = water
+	add_child(ocean)
+	ocean.position.y = -0.6
+	for island in World.ISLANDS:
+		Art.island(self,Vector3(island.at.x,-0.4,island.at.y),island.radius)
+	day_cycle=preload("res://scripts/day_cycle.gd").new()
+	day_cycle.sun=sun
+	day_cycle.environment=environment.environment
+	day_cycle.sky=sky
+	day_cycle.water=water
+	day_cycle.hours=saved_hours
+	add_child(day_cycle)
+	var star_root=Node3D.new()
+	add_child(star_root)
+	day_cycle.stars=star_root
+	var star_mesh=MeshInstance3D.new()
+	star_root.add_child(star_mesh)
+	var positions=PackedVector3Array()
+	var star_random=RandomNumberGenerator.new()
+	star_random.seed=403
+	for i in range(180):
+		var direction=Vector3(star_random.randf_range(-1,1),star_random.randf_range(0.1,1),star_random.randf_range(-1,1)).normalized()
+		positions.append(direction*1800)
+	var star_arrays=[]
+	star_arrays.resize(Mesh.ARRAY_MAX)
+	star_arrays[Mesh.ARRAY_VERTEX]=positions
+	var star_geometry=ArrayMesh.new()
+	star_geometry.add_surface_from_arrays(Mesh.PRIMITIVE_POINTS,star_arrays)
+	star_mesh.mesh=star_geometry
+	var star_material=ShaderMaterial.new()
+	var star_shader=Shader.new()
+	star_shader.code="shader_type spatial; render_mode unshaded, fog_disabled; void vertex(){POINT_SIZE=2.0;} void fragment(){ALBEDO=vec3(0.7,0.8,1.0);}"
+	star_material.shader=star_shader
+	star_mesh.material_override=star_material
+	day_cycle.moon=Art.oval(self,Vector3(-170,130,-360),Vector3.ONE*12,Color("cedbec"))
+	var moon_mat=day_cycle.moon.material_override as StandardMaterial3D
+	moon_mat.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+	day_cycle.apply_lighting()
+	var cloud_layer=MeshInstance3D.new()
+	add_child(cloud_layer)
+	var cloud_plane=PlaneMesh.new()
+	cloud_plane.size=Vector2(1800,1800)
+	cloud_layer.mesh=cloud_plane
+	cloud_layer.position=Vector3(0,90,-150)
+	var cloud_material=ShaderMaterial.new()
+	cloud_material.shader=preload("res://shaders/clouds.gdshader")
+	var noise=FastNoiseLite.new()
+	noise.seed=742
+	noise.frequency=0.012
+	var texture=NoiseTexture2D.new()
+	texture.width=512
+	texture.height=512
+	texture.seamless=true
+	texture.noise=noise
+	cloud_material.set_shader_parameter("cloud_noise",texture)
+	cloud_layer.material_override=cloud_material
+	day_cycle.clouds=cloud_material
+	for i in range(24):
+		Art.block(self, Vector3(-17 + i*0.75,0.5,14),Vector3(0.7,0.25,3.5),Color("a5865d"))
+	for x in [-17,-11,-5,0]:
+		for z in [12.5,15.5]:
+			Art.pole(self,Vector3(x,-1.6,z),Vector3(x,1.2,z),0.14,Color("826546"))
+	Art.label(self,"FISH MARKET",Vector3(-7,2.7,14),55)
+	for i in range(2):
+		var at = Vector3(-18-i*10,1.4,22)
+		Art.block(self,at,Vector3(7,2.8,4.5),Color("d3d8bd"))
+		Art.block(self,at+Vector3(0,1.7,0),Vector3(7.6,0.3,5),Color("2c6973") if i==0 else Color("9a7954"))
+		Art.block(self,at+Vector3(0,-0.2,-2.28),Vector3(1.5,2.2,0.08),Color("284d59"))
+		var sign = Art.label(self,"TACKLE HOUSE" if i==0 else "BOAT WORKSHOP",at+Vector3(0,1,-2.35),26)
+		sign.rotation.y = PI
+	for spot in World.SPOTS:
+		var buoy=Art.oval(self,Vector3(spot.at.x,0,spot.at.y),Vector3(0.7,1.3,0.7),Color("f3c36f"))
+		var material=buoy.material_override as StandardMaterial3D
+		material.emission_enabled=true
+		material.emission=Color("8d6830")*0.3
+		Art.pole(self,Vector3(spot.at.x,0,spot.at.y),Vector3(spot.at.x,1.8,spot.at.y),0.035,Color("d8e4de"))
+		Art.label(self,spot.name,Vector3(spot.at.x,2.1,spot.at.y),22)
+	for point in [Vector3(-5,2,14),Vector3(-17,2,14),Vector3(-28,2,19)]:
+		var light=OmniLight3D.new()
+		add_child(light)
+		light.position=point
+		light.light_color=Color("ffcc8a")
+		light.omni_range=12
+		day_cycle.harbor_lights.append(light)
+		var bulb=Art.oval(self,point,Vector3.ONE*0.12,Color("ffd69b"))
+		(bulb.material_override as StandardMaterial3D).emission_enabled=true
+		(bulb.material_override as StandardMaterial3D).emission=Color("ffc580")
+	waypoint_marker=Node3D.new()
+	add_child(waypoint_marker)
+	var pin=Art.pole(waypoint_marker,Vector3(0,-0.5,0),Vector3(0,6,0),0.05,Color("f5c278"))
+	(pin.material_override as StandardMaterial3D).emission_enabled=true
+	(pin.material_override as StandardMaterial3D).emission=Color("f5c278")
+	waypoint_marker.visible=false
 	boat = Node3D.new()
 	add_child(boat)
 	boat.position = DOCK
-	box(boat, Vector3.ZERO, Vector3(2.5, 0.6, 5), Color("f0e9d8"))
-	box(boat, Vector3(-1.15, 0.5, 0), Vector3(0.2, 0.8, 5), Color("ebf6ef"))
-	box(boat, Vector3(1.15, 0.5, 0), Vector3(0.2, 0.8, 5), Color("ebf6ef"))
-	box(boat, Vector3(0, 0.5, 0.5), Vector3(2.2, 0.25, 0.8), Color("b18c61"))
-	box(boat, Vector3(0, 0.2, 2.7), Vector3(0.65, 1.1, 0.6), Color("334452"))
-	var rod = box(boat, Vector3(0.9, 1.7, -1.3), Vector3(0.06, 3, 0.06), Color("263c46"))
-	rod.rotation.x = -0.5
+	apply_boat()
 	camera = Camera3D.new()
 	add_child(camera)
 	camera.current = true
 	camera.fov = 65
 	camera.position = boat.position + Vector3(0, 10, 15)
 	camera.look_at(boat.position)
-
-func button(parent: Control, title: String, action: Callable) -> Button:
-	var item = Button.new()
-	item.text = title
-	item.custom_minimum_size = Vector2(130, 56)
-	item.add_theme_font_size_override("font_size", 20)
-	item.pressed.connect(action)
-	parent.add_child(item)
-	return item
+	day_cycle.apply_lighting()
 
 func build_ui() -> void:
-	var layer = CanvasLayer.new()
-	add_child(layer)
-	var root = MarginContainer.new()
-	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	root.add_theme_constant_override("margin_left", 26)
-	root.add_theme_constant_override("margin_right", 26)
-	root.add_theme_constant_override("margin_top", 22)
-	root.add_theme_constant_override("margin_bottom", 22)
-	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	layer.add_child(root)
-	var column = VBoxContainer.new()
-	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(column)
-	var title = Label.new()
-	title.text = "ISHAQ'S FISHING TRIP   /   FIRST VOYAGE"
-	title.add_theme_font_size_override("font_size", 27)
-	column.add_child(title)
-	info = Label.new()
-	column.add_child(info)
-	status = Label.new()
-	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	column.add_child(status)
-	var spacer = Control.new()
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	column.add_child(spacer)
-	var row = HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-	column.add_child(row)
-	for entry in [["←", "left"], ["↑", "forward"], ["↓", "back"], ["→", "right"]]:
-		var key: String = entry[1]
-		var control = button(row, entry[0], func(): pass)
-		control.custom_minimum_size.x = 64
-		control.button_down.connect(func(): touch[key] = true)
-		control.button_up.connect(func(): touch[key] = false)
-	fish_button = button(row, "Cast / Reel", cast)
-	fish_button.button_down.connect(func(): reeling = true)
-	fish_button.button_up.connect(func(): reeling = false)
-	button(row, "Sell catch", sell)
-	button(row, "Upgrade · 100", buy_upgrade)
-	button(row, "Return home", return_home)
-	var hint = Label.new()
-	hint.text = "WASD / arrows to drive • Space to cast; hold to reel • Placeholder islands, not a navigation map"
-	hint.add_theme_font_size_override("font_size", 16)
-	column.add_child(hint)
+	interface = preload("res://scripts/trip_hud.gd").new()
+	add_child(interface)
+	interface.build(self)
 
 func _physics_process(delta: float) -> void:
 	elapsed += delta
-	if Input.is_physical_key_pressed(KEY_SPACE) and not fishing:
-		if not reeling:
-			cast()
-		reeling = true
-	elif not Input.is_physical_key_pressed(KEY_SPACE) and not fish_button.button_pressed:
-		reeling = false
+	market.animate(elapsed)
+	if interface.menu_visible or interface.map_visible or not app_active:
+		feedback.reel_audio.stop()
+		engine_audio.update_audio(delta,0,0,false,feedback.sound_enabled)
+		interface.refresh()
+		return
+	if intro_visible:
+		engine_audio.update_audio(delta,0,0,false,feedback.sound_enabled)
+		camera.position = DOCK + Vector3(10,6,13)
+		camera.look_at(Vector3(-12,1,15))
+		return
+	day_cycle.advance(delta)
+	day_cycle.update_rain(camera.global_position,not shop_mode and not market_mode)
+	autosave_tick+=delta
+	if autosave_tick>30:
+		autosave_tick=0
+		save_trip()
+	if catch_overlay.visible:
+		engine_audio.update_audio(delta,0,0,false,feedback.sound_enabled)
+		catch_model.rotate(Vector3.UP,delta*0.45)
+		feedback.update_feedback(delta,false,false,0,line_target())
+		return
+	var space_down = Input.is_physical_key_pressed(KEY_SPACE)
+	if space_down and not space_was_down and not fishing and not market_mode and not shop_mode:
+		cast()
+	space_was_down = space_down
+	var pulling = (reeling or space_down) and fishing and fish_timer >= 2.5
 	if fishing:
 		speed = 0
 		fish_timer += delta
 		if fish_timer < 2.5:
 			message = "Bait in the water… wait for a bite."
 		else:
-			var pulling = reeling or Input.is_physical_key_pressed(KEY_SPACE)
-			tension = clampf(tension + delta * (0.38 if pulling else -0.5), 0, 1)
-			progress = clampf(progress + delta * (0.17 if pulling else -0.035), 0, 1)
-			message = "Fish on! Hold Reel, release to ease tension. Landed %d%% · Tension %d%%" % [progress * 100, tension * 100]
+			if not bite_announced:
+				bite_announced = true
+				feedback.bite_feedback()
+				feedback.splash(line_target())
+			var reel_stats = Catalog.item(str(equipped.Reels))
+			var rod_stats = Catalog.item(str(equipped.Rods))
+			var line_stats = Catalog.item(str(equipped.Line))
+			fight.step(delta,pulling,float(reel_stats.retrieve),float(reel_stats.drag),float(rod_stats.power),float(line_stats.strength))
+			tension=fight.tension
+			progress=fight.progress
+			update_hooked_fish(delta)
+			message = "%s · %s · %d m away" % [active_species.get("name","Fish"),"MAKING A RUN" if fight.running else "Hold to reel",int(fight.position.distance_to(boat.position))]
+			if fight.landing_lift>0.55:
+				message="Lifting %s clear of the water…" % active_species.name
 			if tension >= 1:
 				fishing = false
+				feedback.finish(false,line_target())
+				clear_hooked_fish()
 				message = "The line snapped. Ease off the reel next time."
-			elif progress >= 1:
+			elif progress >= 1 and fight.landing_age>=1.6:
 				land_fish()
-	else:
-		var throttle = float(touch.forward or Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP)) - float(touch.back or Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN))
-		var steering = float(touch.left or Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT)) - float(touch.right or Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT))
-		speed = move_toward(speed, throttle * (10.0 + upgrade * 4), delta * 5)
-		boat.rotation.y += steering * delta * 1.2 * minf(absf(speed) / 2, 1)
+	elif not fishing_view and not market_mode and not shop_mode:
+		var keyboard_steer = float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT))-float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT))
+		var keyboard_throttle = float(Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP))-float(Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN))
+		if keyboard_throttle != 0:
+			driving_controls.lever_value = clampf(driving_controls.lever_value+keyboard_throttle*delta*0.55,-1,1)
+		if Input.is_physical_key_pressed(KEY_N):
+			driving_controls.neutral()
+		var vessel=World.vessel(equipped_boat)
+		drive.base_speed=float(vessel.speed)
+		drive.handling=float(vessel.handling)
+		drive.acceleration_multiplier=float(vessel.accel)
+		drive.performance_propeller = "propeller" in boat_parts
+		drive.set_lever(driving_controls.lever_value)
+		drive.step(delta,keyboard_steer if keyboard_steer!=0 else driving_controls.wheel_command,upgrade)
+		speed = drive.speed
+		boat_visual.get_node("HelmWheel").rotation.z = -drive.steering*2.3
+		update_outboards(delta)
+		boat.rotation.y += drive.yaw_rate()*delta
 		var next = boat.position - boat.basis.z * speed * delta
-		var blocked = Vector2(next.x + 25, next.z - 30).length() < 23
-		blocked = blocked or Vector2(next.x - 85, next.z + 80).length() < 28
-		if not unlocked and next.x > 45:
-			blocked = true
-			message = "Catch 3 fish to unlock the eastern island waters."
+		var blocked=not World.water(Vector2(next.x,next.z),unlocked,4.0)
+		if not unlocked and next.x>45:
+			message="Catch 3 fish to unlock eastern waters."
 		if not blocked and Vector2(next.x, next.z).length() < 250:
 			boat.position = next
 		else:
 			speed = 0
-	boat.position.y = sin(elapsed * 1.6) * 0.12
-	var desired = boat.position + boat.basis.z * 15 + Vector3(0, 10, 0)
-	camera.position = camera.position.lerp(desired, 1 - exp(-delta * 3))
-	camera.look_at(boat.position + Vector3(0, 0.5, 0))
-	info.text = "Coins %d   ·   Catch value %d   ·   Fish caught %d/3   ·   Boat level %d   ·   Buoy %dm   ·   %s" % [coins, hold_value, catches, upgrade + 1, boat.position.distance_to(SPOT), "Eastern waters unlocked" if unlocked else "Eastern waters locked"]
-	status.text = message
+			drive.speed = 0
+	boat.position.y = sin(elapsed * 1.6) * (0.07+absf(speed)*0.003+day_cycle.roughness*0.17)
+	boat.rotation.z = lerpf(boat.rotation.z,-drive.steering*absf(speed)*0.009+sin(elapsed*1.1)*day_cycle.roughness*0.035,1-exp(-delta*3))
+	boat.rotation.x = lerpf(boat.rotation.x,-clampf(absf(speed)/12,0,1)*0.035,1-exp(-delta*2))
+	var driving = not fishing_view and not market_mode and not shop_mode
+	engine_audio.update_audio(delta,drive.rpm,speed,driving,feedback.sound_enabled)
+	wake.update_wake(delta,boat.global_position,boat.basis.z,speed if driving else 0)
+	driving_controls.wheel_display = drive.steering
+	driving_controls.shown_speed = absf(speed)
+	driving_controls.shown_gear = drive.gear_name()
+	driving_controls.shown_rpm = drive.rpm
+	driving_controls.shift_waiting = drive.shift_waiting
+	driving_controls.queue_redraw()
+	route_tick+=delta
+	if route_tick>0.6:
+		route_tick=0
+		navigation.update(Vector2(boat.position.x,boat.position.z))
+	waypoint_marker.visible=navigation.has_destination and driving
+	if navigation.has_destination:
+		waypoint_marker.position=Vector3(navigation.destination.x,0,navigation.destination.y)
+	if shop_mode:
+		shop.pose_camera(camera)
+	elif market_mode:
+		market.pose_camera(camera)
+	elif fishing_view:
+		camera.position=boat_visual.to_global(Vector3(0,1.55,-1.7))
+		var forward=-boat.basis.z
+		var view_target=camera.position+forward*12+Vector3(0,-0.6,0)
+		camera.look_at(view_target)
+	elif first_person_driving:
+		camera.position=boat_visual.to_global(Vector3(0.65,1.42,1.95))
+		camera.look_at(boat.position-boat.basis.z*35+Vector3(0,1.4,0))
+	else:
+		var desired = boat.position + boat.basis.z * 12 + Vector3(0, 7, 0)
+		camera.position = camera.position.lerp(desired, 1 - exp(-delta * 3))
+		camera.look_at(boat.position + Vector3(0, 0.5, 0))
+	camera.h_offset=1.2 if shop_mode else 0.0
+	driving_controls.pov=first_person_driving and driving
+	if driving_controls.pov:
+		var transform=driving_controls.get_global_transform_with_canvas().affine_inverse()
+		driving_controls.pov_wheel=transform*camera.unproject_position(boat_visual.get_node("HelmWheel").global_position)
+		driving_controls.pov_lever=transform*camera.unproject_position(boat_visual.get_node("ThrottleLever").global_position)
+	feedback.update_feedback(delta, fishing_view and not market_mode, pulling, tension if fishing else 0.0, line_target())
+	interface.refresh()
 
 func cast() -> void:
-	if fishing:
+	if fishing or market_mode or shop_mode or intro_visible or catch_overlay.visible:
 		return
-	if boat.position.distance_to(SPOT) > 14:
-		message = "Drive within 14 metres of the golden buoy to fish."
+	if inventory.size()>=icebox_capacity():
+		message = "Your icebox is full. Sell your catch or upgrade storage."
 		return
-	if absf(speed) > 1:
-		message = "Stop the boat before casting."
+	active_spot=World.nearest(boat.position)
+	if Vector2(boat.position.x,boat.position.z).distance_to(active_spot.at)>14:
+		message="Choose a fishing spot on the map and approach its buoy."
 		return
+	if catches<int(active_spot.unlock):
+		message="%s unlocks after %d catches." % [active_spot.name,active_spot.unlock]
+		return
+	if absf(speed) > 1 or drive.gear != 0:
+		message = "Select neutral and let the dinghy slow before casting."
+		return
+	drive.reset()
+	driving_controls.neutral()
+	var species_index=int(active_spot.fish[rng.randi_range(0,active_spot.fish.size()-1)])
+	active_species=World.FISH[species_index]
+	fight=preload("res://scripts/fish_fight.gd").new()
+	fight.start(boat.position,-boat.basis.z,float(active_species.fight))
+	clear_hooked_fish()
+	fish_actor=Art.fish(self,0.45,str(active_species.name))
+	fish_actor.position=fight.position
+	fish_actor.visible=false
+	fish_actor.swim_intensity=2.0
 	fishing = true
+	fishing_view = true
+	bite_announced = false
+	feedback.cast_feedback(line_target())
 	fish_timer = 0
 	progress = 0
 	tension = 0
 
 func land_fish() -> void:
 	fishing = false
-	var species = ["Skipjack tuna", "Yellowfin tuna", "Giant trevally"].pick_random()
-	var value = rng.randi_range(35, 65)
+	reeling = false
+	feedback.finish(true, line_target())
+	var definition=active_species if not active_species.is_empty() else World.FISH[0]
+	var species=str(definition.name)
+	var value=int(definition.value)+rng.randi_range(-5,10)
+	clear_hooked_fish()
 	catches += 1
 	hold_value += value
+	var weight = snappedf(rng.randf_range(float(definition.min),float(definition.max)),0.1)
+	inventory.append({"species":species,"value":value,"weight":weight})
+	catch_text.text = "%s\n%.1f kg   ·   %d coins" % [species,weight,value]
+	catch_model.queue_free()
+	catch_model = Art.fish(camera,0.8,species)
+	catch_model.position = Vector3(-0.8,0,-3)
+	catch_model.basis = Basis(Vector3(0,0,1),-PI/2) * Basis(Vector3.UP,PI/2)
+	catch_model.rotate(Vector3.UP,-0.24)
+	catch_overlay.visible = true
+	hud.visible = false
+	catch_model.visible = true
+	feedback.rig.visible = false
 	unlocked = catches >= 3
+	if navigation.region_open!=unlocked:
+		navigation.configure(unlocked)
 	message = "%s landed! Worth %d coins. Return to the dock to sell.%s" % [species, value, " Eastern waters unlocked!" if catches == 3 else ""]
 	save_trip()
 
+func close_catch() -> void:
+	hud.visible = true
+	catch_overlay.visible = false
+	catch_model.visible = false
+	message = "Catch stored on ice. Cast again or return to the island market."
+
 func sell() -> void:
-	if boat.position.distance_to(DOCK) > 18:
-		message = "Return to the home dock to sell your catch."
+	if fishing or catch_overlay.visible:
 		return
-	message = "Sold your catch for %d coins." % hold_value
-	coins += hold_value
-	hold_value = 0
-	save_trip()
+	if boat.position.distance_to(DOCK) > 18:
+		message = "Return to the home dock to visit the fish market."
+		return
+	if absf(speed)>1 or drive.gear!=0:
+		message = "Select neutral and slow down before entering the market."
+		return
+	leave_fishing()
+	speed = 0
+	market_mode = true
+	message = "Welcome to the island market. Serve your fresh catch to the queue."
+
+func serve_customer() -> void:
+	if not market_mode or market.queue_moving or market.handing_over:
+		return
+	if pending_payment > 0:
+		var amount = pending_payment
+		coins += amount
+		pending_payment = 0
+		save_trip()
+		market.collect_cash()
+		feedback.play_effect("payment")
+		market.advance_queue()
+		feedback.haptic(45,0.4)
+		message = "Received %d coins. Thank you, Ishaq!" % amount
+	elif not inventory.is_empty():
+		var item: Dictionary = inventory.pop_front()
+		pending_payment = int(item.value)
+		hold_value = maxi(0,hold_value-pending_payment)
+		save_trip()
+		market.hand_over()
+		message = "%s sold. Collect %d coins from the counter." % [item.species,pending_payment]
+	else:
+		message = "Your icebox is empty. Head out for another fishing trip."
 
 func buy_upgrade() -> void:
 	if boat.position.distance_to(DOCK) > 18:
 		message = "Boat upgrades are available at the home dock."
 	elif upgrade >= 2:
 		message = "Your prototype dinghy is fully upgraded."
-	elif coins < 100:
-		message = "Earn 100 coins by catching and selling fish."
+	elif coins < item_price("engine"):
+		message = "Earn %d coins to upgrade the engine." % item_price("engine")
 	else:
-		coins -= 100
+		coins -= item_price("engine")
 		upgrade += 1
 		message = "Engine upgraded! Your dinghy now travels faster."
 		save_trip()
 
-func return_home() -> void:
+func line_target() -> Vector3:
+	if fishing and bite_announced and fish_actor:
+		return fight.position+Vector3.UP*0.5*fight.landing_lift
+	return Vector3(boat.position.x, -0.52, boat.position.z) - boat.basis.z * 18.0
+
+func leave_fishing() -> void:
+	clear_hooked_fish()
+	drive.reset()
+	driving_controls.neutral()
+	driving_controls.release_pointers()
+	speed = 0
+	camera.position = boat.position + boat.basis.z * 12 + Vector3(0,7,0)
+	camera.look_at(boat.position)
+	market_mode = false
+	shop_mode = false
+	if interface:
+		interface.hide_shop()
 	fishing = false
+	fishing_view = false
+	reeling = false
+	message = "Neutral selected. Slide the throttle to get underway."
+
+func return_home() -> void:
+	leave_fishing()
 	speed = 0
 	boat.position = DOCK
 	boat.rotation = Vector3.ZERO
+	camera.position = DOCK + Vector3(0,7,12)
+	camera.look_at(DOCK)
 	message = "Back at the dock. Sell your catch or upgrade your dinghy."
 
 func save_trip() -> void:
-	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var file = FileAccess.open(save_path, FileAccess.WRITE)
 	if file:
-		file.store_string(JSON.stringify({"coins": coins, "catches": catches, "hold_value": hold_value, "upgrade": upgrade}))
+		file.store_string(JSON.stringify({"coins": coins, "catches": catches, "hold_value": hold_value, "upgrade": upgrade, "inventory": inventory, "pending_payment": pending_payment,"owned_items":owned_items,"equipped":equipped,"boat_parts":boat_parts,"owned_boats":owned_boats,"equipped_boat":equipped_boat,"hours":day_cycle.hours if day_cycle else saved_hours,"waypoint":[navigation.destination.x,navigation.destination.y] if navigation.has_destination else []}))
 
 func load_trip() -> void:
-	if not FileAccess.file_exists(SAVE_PATH):
+	if not FileAccess.file_exists(save_path):
 		return
-	var parsed = JSON.parse_string(FileAccess.get_file_as_string(SAVE_PATH))
+	var parsed = JSON.parse_string(FileAccess.get_file_as_string(save_path))
 	if parsed is Dictionary:
 		coins = maxi(0, int(parsed.get("coins", 0)))
 		catches = maxi(0, int(parsed.get("catches", 0)))
 		hold_value = maxi(0, int(parsed.get("hold_value", 0)))
 		upgrade = clampi(int(parsed.get("upgrade", 0)), 0, 2)
+		pending_payment = maxi(0,int(parsed.get("pending_payment",0)))
+		inventory = []
+		if parsed.get("inventory") is Array:
+			for item in parsed.inventory:
+				if item is Dictionary and int(item.get("value",0)) > 0:
+					inventory.append({"species":str(item.get("species","Fresh fish")),"value":int(item.value),"weight":float(item.get("weight",1.0))})
+		elif hold_value > 0:
+			# Preserve older saves: split aggregate value into market portions.
+			var remaining = hold_value
+			while remaining > 0:
+				var portion = mini(remaining,50)
+				inventory.append({"species":"Fresh catch","value":portion,"weight":1.0})
+				remaining -= portion
+		hold_value = 0
+		for item in inventory:
+			hold_value += int(item.value)
+		owned_items = ["island_reel","island_rod","mono"]
+		for id in parsed.get("owned_items",[]):
+			if id is String and not Catalog.item(id).is_empty() and id not in owned_items:
+				owned_items.append(id)
+		boat_parts = []
+		for id in parsed.get("boat_parts",[]):
+			if id in ["propeller","icebox"] and id not in boat_parts:
+				boat_parts.append(id)
+		equipped = {"Reels":"island_reel","Rods":"island_rod","Line":"mono"}
+		var saved_equipped = parsed.get("equipped",{})
+		if saved_equipped is Dictionary:
+			for category in equipped:
+				var id = str(saved_equipped.get(category,equipped[category]))
+				var definition = Catalog.item(id)
+				if id in owned_items and definition.get("category")==category:
+					equipped[category] = id
+		if Catalog.item(str(equipped.Reels)).kind != Catalog.item(str(equipped.Rods)).kind:
+			equipped.Reels = "island_reel"
+			equipped.Rods = "island_rod"
+		owned_boats=["dinghy"]
+		for id in parsed.get("owned_boats",[]):
+			if id in ["skiff","runner","launch"] and id not in owned_boats:
+				owned_boats.append(id)
+		equipped_boat=str(parsed.get("equipped_boat","dinghy"))
+		if equipped_boat not in owned_boats:
+			equipped_boat="dinghy"
+		saved_hours=fposmod(float(parsed.get("hours",8.0)),24.0)
+		saved_waypoint=parsed.get("waypoint",[])
 		unlocked = catches >= 3
+		if day_cycle:
+			day_cycle.hours=saved_hours
+			day_cycle.apply_lighting()
+		if boat:
+			apply_boat()
+		apply_equipment()
+		update_boat_parts()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode==KEY_M and not intro_visible and not catch_overlay.visible and not shop_mode and not market_mode:
+		interface.toggle_map()
+		get_viewport().set_input_as_handled()
+	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode==KEY_ESCAPE:
+		if interface.map_visible:
+			interface.toggle_map()
+		elif not intro_visible and not catch_overlay.visible:
+			interface.toggle_menu()
+			get_viewport().set_input_as_handled()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_IN:
+		app_active = true
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		app_active = false
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and driving_controls:
+		driving_controls.release_pointers()
+		driving_controls.neutral()
+		drive.set_lever(0)
+		reeling = false
+
+func icebox_capacity() -> int:
+	return int(World.vessel(equipped_boat).storage)+(14 if "icebox" in boat_parts else 0)
+
+func apply_equipment() -> void:
+	if feedback:
+		feedback.equip(str(equipped.Reels),str(equipped.Rods),str(equipped.Line))
+
+func open_shop(category: String = "Reels") -> void:
+	if fishing or catch_overlay.visible or boat.position.distance_to(DOCK)>18 or absf(speed)>1 or drive.gear!=0:
+		message = "Dock at home in neutral to visit the island shops."
+		return
+	leave_fishing()
+	shop_mode = true
+	interface.show_shop(category)
+	message = "Welcome to the boat workshop." if category=="Boat" else "Welcome to the tackle house. Browse gear for your next trip."
+
+func item_price(id: String) -> int:
+	return 100*(upgrade+1) if id=="engine" else int(Catalog.item(id).get("price",0))
+
+func item_owned(id: String) -> bool:
+	if Catalog.item(id).get("category")=="Boats":
+		return id in owned_boats
+	return upgrade>=2 if id=="engine" else (id in boat_parts if id in ["propeller","icebox"] else id in owned_items)
+
+func equip_item(id: String) -> bool:
+	if id in owned_boats:
+		equipped_boat=id
+		apply_boat()
+		message="%s is ready at the dock." % World.vessel(id).name
+		save_trip()
+		return true
+	var item = Catalog.item(id)
+	if item.is_empty() or id not in owned_items:
+		return false
+	var selection = equipped.duplicate()
+	selection[item.category] = id
+	if item.category in ["Reels","Rods"]:
+		var other = "Rods" if item.category=="Reels" else "Reels"
+		if Catalog.item(str(selection[other])).kind!=item.kind:
+			var match_id = ""
+			for candidate in Catalog.ITEMS:
+				if candidate.category==other and candidate.kind==item.kind and candidate.id in owned_items:
+					match_id = candidate.id
+					break
+			if match_id.is_empty():
+				message = "Owned. Add a matching %s to use this %s setup." % [other.to_lower(),item.kind]
+				return false
+			selection[other] = match_id
+	equipped = selection
+	apply_equipment()
+	message = "%s equipped for your next trip." % item.name
+	save_trip()
+	return true
+
+func purchase_item(id: String) -> bool:
+	if not shop_mode:
+		return false
+	var item = Catalog.item(id)
+	if item.is_empty():
+		return false
+	if item_owned(id):
+		return equip_item(id) if item.category!="Boat" else false
+	if catches<int(item.get("unlock",0)):
+		message="Unlock this boat by catching %d fish." % int(item.unlock)
+		return false
+	var price = item_price(id)
+	if coins<price:
+		message = "You need %d more earned coins." % (price-coins)
+		return false
+	coins -= price
+	if item.category=="Boats":
+		owned_boats.append(id)
+		equip_item(id)
+	elif id=="engine":
+		upgrade += 1
+	elif item.category=="Boat":
+		boat_parts.append(id)
+	else:
+		owned_items.append(id)
+		if equip_item(id):
+			feedback.play_effect("payment")
+			save_trip()
+			return true
+	message = "%s purchased." % item.name if item.category=="Boat" else message
+	update_boat_parts()
+	feedback.play_effect("payment")
+	save_trip()
+	return true
+
+func update_boat_parts() -> void:
+	if boat and boat_visual and boat_visual.has_node("Icebox"):
+		boat_visual.get_node("Icebox").scale = Vector3(1.2,1.12,1.25) if "icebox" in boat_parts else Vector3.ONE
+
+func apply_boat() -> void:
+	if not boat:
+		return
+	if boat_visual:
+		boat.remove_child(boat_visual)
+		boat_visual.queue_free()
+	boat_visual=preload("res://scripts/boat_models.gd").build(boat,equipped_boat)
+	if driving_controls:
+		driving_controls.set_skin(equipped_boat)
+	update_boat_parts()
+
+func update_outboards(delta: float) -> void:
+	for node_name in ["OutboardPivot","OutboardPivot2"]:
+		if boat_visual.has_node(node_name):
+			var motor=boat_visual.get_node(node_name)
+			motor.rotation.y=lerpf(motor.rotation.y,drive.steering*0.52,1-exp(-delta*7))
+			motor.get_node("Propeller").rotation.z+=delta*drive.rpm*35*drive.gear
+	boat_visual.get_node("ThrottleLever").rotation.x=driving_controls.lever_value*0.8
+	if boat_visual.has_node("ThrottleLever2"):
+		boat_visual.get_node("ThrottleLever2").rotation.x=driving_controls.lever_value*0.8
+
+func set_waypoint(at: Vector2,title: String) -> bool:
+	if navigation.set_destination(Vector2(boat.position.x,boat.position.z),at,title):
+		message="Course set: %s. Follow the route on your chart." % title
+		save_trip()
+		return true
+	return false
+
+func clear_hooked_fish() -> void:
+	if fish_actor:
+		fish_actor.queue_free()
+		fish_actor=null
+
+func update_hooked_fish(delta: float) -> void:
+	if not fish_actor:
+		return
+	fish_actor.visible=true
+	fish_actor.position=fight.position
+	var direction=fight.velocity
+	if fight.landing_lift>0.55:
+		fish_actor.rotation=Vector3(PI/2,boat.rotation.y,sin(fight.age*5)*0.12)
+	elif direction.length()>0.01:
+		fish_actor.look_at(fight.position+direction.normalized(),Vector3.UP)
+	fish_actor.swim_intensity=2.5 if fight.running else 1.4
+	fish_splash_timer-=delta
+	if fight.splash_event or (fight.running and fish_splash_timer<=0):
+		feedback.splash(Vector3(fight.position.x,-0.5,fight.position.z))
+		fish_splash_timer=1.1
+
+func toggle_driving_camera() -> void:
+	if fishing_view or market_mode or shop_mode:
+		return
+	first_person_driving=not first_person_driving
+	driving_controls.release_pointers()
+	message="Helm view: drag the wheel and throttle in front of you." if first_person_driving else "External boat camera."
