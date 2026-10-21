@@ -52,3 +52,10 @@ export/android/debug_keystore = "$TASK_DEBUG_KEY"
 export/android/debug_keystore_user = "androiddebugkey"
 export/android/debug_keystore_pass = "android"
 SETTINGS
+
+# Report missing host dependencies before invoking the exporter.
+test -s "$GODOT_DATA_DIR/export_templates/${GODOT_VERSION}.stable/android_debug.apk"
+test -x "$TASK_ANDROID_SDK/platform-tools/adb"
+test -x "$TASK_ANDROID_SDK/build-tools/35.0.0/apksigner"
+test -x "$JAVA_HOME/bin/java"
+"$TASK_ANDROID_SDK/platform-tools/adb" start-server

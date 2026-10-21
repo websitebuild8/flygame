@@ -68,3 +68,13 @@ References:
 Enable `permissions/vibrate` in the Android export preset before device builds.
 Godot's `Input.vibrate_handheld` supports Android/iOS; actual feedback depends on
 hardware and device settings. Desktop testing does not validate phone haptics.
+
+## Blank Android export configuration error
+
+Godot 4.5.1 requires `rendering/textures/vram_compression/import_etc2_astc=true`
+when exporting Android from a host that normally imports desktop textures.
+Without it, the exporter can reject the project with an empty configuration-error
+message. Keep this setting enabled before CI import. The Android workflow runs
+`tools/check-mobile-config.gd` before importing to provide an explicit diagnostic.
+The setup also checks the installed template, Java, adb and apksigner, and starts
+the adb server. Export runs with verbose logging for further diagnostics.

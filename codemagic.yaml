@@ -56,6 +56,7 @@ workflows:
         script: |
           set -eu
           GODOT=/tmp/ishaq-android-godot/Godot.app/Contents/MacOS/Godot
+          "$GODOT" --headless --path "$CM_BUILD_DIR" --script res://tools/check-mobile-config.gd
           "$GODOT" --headless --path "$CM_BUILD_DIR" --editor --import --quit
           for suite in trip_smoke helm_checks gear_checks ocean_checks; do
             "$GODOT" --headless --path "$CM_BUILD_DIR" --script "res://tests/${suite}.gd"
@@ -64,7 +65,7 @@ workflows:
         script: |
           set -eu
           mkdir -p "$CM_BUILD_DIR/build/android"
-          /tmp/ishaq-android-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --export-debug "Android Test" "$CM_BUILD_DIR/build/android/ishaqs-fishing-trip.apk"
+          /tmp/ishaq-android-godot/Godot.app/Contents/MacOS/Godot --headless --verbose --path "$CM_BUILD_DIR" --export-debug "Android Test" "$CM_BUILD_DIR/build/android/ishaqs-fishing-trip.apk"
           test -s "$CM_BUILD_DIR/build/android/ishaqs-fishing-trip.apk"
     artifacts:
       - build/android/*.apk
