@@ -1,0 +1,21 @@
+# First-stage CI: validates the Godot project on the same OS used for iOS exports.
+# Device packages are added after export presets and signing are configured.
+workflows:
+  godot-validate:
+    name: Ishaq's Fishing Trip - validate
+    instance_type: mac_mini_m2
+    max_build_duration: 20
+    environment:
+      vars:
+        GODOT_VERSION: 4.5.1
+    scripts:
+      - name: Install pinned Godot editor
+        script: |
+          set -eu
+          curl -fL --retry 3 "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_macos.universal.zip" -o /tmp/godot.zip
+          unzip -q /tmp/godot.zip -d /tmp/ishaq-godot
+      - name: Import and check project
+        script: |
+          set -eu
+          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --editor --import
+          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --quit-after 120

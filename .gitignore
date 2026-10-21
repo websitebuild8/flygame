@@ -1,0 +1,6 @@
+.godot/
+build/
+.export_credentials
+*.keystore
+*.p12
+*.mobileprovision
