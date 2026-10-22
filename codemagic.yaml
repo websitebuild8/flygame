@@ -1,4 +1,4 @@
-# Manual workflows: validation and an Android debug APK for device testing.
+# Manual workflows: validation, Android device testing, and iOS TestFlight.
 workflows:
   godot-validate:
     name: Ishaq's Fishing Trip - validate
@@ -74,3 +74,68 @@ workflows:
           test -s "$CM_BUILD_DIR/build/android/ishaqs-fishing-trip.apk"
     artifacts:
       - build/android/*.apk
+
+  ios-testflight:
+    name: Ishaq's Fishing Trip - iOS TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      # Match the API key name in Codemagic Team integrations.
+      app_store_connect: codemagic
+    environment:
+      xcode: latest
+      groups:
+        - ios_testflight
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.ishaq.fishingtrip
+      vars:
+        GODOT_VERSION: 4.5.1
+        BUNDLE_ID: com.ishaq.fishingtrip
+    scripts:
+      - name: Check Apple settings and install pinned Godot
+        script: |
+          set -eu
+          : "${APPLE_TEAM_ID:?Add APPLE_TEAM_ID to the ios_testflight variable group}"
+          mkdir -p /tmp/ishaq-ios-godot
+          curl -fL --retry 3 "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_macos.universal.zip" -o /tmp/ishaq-ios-editor.zip
+          unzip -q /tmp/ishaq-ios-editor.zip -d /tmp/ishaq-ios-godot
+          curl -fL --retry 3 "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz" -o /tmp/ishaq-ios-templates.zip
+          TEMPLATE_DIR="$HOME/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.stable"
+          mkdir -p "$TEMPLATE_DIR"
+          unzip -p /tmp/ishaq-ios-templates.zip templates/ios.zip > "$TEMPLATE_DIR/ios.zip"
+          test -s "$TEMPLATE_DIR/ios.zip"
+      - name: Configure iPhone export and run checks
+        script: |
+          set -eu
+          cd "$CM_BUILD_DIR"
+          GODOT=/tmp/ishaq-ios-godot/Godot.app/Contents/MacOS/Godot
+          export IOS_BUILD_NUMBER="${IOS_BUILD_NUMBER:-$((PROJECT_BUILD_NUMBER + 1))}"
+          "$GODOT" --headless --path "$CM_BUILD_DIR" --script res://tools/prepare-ios.gd
+          "$GODOT" --headless --path "$CM_BUILD_DIR" --editor --import --quit
+          for suite in trip_smoke helm_checks gear_checks ocean_checks fish_checks; do
+            "$GODOT" --headless --path "$CM_BUILD_DIR" --script "res://tests/${suite}.gd"
+          done
+      - name: Export Xcode project
+        script: |
+          set -eu
+          mkdir -p "$CM_BUILD_DIR/build/ios"
+          /tmp/ishaq-ios-godot/Godot.app/Contents/MacOS/Godot --headless --verbose --path "$CM_BUILD_DIR" --export-release "iOS TestFlight" "$CM_BUILD_DIR/build/ios/IshaqsFishingTrip.ipa"
+          test -d "$CM_BUILD_DIR/build/ios/IshaqsFishingTrip.xcodeproj"
+      - name: Apply App Store signing and build IPA
+        script: |
+          set -eu
+          cd "$CM_BUILD_DIR"
+          xcode-project use-profiles --project "$CM_BUILD_DIR/build/ios/IshaqsFishingTrip.xcodeproj"
+          xcode-project build-ipa --project "$CM_BUILD_DIR/build/ios/IshaqsFishingTrip.xcodeproj" --scheme IshaqsFishingTrip --config Release --ipa-directory "$CM_BUILD_DIR/build/ios/ipa"
+          test -n "$(find "$CM_BUILD_DIR/build/ios/ipa" -maxdepth 1 -name '*.ipa' -print -quit)"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - build/ios/xcarchive/**/*.dSYM
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        # Upload for internal testing; choose testers in App Store Connect.
+        submit_to_testflight: false
+        submit_to_app_store: false

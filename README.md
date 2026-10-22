@@ -203,3 +203,11 @@ tail movement, with stronger movement during a fight. It does not use a full
 skeletal rig. Device performance still needs checking. Build-time conversion
 uses `tools/prepare_trevally.py` and `tools/simplify_fish.mjs`; Codemagic builds
 use the prepared GLB directly and need no extra packages.
+
+## iPhone TestFlight builds
+
+Use the `ios-testflight` Codemagic workflow. It exports an iPhone Xcode project,
+runs gameplay checks, applies App Store signing and uploads an IPA for internal
+TestFlight testing. Apple membership, the app record and Codemagic signing
+identities must be configured first. Follow [the setup guide](docs/testflight-codemagic.md).
+The first signed cloud build has not yet been run against your Apple account.
