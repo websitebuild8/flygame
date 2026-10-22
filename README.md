@@ -1,8 +1,8 @@
 # Ishaq's Fishing Trip
 
 An offline landscape Godot 4.5.1 / GDScript fishing prototype. Most geometry,
-shaders and cloud textures are original procedural work; yellowfin tuna uses
-a free licensed textured model by GoldenZtuff (see credits below). Audio combines free CC0 real outboard,
+shaders and cloud textures are original procedural work; fish use imported
+textured tuna and giant trevally models (see credits below). Audio combines free CC0 real outboard,
 reel, splash and wave recordings (see docs/audio-credits.md). No Blender or purchased
 assets are required to run this version.
 
@@ -50,10 +50,11 @@ rod follows pull direction with a spring-smoothed curve, its segments bend
 continuously, and the reel mechanism animates during retrieval. The fishing
 view shows rod/reel only: there is no visible hand or arm.
 
-Store the catch in the icebox. Fish pools differ by spot. Nine varieties are
-included: skipjack tuna, yellowfin tuna, giant trevally, dogtooth tuna, wahoo,
-mahi-mahi, bluefin trevally, red bass and rainbow runner. Fish profiles, colours,
-fins and markings differ. Catch values and fight tuning are fictional game data.
+Store the catch in the icebox. Only the imported textured yellowfin tuna and
+giant trevally are currently catchable at all seven spots. Other species are
+retired from gameplay for now. Catch values and fight tuning are fictional game
+data. Currency is displayed as MVR throughout the HUD, shops and market; it is
+an earned in-game balance. Existing saved balances keep their numeric value.
 
 ## Market, equipment and boats
 
@@ -61,16 +62,16 @@ Dock at home in neutral. Market, Tackle and Workshop appear on the controls.
 
 - Market: first-person counter and customer queue. Hand over one fish, then
   collect payment. The customer advances and another buyer approaches. Unpaid
-  sales persist. The customer panel shows the fish, weight and coins due.
+  sales persist. The customer panel shows the fish, weight and MVR due.
 - Tackle: spinning and overhead reels, compatible rods and braid. Manufacturer
   names identify Shimano/PENN/PowerPro references, with original approximate
-  models. Performance multipliers and coin prices are fictional game balance.
+  models. Performance multipliers and MVR prices are fictional game balance.
 - Preview: a lit 3D turntable, drag rotation and +/− zoom. Tap item names to select.
 - Workshop: engine stages, performance propeller and icebox upgrade (+14 fish).
 - Boats tab: buy and switch boats. Each changes model, storage, handling, speed,
   physical helm and touch wheel/throttle design. Ownership/loadouts save locally.
 
-| Boat | Catch milestone | Game coins | Base speed | Storage | Helm |
+| Boat | Catch milestone | MVR | Base speed | Storage | Helm |
 | --- | ---: | ---: | ---: | ---: | --- |
 | Island Dinghy | 0 | Free starter | 12.5 m/s | 10 | Classic mint, 3 spokes |
 | Reef Skiff | 3 | 600 | 18 m/s | 14 | White/blue sport, 5 spokes |
@@ -79,7 +80,7 @@ Dock at home in neutral. Market, Tackle and Workshop appear on the controls.
 
 There are no real-money purchases. Owned equipment can be equipped without
 paying twice. Pairing rules automatically select an owned compatible rod/reel.
-Old saves retain catches and coins and receive the starter boat by default.
+Old saves retain catches and balances and receive the starter boat by default.
 
 ## Day and night
 
@@ -155,17 +156,12 @@ The glass shader uses a blurred screen sample; phone performance still needs
 on-device testing. It is a custom glass-inspired style.
 
 
-### Species-specific fish art
+### Fish art and species references
 
-Fish models use original procedural geometry and shading, guided by species
-identification features rather than the trout shown in the visual reference.
-Tuna have finlets and crescent tails; trevally have deeper foreheads and tail
-scutes; groupers have broad heads, a continuous dorsal fin and rounded tails;
-mahi-mahi have a long dorsal fin; barracuda are slender with rear-set fins.
-Bluefin trevally have blue fins/spots, while yellowfin have yellow finlets.
-The models remain approximations, not photographic scans or anatomical models.
-The original procedural species use no copied photos or meshes. Yellowfin tuna
-now uses a licensed third-party textured model; see the section below.
+Active fish use the imported models described below. The original procedural
+species remain as retired source code for possible future work and are not
+spawned by fishing spots or displayed at the market. Legacy catches retain their
+sale value, but unsupported species do not show a substitute fish on the counter.
 
 Species references:
 - Maldives Marine Research Centre reef fish review (local species context): https://www.mrc.gov.mv/assets/Uploads/May-2008-Review-of-the-Reef-Fishery-of-Maldives.pdf
@@ -177,13 +173,13 @@ Species references:
 - Great barracuda: https://www.floridamuseum.ufl.edu/discover-fish/species-profiles/great-barracuda/
 
 
-### Textured tuna trial
+### Imported textured fish
 
 Yellowfin tuna now uses **Tuna Fish by GoldenZtuff**, downloaded from
 https://www.fab.com/listings/6b90bbe2-3031-4b36-93ad-90f1cb2d01f5 under
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The asset is an artistic
 tuna model used as a yellowfin representation, not a verified biological scan.
-Other species retain their individual procedural models.
+Only this tuna and the imported giant trevally are currently enabled.
 
 The model retains its rigged Swim animation for the fight, catch display and
 market. Mesh and material resources are shared; each fish owns its animation
@@ -196,3 +192,14 @@ Creator/source/license and changes are recorded in
 `assets/models/fish/LICENSE.txt` and `tuna-source.json`, and displayed in the
 scrollable pause menu. Desktop appearance and regression checks have been run;
 Android/iPhone performance still needs actual device testing.
+
+Giant trevally uses the **Caranx ignobilis scan by ffish.asia / floraZia.com**,
+released under CC0. See `assets/models/fish/trevally-source.json` for its source
+and conversion details. The separate label cube was removed and the fish was
+aligned, centred and reduced from about 483k to 51,903 triangles. The smaller
+10k trial visibly damaged texture seams, so the 4.5 MiB version retains more
+geometry. Source 1k textures are preserved. A per-instance shader adds body and
+tail movement, with stronger movement during a fight. It does not use a full
+skeletal rig. Device performance still needs checking. Build-time conversion
+uses `tools/prepare_trevally.py` and `tools/simplify_fish.mjs`; Codemagic builds
+use the prepared GLB directly and need no extra packages.

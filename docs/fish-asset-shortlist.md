@@ -11,12 +11,12 @@ downloaded, imported, animated or tested in this game.
 - Listing licence: CC0, https://creativecommons.org/publicdomain/zero/1.0/
 - Listing geometry: approximately 483,200 triangles / 297,400 vertices.
 - Status: downloaded through the official signed-in GLB download. Optimised
-  asset: `assets/models/fish/trevally.glb`, 9,801 triangles, approximately 2.2 MiB.
+  asset: `assets/models/fish/trevally.glb`, 51,903 triangles, approximately 4.5 MiB.
   Source textures are 1k; body/tail motion is added by the game shader.
 - Preparation checklist: inspect texture coverage and scan defects, simplify with
   UV preservation, reduce textures, align to game -Z forward / +Y up, add tail
-  movement, then inspect hooked, landed, showcase and market views. Target
-  approximately 10,000 triangles and 1024px textures, subject to visual quality.
+  movement, then inspect hooked, landed, showcase and market views. The 10k-triangle trial damaged texture seams; the retained 51,903-triangle
+  version preserves them. Actual mobile-device performance remains to be checked.
 - The procedural fish are retired from active gameplay. Only imported yellowfin
   tuna and giant trevally are catchable for now.
 

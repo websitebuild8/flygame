@@ -325,7 +325,7 @@ func build_menu() -> void:
 	var credits=RichTextLabel.new()
 	credits.bbcode_enabled=true
 	credits.fit_content=true
-	credits.text="Tuna Fish by [url=https://www.fab.com/listings/6b90bbe2-3031-4b36-93ad-90f1cb2d01f5]GoldenZtuff[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: resized textures, game scale and orientation."
+	credits.text="Tuna Fish by [url=https://www.fab.com/listings/6b90bbe2-3031-4b36-93ad-90f1cb2d01f5]GoldenZtuff[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: resized textures, game scale and orientation.\n\nGiant Trevally by [url=https://sketchfab.com/3d-models/cc0-giant-trevally-caranx-ignobilis-e6446df50ba746ed8ce8a3dd66b3b8e8]ffish.asia / floraZia.com[/url] · [url=https://creativecommons.org/publicdomain/zero/1.0/]CC0[/url]\nAdapted: geometry reduction, alignment and body/tail movement."
 	credits.add_theme_font_size_override("normal_font_size",13)
 	credits.meta_clicked.connect(func(url): OS.shell_open(str(url)))
 	column.add_child(credits)

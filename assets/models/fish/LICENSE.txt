@@ -15,5 +15,5 @@ https://sketchfab.com/3d-models/cc0-giant-trevally-caranx-ignobilis-e6446df50ba7
 CC0 1.0 Universal Public Domain Dedication
 https://creativecommons.org/publicdomain/zero/1.0/
 Changes: removed separate label cube, centred and aligned scan, reduced to
-9,801 triangles with UV-aware meshoptimizer, retained supplied 1k textures;
+51,903 triangles with UV-aware meshoptimizer, retained supplied 1k textures;
 added lit material and runtime body/tail deformation. No endorsement implied.
