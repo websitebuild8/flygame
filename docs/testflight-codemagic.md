@@ -11,7 +11,7 @@ build/signing/upload is still to be verified on your Apple account.
    insufficient for TestFlight. Standard membership is US$99/year, with regional
    prices and eligible organisation waivers.
 2. In Apple Developer → Certificates, Identifiers & Profiles, register an explicit
-   App ID for `com.ishaq.fishingtrip`. If you already registered another ID for
+   App ID for `com.ishaqfishingtrip.appname`. If you already registered another ID for
    this game, use that ID consistently in both Codemagic bundle fields below.
 3. In App Store Connect → Apps → New App, create an iOS app named
    **Ishaq's Fishing Trip**, choose that Bundle ID, and use a unique SKU such as
@@ -32,13 +32,13 @@ build/signing/upload is still to be verified on your Apple account.
 2. In Team settings → codemagic.yaml settings → Code signing identities, add
    an **Apple Distribution certificate with its private key** (`.p12` and its
    password) and an **App Store provisioning profile** for
-   `com.ishaq.fishingtrip`. You can fetch the profile through the connected Apple
+   `com.ishaqfishingtrip.appname`. You can fetch the profile through the connected Apple
    integration. The profile must include the same certificate and Team ID.
    Development and Ad Hoc profiles are not the TestFlight profile type.
 3. In this Codemagic app's Environment variables, create the group
    **`ios_testflight`**. Add **`APPLE_TEAM_ID`** with your 10-character Team ID.
    The API key stays in the integration; do not paste it into a source file.
-4. The workflow uses `com.ishaq.fishingtrip` in **two** places:
+4. The workflow uses `com.ishaqfishingtrip.appname` in **two** places:
    `environment.ios_signing.bundle_identifier` and `environment.vars.BUNDLE_ID`.
    If using another registered ID, change both to match Apple.
 

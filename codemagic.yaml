@@ -88,10 +88,10 @@ workflows:
         - ios_testflight
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.ishaq.fishingtrip
+        bundle_identifier: com.ishaqfishingtrip.appname
       vars:
         GODOT_VERSION: 4.5.1
-        BUNDLE_ID: com.ishaq.fishingtrip
+        BUNDLE_ID: com.ishaqfishingtrip.appname
     scripts:
       - name: Check Apple settings and install pinned Godot
         script: |
