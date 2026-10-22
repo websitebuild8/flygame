@@ -1,0 +1,11 @@
+{
+  "title": "Giant Trevally, Caranx ignobilis",
+  "creator": "ffish.asia / floraZia.com",
+  "source": "https://sketchfab.com/3d-models/cc0-giant-trevally-caranx-ignobilis-e6446df50ba746ed8ce8a3dd66b3b8e8",
+  "license": "CC0 1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "original_sha256": "5570db7e2c763e64335a00d78c1906705df35af4bcad72bc71282a44aa5cde8b",
+  "original_bytes": 21471204,
+  "game_bytes": 4686384,
+  "changes": "Removed separate label cube, aligned/centred fish, welded split meshes and reduced geometry with UV-aware meshoptimizer; retained source 1k colour textures; lit wet-fish material and runtime body/tail deformation."
+}

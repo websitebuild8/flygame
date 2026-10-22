@@ -17,7 +17,7 @@ func checks() -> void:
 	nav.configure(true)
 	for spot in World.SPOTS:
 		check(nav.set_destination(Vector2(0,12),spot.at,spot.name),"Every fishing spot is reachable after unlocking: "+spot.name)
-	check(World.SPOTS.size()==7 and World.FISH.size()==15,"Expanded spot/fish catalogues are present")
+	check(World.SPOTS.size()==7 and World.FISH.size()==2,"Seven spots offer the two imported fish species")
 	var fight=preload("res://scripts/fish_fight.gd").new()
 	fight.start(Vector3.ZERO,Vector3.FORWARD,1.1)
 	var original=fight.position

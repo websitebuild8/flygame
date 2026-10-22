@@ -50,7 +50,8 @@ static func label(parent: Node3D, text: String, pos: Vector3, size: int = 60) ->
 	return node
 
 static func fish(parent: Node3D, size: float = 1.0, species: String = "Yellowfin tuna") -> Node3D:
-	var root = load("res://scripts/fish_model.gd").new() as Node3D
+	var script_path="res://scripts/trevally_fish.gd" if species=="Giant trevally" else "res://scripts/textured_fish.gd"
+	var root = load(script_path).new() as Node3D
 	parent.add_child(root)
 	root.setup(species)
 	root.scale = Vector3.ONE*size

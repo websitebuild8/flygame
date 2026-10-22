@@ -1,0 +1,11 @@
+{
+  "title": "Tuna Fish",
+  "creator": "GoldenZtuff",
+  "source": "https://www.fab.com/listings/6b90bbe2-3031-4b36-93ad-90f1cb2d01f5",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "original_sha256": "f1a57a9235d3b4eb7e13ecd831797a96bb76a53b394c3008eb390efd8d6968d6",
+  "changes": "Body texture maps reduced to 1024px, eye maps to 512px; GLB buffer repacked. Geometry, rig and Swim animation retained.",
+  "original_bytes": 59476444,
+  "game_bytes": 5867056
+}

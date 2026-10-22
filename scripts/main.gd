@@ -479,7 +479,7 @@ func land_fish() -> void:
 	hold_value += value
 	var weight = snappedf(rng.randf_range(float(definition.min),float(definition.max)),0.1)
 	inventory.append({"species":species,"value":value,"weight":weight})
-	catch_text.text = "%s\n%.1f kg   ·   %d coins" % [species,weight,value]
+	catch_text.text = "%s\n%.1f kg   ·   MVR %d" % [species,weight,value]
 	catch_model.queue_free()
 	catch_model = Art.fish(camera,0.8,species)
 	catch_model.position = Vector3(-0.8,0,-3)
@@ -492,7 +492,7 @@ func land_fish() -> void:
 	unlocked = catches >= 3
 	if navigation.region_open!=unlocked:
 		navigation.configure(unlocked)
-	message = "%s landed! Worth %d coins. Return to the dock to sell.%s" % [species, value, " Eastern waters unlocked!" if catches == 3 else ""]
+	message = "%s landed! Worth MVR %d. Return to the dock to sell.%s" % [species, value, " Eastern waters unlocked!" if catches == 3 else ""]
 	save_trip()
 
 func close_catch() -> void:
@@ -527,14 +527,14 @@ func serve_customer() -> void:
 		feedback.play_effect("payment")
 		market.advance_queue()
 		feedback.haptic(45,0.4)
-		message = "Received %d coins. Thank you, Ishaq!" % amount
+		message = "Received MVR %d. Thank you, Ishaq!" % amount
 	elif not inventory.is_empty():
 		var item: Dictionary = inventory.pop_front()
 		pending_payment = int(item.value)
 		hold_value = maxi(0,hold_value-pending_payment)
 		save_trip()
 		market.hand_over()
-		message = "%s sold. Collect %d coins from the counter." % [item.species,pending_payment]
+		message = "%s sold. Collect MVR %d from the counter." % [item.species,pending_payment]
 	else:
 		message = "Your icebox is empty. Head out for another fishing trip."
 
@@ -544,7 +544,7 @@ func buy_upgrade() -> void:
 	elif upgrade >= 2:
 		message = "Your prototype dinghy is fully upgraded."
 	elif coins < item_price("engine"):
-		message = "Earn %d coins to upgrade the engine." % item_price("engine")
+		message = "Earn MVR %d to upgrade the engine." % item_price("engine")
 	else:
 		coins -= item_price("engine")
 		upgrade += 1
@@ -741,7 +741,7 @@ func purchase_item(id: String) -> bool:
 		return false
 	var price = item_price(id)
 	if coins<price:
-		message = "You need %d more earned coins." % (price-coins)
+		message = "You need MVR %d more." % (price-coins)
 		return false
 	coins -= price
 	if item.category=="Boats":

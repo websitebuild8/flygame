@@ -284,7 +284,11 @@ func build_menu() -> void:
 	add_child(menu)
 	var column = VBoxContainer.new()
 	column.add_theme_constant_override("separation",10)
-	menu.add_child(column)
+	var scroll=ScrollContainer.new()
+	scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	menu.add_child(scroll)
+	scroll.add_child(column)
+	column.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	column.add_child(label("TAKE A BREATHER",13,MINT))
 	column.add_child(label("Your trip",34))
 	column.add_child(label("Drag the wheel to steer.\nLever up: forward. Centre: neutral.\nLever down: reverse. The throttle stays set.",18,MUTED))
@@ -302,7 +306,7 @@ func build_menu() -> void:
 				game.feedback.vibration_enabled = on
 		)
 		column.add_child(toggle)
-	game.upgrade_button = action(column,"Upgrade engine · 100 coins",game.buy_upgrade)
+	game.upgrade_button = action(column,"Upgrade engine · MVR 100",game.buy_upgrade)
 	game.home_button = action(column,"Return to home dock",func():
 		game.return_home()
 		toggle_menu()
@@ -318,6 +322,13 @@ func build_menu() -> void:
 	pause_tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(pause_tip)
 	action(column,"Back to your trip",toggle_menu,true)
+	var credits=RichTextLabel.new()
+	credits.bbcode_enabled=true
+	credits.fit_content=true
+	credits.text="Tuna Fish by [url=https://www.fab.com/listings/6b90bbe2-3031-4b36-93ad-90f1cb2d01f5]GoldenZtuff[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: resized textures, game scale and orientation."
+	credits.add_theme_font_size_override("normal_font_size",13)
+	credits.meta_clicked.connect(func(url): OS.shell_open(str(url)))
+	column.add_child(credits)
 	menu.visible = false
 
 func build_catch() -> void:
@@ -443,23 +454,23 @@ func refresh() -> void:
 	map_button.visible=not game.shop_mode and not game.market_mode
 	camera_button.visible=driving
 	camera_button.text="External" if game.first_person_driving else "POV"
-	game.upgrade_button.text = "Engine fully upgraded" if game.upgrade>=2 else "Upgrade engine · %d coins" % game.item_price("engine")
+	game.upgrade_button.text = "Engine fully upgraded" if game.upgrade>=2 else "Upgrade engine · MVR %d" % game.item_price("engine")
 	game.upgrade_button.disabled = not at_dock or game.coins<game.item_price("engine") or game.upgrade>=2
-	pause_tip.text = "Dock at home to upgrade your engine." if not at_dock else "Engine level %d / 3 · %d coins" % [game.upgrade+1,game.coins]
+	pause_tip.text = "Dock at home to upgrade your engine." if not at_dock else "Engine level %d / 3 · MVR %d" % [game.upgrade+1,game.coins]
 	if game.market_mode:
 		var customer_names=["Aishath","Hassan","Mariyam","Ibrahim","Fathimath"]
 		customer_label.text="%s · customer %d\n" % [customer_names[game.market.customer_number%5],game.market.customer_number+1]
 		if game.pending_payment>0:
-			customer_label.text+="Fish delivered · %d coins due" % game.pending_payment
+			customer_label.text+="Fish delivered · MVR %d due" % game.pending_payment
 		elif not game.inventory.is_empty():
 			var sale=game.inventory[0]
-			customer_label.text+="%s\n%.1f kg · %d coins" % [sale.species,sale.weight,sale.value]
+			customer_label.text+="%s\n%.1f kg · MVR %d" % [sale.species,sale.weight,sale.value]
 		else:
 			customer_label.text+="Your icebox is empty."
 		game.market.set_species(str(game.inventory[0].species) if not game.inventory.is_empty() else "Yellowfin tuna")
 		game.market.set_sale(not game.inventory.is_empty(),game.pending_payment>0)
 		game.market_action.disabled = game.market.queue_moving or game.market.handing_over or (game.inventory.is_empty() and game.pending_payment==0)
-		game.market_action.text = "Collect %d coins" % game.pending_payment if game.pending_payment>0 else "Serve next customer"
+		game.market_action.text = "Collect MVR %d" % game.pending_payment if game.pending_payment>0 else "Serve next customer"
 		if game.inventory.is_empty() and game.pending_payment==0:
 			game.market_action.text = "Icebox empty"
 	game.fishing_meters.visible = game.fishing
@@ -479,7 +490,7 @@ func refresh() -> void:
 		game.fish_button.text = "REEL IN" if game.fish_timer>=2.5 else "WAIT…"
 	else:
 		game.fish_button.text = ("DROP JIG" if game.feedback.overhead else "CAST") if game.fishing_view else ("Start fishing" if at_spot else "%s · %d m" % [nearest.name,spot_distance])
-	game.info.text = "%d coins  /  %d fish  /  %s" % [game.coins,game.inventory.size(),game.World.vessel(game.equipped_boat).name]
+	game.info.text = "MVR %d  /  %d fish  /  %s" % [game.coins,game.inventory.size(),game.World.vessel(game.equipped_boat).name]
 	zone.text = ("BOAT SHOWROOM" if shop_category=="Boats" else ("BOAT WORKSHOP" if shop_category=="Boat" else "TACKLE HOUSE")) if game.shop_mode else ("KELAA FISH MARKET" if game.market_mode else ("ON THE LINE" if game.fishing_view else "HA. KELAA"))
 	objective.visible = not game.market_mode and not game.shop_mode
 	objective.text = "Eastern waters unlocked" if game.unlocked else "Discover eastern waters · %d / 3 catches" % mini(game.catches,3)
@@ -530,7 +541,7 @@ func build_shop() -> void:
 	shop_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	shop_list.add_theme_constant_override("separation",14)
 	scroll.add_child(shop_list)
-	column.add_child(label("Earned game coins only · tap a name to preview",12,MUTED))
+	column.add_child(label("Earned MVR · in-game currency · tap a name to preview",12,MUTED))
 	action(column,"Return to dinghy",game.leave_fishing)
 	shop_panel.visible = false
 
@@ -570,7 +581,7 @@ func show_shop(category: String) -> void:
 		var owned = game.item_owned(item.id)
 		var active = game.equipped_boat==item.id if category=="Boats" else game.equipped.get(category)==item.id
 		var locked=game.catches<int(item.get("unlock",0))
-		var text = "Equipped" if active else ("Owned" if owned and category=="Boat" else ("Equip" if owned else "%d coins" % game.item_price(item.id)))
+		var text = "Equipped" if active else ("Owned" if owned and category=="Boat" else ("Equip" if owned else "MVR %d" % game.item_price(item.id)))
 		var buy = action(row,"%d catches" % item.unlock if locked else text,func():
 			game.purchase_item(item.id)
 			selected_item = item.id

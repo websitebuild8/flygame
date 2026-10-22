@@ -1,0 +1,19 @@
+Tuna Fish by GoldenZtuff
+https://www.fab.com/listings/6b90bbe2-3031-4b36-93ad-90f1cb2d01f5
+Original listing: https://sketchfab.com/3d-models/tuna-fish-642c6515d893474a8fc8f129491efcac
+
+Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0).
+https://creativecommons.org/licenses/by/4.0/
+
+Changes for Ishaq's Fishing Trip: embedded body textures resized to 1024px,
+eye textures resized to 512px; GLB buffer repacked. Runtime orientation and
+scale adapted to match game fish. Original mesh, rig and Swim animation retained.
+The original author does not endorse this game.
+
+Giant Trevally, Caranx ignobilis by ffish.asia / floraZia.com
+https://sketchfab.com/3d-models/cc0-giant-trevally-caranx-ignobilis-e6446df50ba746ed8ce8a3dd66b3b8e8
+CC0 1.0 Universal Public Domain Dedication
+https://creativecommons.org/publicdomain/zero/1.0/
+Changes: removed separate label cube, centred and aligned scan, reduced to
+9,801 triangles with UV-aware meshoptimizer, retained supplied 1k textures;
+added lit material and runtime body/tail deformation. No endorsement implied.

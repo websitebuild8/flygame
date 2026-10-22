@@ -66,7 +66,7 @@ func set_species(species: String) -> void:
 	displayed_fish.rotation.y = PI/2
 
 func set_sale(has_fish: bool, waiting_payment: bool) -> void:
-	displayed_fish.visible = handing_over or (has_fish and not waiting_payment)
+	displayed_fish.visible = preload("res://scripts/world_data.gd").has_fish_model(shown_species) and (handing_over or (has_fish and not waiting_payment))
 	payment.visible = waiting_payment
 
 func hand_over() -> void:

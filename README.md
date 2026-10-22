@@ -1,7 +1,8 @@
 # Ishaq's Fishing Trip
 
-An offline landscape Godot 4.5.1 / GDScript fishing prototype. Geometry, shaders,
-cloud textures are original procedural work. Audio combines free CC0 real outboard,
+An offline landscape Godot 4.5.1 / GDScript fishing prototype. Most geometry,
+shaders and cloud textures are original procedural work; yellowfin tuna uses
+a free licensed textured model by GoldenZtuff (see credits below). Audio combines free CC0 real outboard,
 reel, splash and wave recordings (see docs/audio-credits.md). No Blender or purchased
 assets are required to run this version.
 
@@ -163,7 +164,8 @@ scutes; groupers have broad heads, a continuous dorsal fin and rounded tails;
 mahi-mahi have a long dorsal fin; barracuda are slender with rear-set fins.
 Bluefin trevally have blue fins/spots, while yellowfin have yellow finlets.
 The models remain approximations, not photographic scans or anatomical models.
-No photos or third-party mesh assets were copied into the game.
+The original procedural species use no copied photos or meshes. Yellowfin tuna
+now uses a licensed third-party textured model; see the section below.
 
 Species references:
 - Maldives Marine Research Centre reef fish review (local species context): https://www.mrc.gov.mv/assets/Uploads/May-2008-Review-of-the-Reef-Fishery-of-Maldives.pdf
@@ -173,3 +175,24 @@ Species references:
 - Marble grouper: https://fishesofaustralia.net.au/Home/species/4670
 - Mahi-mahi: https://www.floridamuseum.ufl.edu/discover-fish/species-profiles/dolphinfish/
 - Great barracuda: https://www.floridamuseum.ufl.edu/discover-fish/species-profiles/great-barracuda/
+
+
+### Textured tuna trial
+
+Yellowfin tuna now uses **Tuna Fish by GoldenZtuff**, downloaded from
+https://www.fab.com/listings/6b90bbe2-3031-4b36-93ad-90f1cb2d01f5 under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The asset is an artistic
+tuna model used as a yellowfin representation, not a verified biological scan.
+Other species retain their individual procedural models.
+
+The model retains its rigged Swim animation for the fight, catch display and
+market. Mesh and material resources are shared; each fish owns its animation
+playback. Body textures are reduced from 4096px to 1024px and eyes to 512px,
+reducing the GLB from 56.7 MiB to about 5.6 MiB. `tools/prepare_tuna.py` reproduces
+that conversion from the original download with Pillow; it is not needed to run
+the game or build on Codemagic. The full original stays outside the repository.
+
+Creator/source/license and changes are recorded in
+`assets/models/fish/LICENSE.txt` and `tuna-source.json`, and displayed in the
+scrollable pause menu. Desktop appearance and regression checks have been run;
+Android/iPhone performance still needs actual device testing.
