@@ -1,6 +1,6 @@
 # Textured fish asset research
 
-Checked 2026-10-22. Listing availability is not proof that a model has been
+Updated 2026-10-23. Listing availability is not proof that a model has been
 downloaded, imported, animated or tested in this game.
 
 ## Giant trevally — integrated
@@ -17,8 +17,7 @@ downloaded, imported, animated or tested in this game.
   UV preservation, reduce textures, align to game -Z forward / +Y up, add tail
   movement, then inspect hooked, landed, showcase and market views. The 10k-triangle trial damaged texture seams; the retained 51,903-triangle
   version preserves them. Actual mobile-device performance remains to be checked.
-- The procedural fish are retired from active gameplay. Only imported yellowfin
-  tuna and giant trevally are catchable for now.
+- The procedural fish are retired from active gameplay. Five imported species are now catchable: yellowfin, giant trevally, skipjack, sailfish and mahi-mahi.
 
 ## Painted sweetlips — candidate for an additional species
 
@@ -49,8 +48,18 @@ These are useful leads, not substitutes for similarly named game fish.
 
 - MEA AQUA bigeye trevally sample: evaluation sample; do not treat as a free
   production replacement.
-- Ryba mahi mahi: listing specifies Attribution-NoDerivs; unsuitable for the
-  planned modified/animated asset workflow.
+- Ryba mahi mahi: downloaded and visually rejected as a decorative ornament rather than a realistic mahi-mahi. The owner confirmed additional modification permission, but this candidate is not shipped. Randibu’s properly shaped Coryphaena hippurus replaces it.
 - Paid fish packs, unknown-licence copies and models without official download
-  access have not been used. No suitable free textured wahoo or mahi-mahi was
-  verified in this search.
+  access have not been used. No suitable free textured wahoo has been verified.
+
+## Additional species — integrated 2026-10-23
+
+| Species | Source | Licence | Prepared geometry |
+| --- | --- | --- | --- |
+| Skipjack tuna | [ffish.asia scan](https://sketchfab.com/3d-models/cc0-skipjack-tuna-katsuwonus-pelamis-9431157b2fce4ea9a72d9cfe3ce37a6d) | CC0 | 74,045 triangles, 3 texture regions, 1k textures |
+| Sailfish | [RED SIDE](https://sketchfab.com/3d-models/sailfish-78249838285d4f67a24c3832464c37ae) | CC BY 4.0 | 23,994 triangles; unpainted source receives blue/silver body and patterned sail shader |
+| Mahi-mahi, Coryphaena hippurus | [Randibu fish pack](https://randibu.itch.io/3dfish) | CC BY 4.0 | 1,306 triangles, original painted colour map reduced to 1k |
+
+Official downloads only; no payment. These are distinct meshes, not recolours of the tuna. The source GLBs and Randibu archive remain in Downloads. The prepared models are included in the repository; builds do not fetch or convert them. Each has its own credits/source record. All use independent shader swimming and the existing hooked, landing, catch and market flows.
+
+Preparation: use Godot `tools/convert_mahi.gd -- SOURCE_FOLDER OUTPUT.glb` to convert Randibu’s FBX, then `tools/prepare_species.py SPECIES SOURCE.glb NODE MESHOPTIMIZER/index.js` for each model. Requires numpy and meshoptimizer 1.3.0 only during preparation. Originals are left unchanged. Confirm head is -Z and dorsal fin is +Y in previews after any asset replacement.

@@ -3,6 +3,8 @@ const Art=preload("res://scripts/world_art.gd")
 const Tackle=preload("res://scripts/tackle_art.gd")
 
 static func build(root: Node3D,id: String) -> Node3D:
+	if id in ["skiff","launch","glacier","grady"]:
+		return preload("res://scripts/imported_boats.gd").build(root,id)
 	var visual=Node3D.new()
 	visual.name="Visual"
 	root.add_child(visual)
@@ -19,6 +21,7 @@ static func build(root: Node3D,id: String) -> Node3D:
 		elif child is MeshInstance3D and child.mesh is TorusMesh:
 			(child.material_override as StandardMaterial3D).albedo_color=Color("8e6447") if id=="launch" else (Color("e0e8e5") if id=="skiff" else colors[id])
 	wheel.scale=Vector3.ONE*1.65
+	wheel.set_meta("rest_basis",wheel.basis)
 	var spokes=6 if id=="launch" else (5 if id=="skiff" else 3)
 	for i in range(spokes):
 		var a=float(i)*TAU/spokes

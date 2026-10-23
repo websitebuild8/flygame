@@ -67,6 +67,19 @@ func checks() -> void:
 	check(helm.lever_value==1,"Throttle persists after finger release")
 	helm.update_lever(helm.rail_center()+Vector2(0,4))
 	check(helm.lever_value==0,"Lever snaps at neutral")
+	helm.pov=true
+	for viewport_size in [Vector2(496,224),Vector2(1100,224),Vector2(760,300)]:
+		helm.size=viewport_size
+		helm.pov_lever=Vector2(-500,2000)
+		var rail=helm.rail_center()
+		check(Rect2(Vector2.ZERO,helm.size).encloses(Rect2(rail-Vector2(60,108),Vector2(120,216))),"POV throttle and complete drag range remain inside the control area")
+		helm.pointer(8,rail-Vector2(0,74),true)
+		check(helm.lever_value==1,"Fixed POV throttle reaches full forward")
+		helm.drag(8,rail+Vector2(0,74))
+		check(helm.lever_value==-1,"Fixed POV throttle reaches full reverse")
+		helm.drag(8,rail)
+		check(helm.lever_value==0,"Fixed POV throttle reaches neutral")
+		helm.pointer(8,rail,false)
 	var off_drive=preload("res://scripts/boat_drive.gd").new()
 	off_drive.set_lever(1)
 	off_drive.step(2,0,0)

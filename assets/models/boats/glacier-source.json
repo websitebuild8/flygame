@@ -1,0 +1,21 @@
+{
+  "title": "Glacier Bay",
+  "creator": "BoatUS Foundation",
+  "source": "https://sketchfab.com/3d-models/glacier-bay-6c4e6c341c09466fa6d6aafb8d7312b0",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "original_sha256": "ff10601681868be1ae50d0b5c8ba800798dd4fd80e5b29e2c55efa142880d6d9",
+  "original_bytes": 15175236,
+  "removed_trailer_triangles": 0,
+  "parts": {
+    "Hull": 230295,
+    "OutboardPivot2Propeller": 2854,
+    "OutboardPivot2": 16848,
+    "OutboardPivot": 16848,
+    "OutboardPivotPropeller": 2854,
+    "ThrottleLever": 3322,
+    "HelmWheel": 5215
+  },
+  "changes": "Separated original steering wheel, throttle levers, outboards and propellers; aligned/scaled for gameplay; simplified with attribute preservation; retained source 1k textures. Scout trailer removed and cockpit lever isolated from fixed radio and housing.",
+  "additional_permission": "Project owner confirmed permission on 2026-10-24."
+}

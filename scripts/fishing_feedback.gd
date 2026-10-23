@@ -163,11 +163,11 @@ func update_feedback(delta: float, active: bool, pulling: bool, tension: float, 
 			segments[i].quaternion = Quaternion(Vector3.UP,(end-start).normalized())
 			segments[i].scale.y=start.distance_to(end)/0.2555
 		if pulling:
-			crank.rotation.x += delta*13
+			crank.rotate_object_local(crank.get_meta("spin_axis",Vector3.RIGHT),delta*13)
 			if overhead:
 				rotor.rotation.x += delta*20
 			else:
-				rotor.rotation.z += delta*20
+				rotor.rotate_object_local(rotor.get_meta("spin_axis",Vector3.BACK),delta*20)
 		if pulling and sound_enabled:
 			reel_audio.pitch_scale=lerpf(1.12,0.78,tension)
 			reel_audio.volume_db=lerpf(-14,-9,tension)

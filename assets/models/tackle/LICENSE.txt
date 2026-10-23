@@ -1,0 +1,5 @@
+Fishing Rod, Rigged and Animated by Ergin ERYILDIR
+https://sketchfab.com/3d-models/fishing-rod-rigged-and-animated-78991bf44cf54acb8660bef317d72c7a
+Changes: runtime extracted reel meshes, scale/orientation, crank and rotor pivots; rod preview framing. Original source GLB retained.
+CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Original authors do not endorse this game.

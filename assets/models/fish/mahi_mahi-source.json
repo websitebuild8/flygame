@@ -1,0 +1,12 @@
+{
+  "original_sha256": "94deb04a60bc6db98a1b10a52e53c570bdd4e724208355c99ea9d2ca75f25cd2",
+  "original_bytes": 392644,
+  "changes": "Converted original FBX with its painted texture to GLB, reduced texture to 1k, aligned and scaled for the game, added wet material and runtime swimming. Geometry shape retained.",
+  "title": "Coryphaena hippurus — 3D Model Pack – Mediterranean and River Fish",
+  "creator": "Randibu",
+  "source": "https://randibu.itch.io/3dfish",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "original_archive": "FIshes_Itchio_2026.zip",
+  "archive_sha256": "86cfc02e17e4d3378ae1162b57034d7b8aafcb3ce5d8f24cced1da4ea75d2f2e"
+}

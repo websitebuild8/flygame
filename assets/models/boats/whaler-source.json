@@ -1,0 +1,21 @@
+{
+  "title": "285 Conquest Boston Whaler",
+  "creator": "BoatUS Foundation",
+  "source": "https://sketchfab.com/3d-models/285-conquest-boston-whaler-61e2b2fae81b4e858b401ce7ccc8d8d2",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "original_sha256": "00313168ae3627953d1452180166ed4c363271650a3bb2b2ce1021f17804eb67",
+  "original_bytes": 11291260,
+  "removed_trailer_triangles": 0,
+  "parts": {
+    "Hull": 226923,
+    "OutboardPivotPropeller": 2014,
+    "OutboardPivot": 23560,
+    "OutboardPivot2Propeller": 2014,
+    "OutboardPivot2": 23560,
+    "HelmWheel": 4675,
+    "ThrottleLever": 3260
+  },
+  "changes": "Separated steering wheel, throttle, outboard and propeller geometry; removed Scout trailer; aligned/scaled for game; simplified with attribute preservation; retained source 1k textures.",
+  "additional_permission": "Project owner confirmed permission on 2026-10-24."
+}

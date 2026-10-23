@@ -1,0 +1,5 @@
+2004 17' Scout - Center Console by BoatUS Foundation
+https://sketchfab.com/3d-models/2004-17-scout-center-console-185e7c1dbf254b57b42b1979c45e4117
+CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Changes: Separated steering wheel, throttle, outboard and propeller geometry; removed Scout trailer; aligned/scaled for game; simplified with attribute preservation; retained source 1k textures.
+Original creator and manufacturers do not endorse this game.

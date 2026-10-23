@@ -51,6 +51,8 @@ static func label(parent: Node3D, text: String, pos: Vector3, size: int = 60) ->
 
 static func fish(parent: Node3D, size: float = 1.0, species: String = "Yellowfin tuna") -> Node3D:
 	var script_path="res://scripts/trevally_fish.gd" if species=="Giant trevally" else "res://scripts/textured_fish.gd"
+	if species in ["Skipjack tuna","Sailfish","Mahi-mahi"]:
+		script_path="res://scripts/scanned_fish.gd"
 	var root = load(script_path).new() as Node3D
 	parent.add_child(root)
 	root.setup(species)
@@ -144,22 +146,8 @@ static func dinghy(root: Node3D) -> void:
 	for z in [-0.9,1.2]:
 		block(root, Vector3(0,0.42,z),Vector3(1.9,0.16,0.5),Color("a77b4b"))
 		block(root, Vector3(0,0.53,z),Vector3(1.5,0.12,0.4),Color("f2e9d2"))
-	var motor=Node3D.new()
-	motor.name="OutboardPivot"
-	root.add_child(motor)
+	var motor=preload("res://scripts/imported_marine.gd").motor(root)
 	motor.position=Vector3(0,0,2.6)
-	block(motor,Vector3(0,0.16,0.1),Vector3(0.6,1,0.5),Color("253f4e"))
-	block(motor,Vector3(0,0.5,0.12),Vector3(0.7,0.35,0.65),Color("415666"))
-	pole(motor,Vector3(0,0.4,-0.2),Vector3(0.6,0.5,-0.9),0.05,Color("293f49"))
-	pole(motor,Vector3(0,-0.3,0.1),Vector3(0,-0.7,0.1),0.07,Color("617985"))
-	var prop=Node3D.new()
-	prop.name="Propeller"
-	motor.add_child(prop)
-	prop.position=Vector3(0,-0.65,0.25)
-	for i in range(3):
-		var a=float(i)*TAU/3
-		var blade=oval(prop,Vector3(cos(a)*0.15,sin(a)*0.15,0),Vector3(0.27,0.09,0.04),Color("a9bec0"))
-		blade.rotation.z=a+0.4
 	var icebox = Node3D.new()
 	icebox.name = "Icebox"
 	root.add_child(icebox)

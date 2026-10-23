@@ -1,0 +1,7 @@
+Freedom 325 Grady White
+Creator: BoatUS Foundation
+Source: https://sketchfab.com/3d-models/freedom-325-grady-white-71ca8a73f97d44a98f92dd785e151b93
+Licence: Creative Commons Attribution 4.0 International
+https://creativecommons.org/licenses/by/4.0/
+Adaptations: Separated original steering wheel, throttle levers, outboards and propellers; aligned/scaled for gameplay; simplified with attribute preservation; retained source 1k textures. Scout trailer removed and cockpit lever isolated from fixed radio and housing.
+No manufacturer endorsement is claimed.

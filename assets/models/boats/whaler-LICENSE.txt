@@ -1,0 +1,5 @@
+285 Conquest Boston Whaler by BoatUS Foundation
+https://sketchfab.com/3d-models/285-conquest-boston-whaler-61e2b2fae81b4e858b401ce7ccc8d8d2
+CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Changes: Separated steering wheel, throttle, outboard and propeller geometry; removed Scout trailer; aligned/scaled for game; simplified with attribute preservation; retained source 1k textures.
+Original creator and manufacturers do not endorse this game.

@@ -14,9 +14,11 @@ const ITEMS = [
  {"id":"propeller","name":"Performance propeller","category":"Boat","kind":"part","price":180,"detail":"Quicker acceleration · 8% more top speed"},
  {"id":"icebox","name":"Insulated large icebox","category":"Boat","kind":"part","price":160,"detail":"Adds 14 fish to your boat storage"},
  {"id":"dinghy","name":"Island Dinghy","category":"Boats","kind":"boat","price":0,"unlock":0,"detail":"Classic mint helm · starter boat"},
- {"id":"skiff","name":"Reef Skiff","category":"Boats","kind":"boat","price":600,"unlock":3,"detail":"Blue sport helm · 18 m/s base speed · 14 fish"},
+ {"id":"skiff","name":"Scout 17 Centre Console","category":"Boats","kind":"boat","price":600,"unlock":3,"detail":"Blue sport helm · 18 m/s base speed · 14 fish"},
  {"id":"runner","name":"Atoll Runner","category":"Boats","kind":"boat","price":1400,"unlock":8,"detail":"Carbon racing helm · 24 m/s base speed · 18 fish"},
- {"id":"launch","name":"Ocean Launch","category":"Boats","kind":"boat","price":2800,"unlock":15,"detail":"Wood helm · twin throttle · 30 m/s base speed"}
+ {"id":"launch","name":"Boston Whaler 285 Conquest","category":"Boats","kind":"boat","price":2800,"unlock":15,"detail":"Cabin helm · twin throttle · 24 fish"},
+ {"id":"glacier","name":"Glacier Bay","category":"Boats","kind":"boat","price":4200,"unlock":22,"detail":"Twin-hull fishing boat · navy canopy · 30 fish"},
+ {"id":"grady","name":"Grady-White Freedom 325","category":"Boats","kind":"boat","price":6000,"unlock":30,"detail":"Blue sport hull · covered helm · 36 fish"}
 ]
 const STARTERS = ["island_reel","island_rod","mono"]
 

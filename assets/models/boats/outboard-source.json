@@ -1,0 +1,8 @@
+{
+  "creator": "Bora Ozakaltun (metadata alias paraverun)",
+  "source": "https://sketchfab.com/3d-models/boat-motor-a496b95b40074b91aeeb1e9a2aae913b",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "original_sha256": "82d5270144d965545bf773cf0726d4501ac0f71a373954a7ec3c71ef45b76fb3",
+  "changes": "Split existing propeller geometry into a separately rotating node; source 1k textures retained. Runtime size, centre and mounting orientation adapted."
+}

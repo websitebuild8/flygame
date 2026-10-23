@@ -9,22 +9,27 @@ const ISLANDS = [
 # Only species with imported textured models are currently catchable.
 const FISH = [
  {"name":"Yellowfin tuna","min":2.0,"max":16.0,"value":65,"fight":1.1},
- {"name":"Giant trevally","min":2.0,"max":14.0,"value":60,"fight":1.12}
+ {"name":"Giant trevally","min":2.0,"max":14.0,"value":60,"fight":1.12},
+ {"name":"Skipjack tuna","min":1.5,"max":8.0,"value":35,"fight":0.95},
+ {"name":"Sailfish","min":8.0,"max":35.0,"value":90,"fight":1.45},
+ {"name":"Mahi-mahi","min":2.0,"max":14.0,"value":55,"fight":1.2}
 ]
 const SPOTS = [
- {"id":"lagoon","name":"Kelaa Lagoon","at":Vector2(0,-45),"unlock":0,"fish":[0,1]},
- {"id":"reef","name":"Kelaa Outer Reef","at":Vector2(-80,-60),"unlock":0,"fish":[0,1]},
- {"id":"channel","name":"Vashafaru Channel","at":Vector2(25,-100),"unlock":0,"fish":[0,1]},
- {"id":"east","name":"Filladhoo Dropoff","at":Vector2(125,-45),"unlock":3,"fish":[0,1]},
- {"id":"bluewater","name":"Haa Alif Bluewater","at":Vector2(150,-150),"unlock":6,"fish":[0,1]},
- {"id":"night","name":"Baarah Drift","at":Vector2(15,120),"unlock":0,"fish":[0,1]},
- {"id":"sunset","name":"Dhidhdhoo Reef","at":Vector2(-165,65),"unlock":4,"fish":[0,1]}
+ {"id":"lagoon","name":"Kelaa Lagoon","at":Vector2(0,-45),"unlock":0,"fish":[0,1,2]},
+ {"id":"reef","name":"Kelaa Outer Reef","at":Vector2(-80,-60),"unlock":0,"fish":[0,1,2,4]},
+ {"id":"channel","name":"Vashafaru Channel","at":Vector2(25,-100),"unlock":0,"fish":[0,1,2,4]},
+ {"id":"east","name":"Filladhoo Dropoff","at":Vector2(125,-45),"unlock":3,"fish":[0,1,2,3,4]},
+ {"id":"bluewater","name":"Haa Alif Bluewater","at":Vector2(150,-150),"unlock":6,"fish":[0,2,3,4]},
+ {"id":"night","name":"Baarah Drift","at":Vector2(15,120),"unlock":0,"fish":[0,1,2,4]},
+ {"id":"sunset","name":"Dhidhdhoo Reef","at":Vector2(-165,65),"unlock":4,"fish":[0,1,2,4]}
 ]
 const BOATS = [
  {"id":"dinghy","name":"Island Dinghy","price":0,"unlock":0,"speed":12.5,"handling":1.0,"accel":1.0,"storage":10,"detail":"Classic mint helm · light and easy to handle"},
- {"id":"skiff","name":"Reef Skiff","price":600,"unlock":3,"speed":18.0,"handling":1.15,"accel":1.15,"storage":14,"detail":"White sport wheel · blue throttle · nimble handling"},
+ {"id":"skiff","name":"Scout 17 Centre Console","price":600,"unlock":3,"speed":18.0,"handling":1.15,"accel":1.15,"storage":14,"detail":"Real Scout hull · centre console · single outboard"},
  {"id":"runner","name":"Atoll Runner","price":1400,"unlock":8,"speed":24.0,"handling":0.95,"accel":1.3,"storage":18,"detail":"Carbon sport helm · amber controls · T-top canopy"},
- {"id":"launch","name":"Ocean Launch","price":2800,"unlock":15,"speed":30.0,"handling":0.8,"accel":1.45,"storage":24,"detail":"Wood and brass wheel · twin throttle · cabin canopy"}
+ {"id":"launch","name":"Boston Whaler 285 Conquest","price":2800,"unlock":15,"speed":30.0,"handling":0.8,"accel":1.45,"storage":24,"detail":"Real Boston Whaler hull · cabin helm · twin outboards"},
+ {"id":"glacier","name":"Glacier Bay","price":4200,"unlock":22,"speed":31.0,"handling":0.9,"accel":1.5,"storage":30,"detail":"Twin-hull fishing boat · navy canopy · twin outboards"},
+ {"id":"grady","name":"Grady-White Freedom 325","price":6000,"unlock":30,"speed":35.0,"handling":0.85,"accel":1.6,"storage":36,"detail":"Blue sport hull · covered helm · twin outboards"}
 ]
 static func vessel(id: String) -> Dictionary:
 	for entry in BOATS:

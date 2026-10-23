@@ -1,0 +1,5 @@
+Boat Motor by Bora Ozakaltun (Bora Özakaltun; metadata alias paraverun)
+https://sketchfab.com/3d-models/boat-motor-a496b95b40074b91aeeb1e9a2aae913b
+Changes: separated source propeller into an animated node, runtime mounting orientation and scale; supplied 1k textures retained.
+CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Original authors do not endorse this game.

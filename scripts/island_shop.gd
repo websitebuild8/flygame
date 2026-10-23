@@ -46,6 +46,8 @@ func show_item(item: Dictionary) -> void:
 		hull.scale*=0.32
 	elif item.category=="Reels":
 		Tackle.reel(preview_model,item.kind,item.id).scale = Vector3.ONE*3.2
+	elif item.category=="Rods" and item.id=="island_rod":
+		preload("res://scripts/imported_tackle.gd").rod_preview(preview_model)
 	elif item.category=="Rods":
 		var rod = Tackle.rod(preview_model,item.kind,"ocea" if item.kind=="overhead" else "island_reel",item.id,false)
 		rod.rotation.z = 0.5
@@ -55,6 +57,8 @@ func show_item(item: Dictionary) -> void:
 		Tackle.cylinder(preview_model,Vector3.ZERO,0.22,0.16,Vector3.FORWARD,Color("75b6a1"),false)
 		for z in [-0.1,0.1]:
 			Tackle.cylinder(preview_model,Vector3(0,0,z),0.27,0.025,Vector3.FORWARD,Color("364a53"))
+	elif item.id=="engine":
+		preload("res://scripts/imported_marine.gd").motor(preview_model)
 	elif item.id=="propeller":
 		Tackle.cylinder(preview_model,Vector3.ZERO,0.13,0.25,Vector3.FORWARD,Color("a4b9bd"))
 		for i in range(3):

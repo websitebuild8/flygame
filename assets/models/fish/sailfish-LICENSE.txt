@@ -1,0 +1,6 @@
+Sailfish by RED SIDE
+https://sketchfab.com/3d-models/sailfish-78249838285d4f67a24c3832464c37ae
+CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Changes: Canonical alignment, centering, uniform scale, material preparation, attribute-aware geometry reduction; runtime swimming; original white surface replaced by a blue/silver species-coloured shader and patterned sail.
+
+Original authors do not endorse this game.

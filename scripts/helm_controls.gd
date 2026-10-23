@@ -30,7 +30,8 @@ func wheel_center() -> Vector2:
 	return pov_wheel if pov else Vector2(94,size.y*0.5)
 
 func rail_center() -> Vector2:
-	return pov_lever if pov else Vector2(size.x-63,size.y*0.5)
+	# Throttle is a fixed touch instrument, never a projected moving 3D point.
+	return Vector2(size.x-70,size.y*0.5) if pov else Vector2(size.x-63,size.y*0.5)
 
 func local_point(point: Vector2) -> Vector2:
 	return get_global_transform_with_canvas().affine_inverse()*point
@@ -104,9 +105,9 @@ func text_at(text: String, position: Vector2, font_size: int, color: Color) -> v
 
 func set_skin(id: String) -> void:
 	skin=id
-	accent={"dinghy":Color("83dfd0"),"skiff":Color("90c8ff"),"runner":Color("f2b16e"),"launch":Color("dec58c")}.get(id,Color("83dfd0"))
-	rim_color={"dinghy":Color("729097"),"skiff":Color("e3e9e2"),"runner":Color("384854"),"launch":Color("8e6447")}.get(id,Color("729097"))
-	spokes={"dinghy":3,"skiff":5,"runner":3,"launch":6}.get(id,3)
+	accent={"dinghy":Color("83dfd0"),"skiff":Color("90c8ff"),"runner":Color("f2b16e"),"launch":Color("dec58c"),"glacier":Color("c7bfff"),"grady":Color("8ee4ff")}.get(id,Color("83dfd0"))
+	rim_color={"dinghy":Color("729097"),"skiff":Color("e3e9e2"),"runner":Color("384854"),"launch":Color("8e6447"),"glacier":Color("292d5a"),"grady":Color("e5e8eb")}.get(id,Color("729097"))
+	spokes={"dinghy":3,"skiff":5,"runner":3,"launch":6,"glacier":4,"grady":3}.get(id,3)
 	queue_redraw()
 
 func _draw() -> void:
@@ -114,14 +115,10 @@ func _draw() -> void:
 		var wheel=wheel_center()
 		draw_arc(wheel,pov_wheel_radius*.9,-PI*.85,-PI*.15,30,Color(accent,0.5),2,true)
 		text_at("DRAG WHEEL",wheel+Vector2(-45,100),12,accent)
-		var lever=rail_center()
-		text_at("F",lever+Vector2(38,-72),16,accent)
-		text_at("N",lever+Vector2(38,4),16,white)
-		text_at("R",lever+Vector2(38,78),16,accent)
-		draw_line(lever+Vector2(29,-74),lever+Vector2(29,74),Color(accent,0.45),2,true)
-		draw_circle(lever+Vector2(29,-lever_value*74),5,accent)
-		panel(Rect2(size.x-188,size.y-70,188,70))
-		text_at("%.1f kn · %s" % [shown_speed*1.94384,shown_gear],Vector2(size.x-170,size.y-28),24,white)
+		panel(Rect2(size.x-140,0,140,size.y))
+		draw_throttle()
+		panel(Rect2(size.x-320,size.y-70,165,70))
+		text_at("%.1f kn · %s" % [shown_speed*1.94384,shown_gear],Vector2(size.x-308,size.y-28),22,white)
 		return
 	panel(Rect2(0,0,188,size.y))
 	panel(Rect2(size.x-130,0,130,size.y))
@@ -149,11 +146,23 @@ func _draw() -> void:
 	var marker = c+Vector2(sin(angle),-cos(angle))*69
 	draw_circle(marker,4,accent)
 	text_at("DRAG TO TURN",Vector2(39,size.y-13),12,muted)
+	draw_throttle()
+	var center_x = 264.0 if size.x>700 else (188.0+size.x-130)/2.0
+	panel(Rect2(center_x-61,49,122,160))
+	text_at("%02.1f" % (shown_speed*1.94384),Vector2(center_x-37,92),34,white)
+	text_at("KNOTS",Vector2(center_x-22,112),12,muted)
+	text_at(shown_gear,Vector2(center_x-10,155),29,accent)
+	text_at("SHIFTING" if shift_waiting else "%d%%" % (absf(lever_value)*100),Vector2(center_x-28,176),12,muted)
+	for i in range(5):
+		draw_rect(Rect2(center_x-25+i*11,194,7,5),accent if shown_rpm > float(i)/5 else Color("2b4552"))
+
+func draw_throttle() -> void:
 	var rail = rail_center()
-	text_at("TWIN DRIVE" if skin=="launch" else ("SPORT" if skin=="runner" else "THROTTLE"),rail+Vector2(-38,-89),13,muted)
+	var label={"launch":"TWIN DRIVE","glacier":"CAT DRIVE","grady":"FREEDOM","runner":"SPORT"}.get(skin,"THROTTLE")
+	text_at(label,rail+Vector2(-38,-89),13,muted)
 	draw_line(rail+Vector2(0,-72),rail+Vector2(0,74),Color("344e5b"),14,true)
-	if skin=="launch":
-		draw_line(rail+Vector2(-15,-72),rail+Vector2(-15,74),Color("7d745a"),5,true)
+	if skin in ["launch","glacier","grady"]:
+		draw_line(rail+Vector2(-15,-72),rail+Vector2(-15,74),Color(accent,.65),5,true)
 	for i in range(9):
 		var y = rail.y-72+i*18
 		draw_line(Vector2(rail.x-16,y),Vector2(rail.x+16,y),Color("729095"),1,true)
@@ -168,11 +177,3 @@ func _draw() -> void:
 	draw_style_box(knob,Rect2(handle-Vector2(27,14),Vector2(54,28)))
 	for i in [-1,0,1]:
 		draw_line(handle+Vector2(i*7,-6),handle+Vector2(i*7,6),Color("31666b"),2,true)
-	var center_x = 264.0 if size.x>700 else (188.0+size.x-130)/2.0
-	panel(Rect2(center_x-61,49,122,160))
-	text_at("%02.1f" % (shown_speed*1.94384),Vector2(center_x-37,92),34,white)
-	text_at("KNOTS",Vector2(center_x-22,112),12,muted)
-	text_at(shown_gear,Vector2(center_x-10,155),29,accent)
-	text_at("SHIFTING" if shift_waiting else "%d%%" % (absf(lever_value)*100),Vector2(center_x-28,176),12,muted)
-	for i in range(5):
-		draw_rect(Rect2(center_x-25+i*11,194,7,5),accent if shown_rpm > float(i)/5 else Color("2b4552"))

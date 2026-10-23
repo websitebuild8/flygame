@@ -1,0 +1,19 @@
+{
+  "title": "2004 17' Scout - Center Console",
+  "creator": "BoatUS Foundation",
+  "source": "https://sketchfab.com/3d-models/2004-17-scout-center-console-185e7c1dbf254b57b42b1979c45e4117",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "original_sha256": "3b33aea6b59f12a62e9d1d09976624c417af0b6d85794edddda1a367d819c88d",
+  "original_bytes": 23504380,
+  "removed_trailer_triangles": 110652,
+  "parts": {
+    "Hull": 238657,
+    "OutboardPivot": 27911,
+    "ThrottleLever": 2500,
+    "OutboardPivotPropeller": 2014,
+    "HelmWheel": 1410
+  },
+  "changes": "Separated steering wheel, throttle, outboard and propeller geometry; removed Scout trailer; aligned/scaled for game; simplified with attribute preservation; retained source 1k textures. Corrected throttle separation to animate the existing cockpit lever and trigger at its bearing; radio and control housing remain fixed.",
+  "additional_permission": "Project owner confirmed permission on 2026-10-24."
+}

@@ -26,6 +26,8 @@ static func ring(parent: Node3D, at: Vector3, radius: float, tube: float, color:
 	return node
 
 static func reel(parent: Node3D, kind: String, model: String = "island_reel") -> Node3D:
+	if kind=="spinning" and model=="island_reel":
+		return preload("res://scripts/imported_tackle.gd").reel(parent)
 	var root = Node3D.new()
 	parent.add_child(root)
 	var silver = Color("b3c5c7")

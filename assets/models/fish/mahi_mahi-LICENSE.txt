@@ -1,0 +1,5 @@
+Coryphaena hippurus from 3D Model Pack – Mediterranean and River Fish by Randibu
+https://randibu.itch.io/3dfish
+CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Changes: Converted original FBX with its painted texture to GLB, reduced texture to 1k, aligned and scaled for the game, added wet material and runtime swimming. Geometry shape retained.
+Original author does not endorse this game.

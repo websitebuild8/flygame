@@ -1,0 +1,21 @@
+{
+  "title": "Freedom 325 Grady White",
+  "creator": "BoatUS Foundation",
+  "source": "https://sketchfab.com/3d-models/freedom-325-grady-white-71ca8a73f97d44a98f92dd785e151b93",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "original_sha256": "dc8ebb952f3a788727b7e48a0e118f544f57537f0d02a1100fb5441af18e8a4c",
+  "original_bytes": 22978140,
+  "removed_trailer_triangles": 0,
+  "parts": {
+    "OutboardPivot2Propeller": 2854,
+    "OutboardPivot2": 17616,
+    "OutboardPivotPropeller": 2854,
+    "OutboardPivot": 17616,
+    "Hull": 321223,
+    "ThrottleLever": 3304,
+    "HelmWheel": 4206
+  },
+  "changes": "Separated original steering wheel, throttle levers, outboards and propellers; aligned/scaled for gameplay; simplified with attribute preservation; retained source 1k textures. Scout trailer removed and cockpit lever isolated from fixed radio and housing.",
+  "additional_permission": "Project owner confirmed permission on 2026-10-24."
+}

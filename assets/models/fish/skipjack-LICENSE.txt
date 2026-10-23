@@ -1,0 +1,6 @@
+CC0 Skipjack Tuna, Katsuwonus pelamis by ffish.asia / floraZia.com
+https://sketchfab.com/3d-models/cc0-skipjack-tuna-katsuwonus-pelamis-9431157b2fce4ea9a72d9cfe3ce37a6d
+CC0 1.0 — https://creativecommons.org/publicdomain/zero/1.0/
+Changes: Canonical alignment, centering, uniform scale, material preparation, attribute-aware geometry reduction; runtime swimming.
+
+Original authors do not endorse this game.

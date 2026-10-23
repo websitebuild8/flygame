@@ -211,3 +211,25 @@ runs gameplay checks, applies App Store signing and uploads an IPA for internal
 TestFlight testing. Apple membership, the app record and Codemagic signing
 identities must be configured first. Follow [the setup guide](docs/testflight-codemagic.md).
 The first signed cloud build has not yet been run against your Apple account.
+
+## Free tackle and motor upgrades
+
+The starter spinning reel now uses the free textured Ergin ERYILDIR model, and
+its full rod appears in the starter rod shop preview. The live blank retains
+fish-responsive bending. Boats now use Bora Özakaltun's textured outboard, with
+steering pivots and separately animated propellers. Both are CC BY 4.0 assets,
+credited in-game and in exported licence files. The POV throttle has a fixed
+right-side touch panel so its full F/N/R range stays on-screen. See
+[model sources, changes and further candidates](docs/free-model-upgrades.md).
+
+### Additional imported catches
+
+Skipjack tuna (ffish.asia, CC0), sailfish (RED SIDE, CC BY 4.0) and mahi-mahi (Randibu, CC BY 4.0) join yellowfin and giant trevally. All are available through fishing spots, hooked movement, catch display and MVR market sales. Skipjack uses its scan colours; the unpainted sailfish receives a procedural species-coloured skin. Mahi-mahi uses Randibu’s painted Coryphaena hippurus model. Sources and changes are recorded in assets/models/fish/*-source.json and *-LICENSE.txt and the in-game credits.
+
+The earlier Sketchfab “Ryba mahi mahi” scan was rejected after visual inspection: it resembles a decorative ornament rather than the requested fish. It is not shipped or used.
+
+### Real boat upgrades
+
+The existing skiff and launch upgrades now use BoatUS Foundation’s Scout 17 Centre Console and Boston Whaler 285 Conquest models (CC BY 4.0), with detailed consoles/cabin, independent steering wheels, throttles, original outboards/props, and individual driving/fishing cameras. Existing purchases and saves keep their IDs and game stats. See [model sources and preparation](docs/real-boat-models.md).
+
+Glacier Bay and Grady-White Freedom 325 are additional BoatUS Foundation CC BY 4.0 boat upgrades with original 3D cockpit hardware, twin outboards and per-boat helm skins. Unlock at 22/30 catches for MVR 4,200/6,000 respectively; ownership persists in saves. See [real boat models](docs/real-boat-models.md).

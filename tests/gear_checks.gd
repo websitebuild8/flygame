@@ -42,6 +42,27 @@ func checks() -> void:
 	game.equipped = {}
 	game.load_trip()
 	check(game.equipped.Reels=="ocea" and game.equipped.Line=="powerpro" and game.icebox_capacity()==24,"Ownership and loadout persist through saves")
+	var imported=preload("res://scripts/tackle_art.gd").reel(game,"spinning","island_reel")
+	check(imported.get_meta("imported_model",false),"Starter reel uses the imported textured model")
+	check(is_instance_valid(imported.get_meta("crank")) and is_instance_valid(imported.get_meta("rotor")),"Imported reel keeps independent animation pivots")
+	var crank=imported.get_meta("crank") as Node3D
+	var rotor=imported.get_meta("rotor") as Node3D
+	var spool=imported.get_meta("spool") as MeshInstance3D
+	var body=imported.find_child("Object001_rod06_0",true,false) as MeshInstance3D
+	var body_rest=body.global_transform
+	var spool_rest=spool.global_transform
+	var spool_center=spool.to_global(spool.get_aabb().get_center())
+	var shaft=rotor.global_basis.x.normalized()
+	check((spool_center-rotor.global_position).cross(shaft).length()<0.015,"Bail shaft stays aligned with the fixed spool centre")
+	check(absf(shaft.dot(crank.global_basis.z.normalized()))<0.01,"Handle shaft is perpendicular to spool shaft")
+	var rotor_mesh=rotor.get_child(0) as MeshInstance3D
+	var rotor_rest=rotor_mesh.global_transform
+	for step in range(24):
+		crank.rotate_object_local(crank.get_meta("spin_axis"),TAU/24)
+		rotor.rotate_object_local(rotor.get_meta("spin_axis"),TAU/24)
+		check(body.global_transform.is_equal_approx(body_rest) and spool.global_transform.is_equal_approx(spool_rest),"Winding keeps the reel housing and spool fixed")
+	check(rotor_mesh.global_transform.is_equal_approx(rotor_rest),"Bail completes a full revolution without drifting")
+	imported.queue_free()
 	game.equip_item("island_reel")
 	check(game.equipped.Rods=="island_rod","Switching back to spinning equips compatible rod")
 	game.leave_fishing()

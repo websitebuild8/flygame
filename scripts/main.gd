@@ -6,7 +6,7 @@ const Catalog = preload("res://scripts/gear_catalog.gd")
 
 const SAVE_PATH = "user://trip.json"
 var save_path = SAVE_PATH
-const DOCK = Vector3(0, 0, 12)
+const DOCK = Vector3(2.3, 0, 12) # Moor beside the jetty, clear of its posts and planks.
 const SPOT = Vector3(0, 0, -45)
 var boat: Node3D
 var camera: Camera3D
@@ -338,7 +338,8 @@ func _physics_process(delta: float) -> void:
 		drive.set_lever(driving_controls.lever_value)
 		drive.step(delta,keyboard_steer if keyboard_steer!=0 else driving_controls.wheel_command,upgrade)
 		speed = drive.speed
-		boat_visual.get_node("HelmWheel").rotation.z = -drive.steering*2.3
+		var wheel=boat_visual.get_node("HelmWheel") as Node3D
+		wheel.basis=wheel.get_meta("rest_basis",Basis.IDENTITY)*Basis(Vector3.BACK,-drive.steering*2.3)
 		update_outboards(delta)
 		boat.rotation.y += drive.yaw_rate()*delta
 		var next = boat.position - boat.basis.z * speed * delta
@@ -374,12 +375,12 @@ func _physics_process(delta: float) -> void:
 	elif market_mode:
 		market.pose_camera(camera)
 	elif fishing_view:
-		camera.position=boat_visual.to_global(Vector3(0,1.55,-1.7))
+		camera.position=boat_visual.get_node("FishingView").global_position if boat_visual.has_node("FishingView") else boat_visual.to_global(Vector3(0,1.55,-1.7))
 		var forward=-boat.basis.z
 		var view_target=camera.position+forward*12+Vector3(0,-0.6,0)
 		camera.look_at(view_target)
 	elif first_person_driving:
-		camera.position=boat_visual.to_global(Vector3(0.53,1.30,1.37))
+		camera.position=boat_visual.get_node("DrivingView").global_position if boat_visual.has_node("DrivingView") else boat_visual.to_global(Vector3(0.53,1.30,1.37))
 		camera.look_at(boat.position-boat.basis.z*35+Vector3(0,1.13,0))
 	else:
 		var desired = boat.position + boat.basis.z * 12 + Vector3(0, 7, 0)
@@ -393,7 +394,7 @@ func _physics_process(delta: float) -> void:
 		var wheel_node=boat_visual.get_node("HelmWheel")
 		var wheel_edge=camera.unproject_position(wheel_node.global_position+camera.global_basis.x*wheel_node.global_basis.x.length()*0.18)
 		driving_controls.pov_wheel_radius=maxf(87,(transform*wheel_edge).distance_to(driving_controls.pov_wheel))
-		driving_controls.pov_lever=transform*camera.unproject_position(boat_visual.get_node("ThrottleLever").global_position)
+		# The POV touch throttle stays docked inside the screen during waves and turns.
 	feedback.update_feedback(delta, fishing_view and not market_mode, pulling, tension if fishing else 0.0, line_target())
 	interface.refresh()
 
@@ -636,7 +637,7 @@ func load_trip() -> void:
 			equipped.Rods = "island_rod"
 		owned_boats=["dinghy"]
 		for id in parsed.get("owned_boats",[]):
-			if id in ["skiff","runner","launch"] and id not in owned_boats:
+			if Catalog.item(str(id)).get("category")=="Boats" and id not in owned_boats:
 				owned_boats.append(id)
 		equipped_boat=str(parsed.get("equipped_boat","dinghy"))
 		if equipped_boat not in owned_boats:
@@ -784,7 +785,8 @@ func update_outboards(delta: float) -> void:
 			var motor=boat_visual.get_node(node_name)
 			motor.rotation.y=lerpf(motor.rotation.y,drive.steering*0.52,1-exp(-delta*7))
 			motor.get_node("Propeller").rotation.z+=delta*drive.rpm*35*drive.gear*(1 if drive.engine_running else 0)
-	boat_visual.get_node("ThrottleLever").rotation.x=driving_controls.lever_value*0.8
+	var lever=boat_visual.get_node("ThrottleLever") as Node3D
+	lever.basis=lever.get_meta("rest_basis",Basis.IDENTITY)*Basis(Vector3.RIGHT,driving_controls.lever_value*0.8*lever.get_meta("travel_direction",1.0))
 	if boat_visual.has_node("ThrottleLever2"):
 		boat_visual.get_node("ThrottleLever2").rotation.x=driving_controls.lever_value*0.8
 

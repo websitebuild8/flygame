@@ -39,6 +39,8 @@ workflows:
         script: |
           set -eu
           /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/fish_checks.gd
+          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/species_market_checks.gd
+          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/boat_model_checks.gd
 
   android-test:
     name: Ishaq's Fishing Trip - Android test APK
@@ -63,7 +65,7 @@ workflows:
           GODOT=/tmp/ishaq-android-godot/Godot.app/Contents/MacOS/Godot
           "$GODOT" --headless --path "$CM_BUILD_DIR" --script res://tools/check-mobile-config.gd
           "$GODOT" --headless --path "$CM_BUILD_DIR" --editor --import --quit
-          for suite in trip_smoke helm_checks gear_checks ocean_checks fish_checks; do
+          for suite in trip_smoke helm_checks gear_checks ocean_checks fish_checks species_market_checks boat_model_checks; do
             "$GODOT" --headless --path "$CM_BUILD_DIR" --script "res://tests/${suite}.gd"
           done
       - name: Export installable Android APK
@@ -113,7 +115,7 @@ workflows:
           export IOS_BUILD_NUMBER="${IOS_BUILD_NUMBER:-$((PROJECT_BUILD_NUMBER + 1))}"
           "$GODOT" --headless --path "$CM_BUILD_DIR" --script res://tools/prepare-ios.gd
           "$GODOT" --headless --path "$CM_BUILD_DIR" --editor --import --quit
-          for suite in trip_smoke helm_checks gear_checks ocean_checks fish_checks; do
+          for suite in trip_smoke helm_checks gear_checks ocean_checks fish_checks species_market_checks boat_model_checks; do
             "$GODOT" --headless --path "$CM_BUILD_DIR" --script "res://tests/${suite}.gd"
           done
       - name: Export Xcode project
