@@ -112,7 +112,9 @@ workflows:
           set -eu
           cd "$CM_BUILD_DIR"
           GODOT=/tmp/ishaq-ios-godot/Godot.app/Contents/MacOS/Godot
-          export IOS_BUILD_NUMBER="${IOS_BUILD_NUMBER:-$((PROJECT_BUILD_NUMBER + 1))}"
+          NEXT_IOS_BUILD=$((PROJECT_BUILD_NUMBER + 1))
+          if [ "$NEXT_IOS_BUILD" -lt 14 ]; then NEXT_IOS_BUILD=14; fi
+          export IOS_BUILD_NUMBER="${IOS_BUILD_NUMBER:-$NEXT_IOS_BUILD}"
           "$GODOT" --headless --path "$CM_BUILD_DIR" --script res://tools/prepare-ios.gd
           "$GODOT" --headless --path "$CM_BUILD_DIR" --editor --import --quit
           for suite in trip_smoke helm_checks gear_checks ocean_checks fish_checks species_market_checks boat_model_checks; do

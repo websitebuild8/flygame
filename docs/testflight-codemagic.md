@@ -64,12 +64,13 @@ App Store review submission is also disabled.
 ## Versions and device settings
 
 - App version: `0.1.0`, in the iOS export preset.
-- Build number: automatically `PROJECT_BUILD_NUMBER + 1` in Codemagic.
+- Build number: automatically `PROJECT_BUILD_NUMBER + 1` in Codemagic, with a
+  minimum of 14 following the accepted build 13. The local preset uses build 14.
 - If a higher build already exists on Apple, add `IOS_BUILD_NUMBER` to the
   `ios_testflight` variable group with a higher unused integer for that run.
   Remove the override afterward when the Codemagic counter has caught up, or
   keep increasing it explicitly. Every upload must use a new build number.
-- Native arm64 iPhone build, iOS 14+, landscape from the game project settings.
+- Native arm64 iPhone build, iOS 15+, landscape from the game project settings.
 - The committed 1024px icon artwork is `assets/icons/ios-app-icon.png`. The
   preparation script validates its dimensions/opacity and writes the build icon.
   Godot generates the required iPhone icon sizes from it.
