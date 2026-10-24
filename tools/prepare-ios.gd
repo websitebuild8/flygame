@@ -28,11 +28,13 @@ func _initialize() -> void:
 	if preset.save("res://export_presets.cfg")!=OK:
 		fail("Could not save iOS export settings.")
 		return
-	# Original opaque icon. Godot generates all required iPhone icon sizes from it.
-	var svg='<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#073e52"/><circle cx="512" cy="512" r="407" fill="#126b79"/><path d="M190 520 Q420 220 733 498 L870 365 L850 645 L729 552 Q420 815 190 520Z" fill="#d8f2ed"/><path d="M420 350 L535 240 L597 350 M416 671 L530 752 L582 660" fill="#54d1bc"/><circle cx="291" cy="493" r="28" fill="#073e52"/><path d="M240 833 Q510 720 790 833" fill="none" stroke="#54d1bc" stroke-width="20"/></svg>'
+	# Load the committed artwork directly, before the CI asset-import step.
 	var image=Image.new()
-	if image.load_svg_from_string(svg)!=OK:
-		fail("Could not generate iOS icon.")
+	if image.load("res://assets/icons/ios-app-icon.png")!=OK:
+		fail("Missing iOS artwork: assets/icons/ios-app-icon.png")
+		return
+	if image.get_width()!=1024 or image.get_height()!=1024 or image.is_invisible() or image.detect_alpha():
+		fail("The iOS icon must be an opaque 1024 by 1024 PNG.")
 		return
 	image.convert(Image.FORMAT_RGB8)
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://build"))

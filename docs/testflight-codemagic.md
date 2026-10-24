@@ -1,6 +1,6 @@
 # iPhone TestFlight build with Codemagic
 
-The `ios-testflight` workflow exports this Godot project, runs the five gameplay
+The `ios-testflight` workflow exports this Godot project, runs the seven gameplay
 checks, signs a Release IPA and uploads it to App Store Connect. It does not
 submit a public App Store release or automatically invite testers. First cloud
 build/signing/upload is still to be verified on your Apple account.
@@ -70,8 +70,12 @@ App Store review submission is also disabled.
   Remove the override afterward when the Codemagic counter has caught up, or
   keep increasing it explicitly. Every upload must use a new build number.
 - Native arm64 iPhone build, iOS 14+, landscape from the game project settings.
-- An original opaque fish icon is generated at 1024px before export. Godot
-  generates the required iPhone icon sizes from it.
+- The committed 1024px icon artwork is `assets/icons/ios-app-icon.png`. The
+  preparation script validates its dimensions/opacity and writes the build icon.
+  Godot generates the required iPhone icon sizes from it.
+- The icon uploads inside the signed app build. Push the artwork and preparation
+  script, run `ios-testflight`, then check the processed build in App Store
+  Connect. There is no separate icon-upload step for this iOS app.
 - Godot only exports the Xcode project; Codemagic applies signing and archives it.
   Godot export alone does not produce the signed IPA in this workflow.
 - No extra Blender, mesh optimisation or Python image packages are needed on CI.
