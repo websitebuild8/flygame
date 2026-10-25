@@ -38,6 +38,10 @@ var action_stack: VBoxContainer
 var preview_card: PanelContainer
 var travel_box: PanelContainer
 var gauge_panel: PanelContainer
+var fight_gauge: Control
+var reel_ring: Control
+var reel_swipe=0.0
+var swipe_pointer=-1
 const INK = Color("102633")
 const WHITE = Color("edf5f2")
 const MUTED = Color("a6c0c7")
@@ -165,6 +169,13 @@ func build(owner_game: Node3D) -> void:
 		game.fishing_meters.add_child(meter)
 		if game.tension_bar==null: game.tension_bar=meter
 		else: game.landing_bar=meter
+	fight_gauge=preload("res://scripts/fishing_gauge.gd").new()
+	fight_gauge.game=game
+	fight_gauge.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	stage.add_child(fight_gauge)
+	fight_gauge.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	fight_gauge.offset_left=-180;fight_gauge.offset_right=180
+	fight_gauge.offset_top=85;fight_gauge.offset_bottom=295
 	game.driving_controls=preload("res://scripts/helm_controls.gd").new()
 	stage.add_child(game.driving_controls)
 	game.driving_controls.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
@@ -181,18 +192,27 @@ func build(owner_game: Node3D) -> void:
 	actions.offset_top=-250
 	actions.offset_bottom=0
 	game.fish_button=action(actions,"Start fishing",func(): pass,true)
+	reel_ring=preload("res://scripts/reel_control_ring.gd").new()
+	reel_ring.game=game
+	reel_ring.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	game.fish_button.add_child(reel_ring)
+	reel_ring.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	cast_normal=game.fish_button.get_theme_stylebox("normal").duplicate()
 	cast_pressed=game.fish_button.get_theme_stylebox("pressed").duplicate()
-	cast_round=panel_style(Color(0.80,0.62,0.32,0.55),80)
-	cast_round.set_border_width_all(4)
+	cast_round=panel_style(Color.TRANSPARENT,80)
+	cast_round.set_border_width_all(0)
+	cast_round.shadow_size=0
+	cast_round.shadow_color=Color.TRANSPARENT
 	cast_round.border_color=Color("f8dfb0")
 	cast_round_pressed=cast_round.duplicate()
-	cast_round_pressed.bg_color=Color(0.8,0.55,0.2,0.7)
+	cast_round_pressed.bg_color=Color.TRANSPARENT
 	game.fish_button.button_down.connect(func():
+		reel_swipe=0
 		if not game.fishing: game.cast()
 		game.reeling=true
 	)
 	game.fish_button.button_up.connect(func(): game.reeling=false)
+	game.fish_button.gui_input.connect(reel_gesture)
 	put_fish_button=action(actions,"Put fish on boat",game.put_fish_on_boat,true)
 	var navigation=HBoxContainer.new()
 	navigation.add_theme_constant_override("separation",8)
@@ -329,6 +349,8 @@ func build_menu() -> void:
 	credits.add_theme_font_size_override("normal_font_size",13)
 	credits.text+="\n\nSkipjack Tuna by [url=https://sketchfab.com/3d-models/cc0-skipjack-tuna-katsuwonus-pelamis-9431157b2fce4ea9a72d9cfe3ce37a6d]ffish.asia / floraZia.com[/url] · CC0\nAdapted: scan reduction, alignment and swimming.\n\nSailfish by [url=https://sketchfab.com/3d-models/sailfish-78249838285d4f67a24c3832464c37ae]RED SIDE[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: geometry reduction, materials, alignment and swimming.\n\nCoryphaena hippurus by [url=https://randibu.itch.io/3dfish]Randibu[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: FBX conversion, 1k texture, alignment, wet material and swimming."
 	credits.text+="\n\n2004 17-foot Scout, 285 Conquest Boston Whaler, Freedom 325 Grady White and Glacier Bay by [url=https://sketchfab.com/boatusfoundation]BoatUS Foundation[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: mesh optimisation, trailer removal, wheel/throttle/outboard pivots, camera mounts and game integration. Manufacturers do not endorse this game."
+	credits.text+="\n\nHand With Gloves by [url=https://sketchfab.com/3d-models/hand-with-gloves-5a6a434b8ec943ffacc581358781eecb]JUST (@teenjust500)[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: finger poses, fishing grips and two arm IK chains. Authored rod blank by Ergin ERYILDIR: live geometry alignment, bending material and right-hand reel conversion."
+	credits.text+="\n\nMarket customers: [url=https://quaternius.com/packs/ultimatemodularcharacters.html]Quaternius Ultimate Modular Men[/url] · CC0 1.0. Adapted: retained idle/walk/interact clips, GLB packing, scale and clothing colours.\nCash register: [url=https://kenney.nl/assets/mini-market]Kenney Mini Market[/url] · CC0 1.0.\nMVR 100 specimen artwork: [url=https://www.mma.gov.mv/Public%20Education/currency/RDF%20book/RDF%20booklet.pdf]Maldives Monetary Authority, Ran Dhihafaheh booklet[/url], page 13. Used as an in-game payment prop; not covered by the CC0 model licences."
 	credits.meta_clicked.connect(func(url): OS.shell_open(str(url)))
 	column.add_child(credits)
 	menu.visible = false
@@ -338,7 +360,7 @@ func build_catch() -> void:
 	game.catch_overlay.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	game.catch_overlay.offset_left = -440
 	game.catch_overlay.offset_right = -30
-	game.catch_overlay.offset_top = -250
+	game.catch_overlay.offset_top = -310
 	game.catch_overlay.offset_bottom = -28
 	game.catch_overlay.add_theme_stylebox_override("panel",panel_style(Color(0.025,0.085,0.12,0.97),24))
 	add_child(game.catch_overlay)
@@ -441,7 +463,7 @@ func refresh() -> void:
 		action_stack.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 		action_stack.offset_left=-255
 		action_stack.offset_right=-10
-		action_stack.offset_top=-250
+		action_stack.offset_top=-280
 	elif game.first_person_driving and driving:
 		action_stack.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 		action_stack.offset_left=0
@@ -451,8 +473,8 @@ func refresh() -> void:
 		action_stack.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 		action_stack.offset_left=-210
 		action_stack.offset_right=210
-		action_stack.offset_top=-250
-	travel_box.visible=not game.shop_mode and not game.market_mode
+		action_stack.offset_top=-280
+	travel_box.visible=not game.shop_mode and not game.market_mode and not game.fishing_view
 	map_button.visible=not game.shop_mode and not game.market_mode
 	camera_button.visible=driving
 	camera_button.text="External" if game.first_person_driving else "POV"
@@ -471,25 +493,34 @@ func refresh() -> void:
 			customer_label.text+="Your icebox is empty."
 		game.market.set_species(str(game.inventory[0].species) if not game.inventory.is_empty() else "Yellowfin tuna")
 		game.market.set_sale(not game.inventory.is_empty(),game.pending_payment>0)
+		game.market.register_total.text="MVR %d" % (game.pending_payment if game.pending_payment>0 else (int(game.inventory[0].value) if not game.inventory.is_empty() else 0))
 		game.market_action.disabled = game.market.queue_moving or game.market.handing_over or (game.inventory.is_empty() and game.pending_payment==0)
 		game.market_action.text = "Collect MVR %d" % game.pending_payment if game.pending_payment>0 else "Serve next customer"
 		if game.inventory.is_empty() and game.pending_payment==0:
 			game.market_action.text = "Icebox empty"
 	game.fishing_meters.visible = game.fishing
-	gauge_panel.visible=game.fishing
+	gauge_panel.visible=false
+	fight_gauge.visible=game.fishing and game.bite_announced
+	fight_gauge.queue_redraw()
+	reel_ring.queue_redraw()
 	game.tension_bar.value = game.tension*100
 	game.tension_bar.modulate = Color("f19b83") if game.tension>0.75 else WHITE
 	game.landing_bar.value = game.progress*100
 	var mode = "fishing" if game.fishing_view else "driving"
 	if mode!=mode_before:
 		mode_before = mode
-		game.fish_button.custom_minimum_size = Vector2(158,158) if game.fishing_view else Vector2(0,54)
+		game.fish_button.custom_minimum_size = Vector2(182,182) if game.fishing_view else Vector2(0,54)
 		game.fish_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER if game.fishing_view else Control.SIZE_EXPAND_FILL
+		game.fish_button.add_theme_color_override("font_color",Color.TRANSPARENT if game.fishing_view else WHITE)
+		game.fish_button.add_theme_color_override("font_hover_color",Color.TRANSPARENT if game.fishing_view else WHITE)
+		game.fish_button.add_theme_color_override("font_pressed_color",Color.TRANSPARENT if game.fishing_view else WHITE)
 		game.fish_button.add_theme_stylebox_override("normal",cast_round if game.fishing_view else cast_normal)
 		game.fish_button.add_theme_stylebox_override("hover",cast_round if game.fishing_view else cast_normal)
 		game.fish_button.add_theme_stylebox_override("pressed",cast_round_pressed if game.fishing_view else cast_pressed)
+		game.fish_button.add_theme_stylebox_override("focus",StyleBoxEmpty.new() if game.fishing_view else panel_style(Color.TRANSPARENT,18))
+		game.fish_button.add_theme_stylebox_override("disabled",cast_round if game.fishing_view else cast_normal)
 	if game.fishing:
-		game.fish_button.text = "REEL IN" if game.fish_timer>=2.5 else "WAIT…"
+		game.fish_button.text = ("HOOK" if not game.fight.hooked else ("REEL IN\n↑ POWER" if game.fight.power_charge>=1 else "REEL IN")) if game.fish_timer>=2.5 else "WAIT…"
 	else:
 		game.fish_button.text = ("DROP JIG" if game.feedback.overhead else "CAST") if game.fishing_view else ("Start fishing" if at_spot else "%s · %d m" % [nearest.name,spot_distance])
 	game.info.text = "MVR %d  /  %d fish  /  %s" % [game.coins,game.inventory.size(),game.World.vessel(game.equipped_boat).name]
@@ -501,6 +532,8 @@ func refresh() -> void:
 	game.hint_label.visible = not game.shop_mode
 	game.status.text = game.message
 	game.hint_label.text = "Hold to reel. Release to ease tension." if game.fishing_view else "Drag the wheel · slide the throttle"
+	if game.fishing and game.bite_announced and not game.fight.hooked:game.hint_label.text="Tap HOOK in the green zone"
+	if game.fishing and game.fight.power_charge>=1:game.hint_label.text="Swipe up on reel · R on keyboard"
 	if game.market_mode:
 		game.hint_label.text="Fresh catch. Fair trade."
 	clock_label.text="%s  ·  %s" % [game.day_cycle.clock_text(),game.day_cycle.weather_name()]
@@ -515,6 +548,18 @@ func refresh() -> void:
 		route_label.text="%s · %d m\n%s" % [nav.destination_name,nav.remaining(Vector2(game.boat.position.x,game.boat.position.z)),course]
 	else:
 		route_label.text="Open the chart to plan your trip"
+
+func reel_gesture(event: InputEvent) -> void:
+	if event is InputEventScreenTouch:
+		if event.pressed and swipe_pointer<0:swipe_pointer=event.index
+		elif not event.pressed and event.index==swipe_pointer:swipe_pointer=-1;reel_swipe=0
+	if event is InputEventScreenDrag and event.index==swipe_pointer:
+		reel_swipe-=event.relative.y
+	elif event is InputEventMouseMotion and event.button_mask&MOUSE_BUTTON_MASK_LEFT:
+		reel_swipe-=event.relative.y
+	if reel_swipe>65:
+		game.power_reel()
+		reel_swipe=0
 
 func build_shop() -> void:
 	shop_panel = PanelContainer.new()

@@ -1,0 +1,5 @@
+Hand With Gloves by JUST (@teenjust500)
+https://sketchfab.com/3d-models/hand-with-gloves-5a6a434b8ec943ffacc581358781eecb
+Creative Commons Attribution 4.0 International
+https://creativecommons.org/licenses/by/4.0/
+Authored glove/sleeve geometry and 1k textures retained. Runtime camera/controllers hidden; fingers posed for fishing, arm targets animated for left grip/right winding.

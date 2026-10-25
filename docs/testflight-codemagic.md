@@ -1,6 +1,6 @@
 # iPhone TestFlight build with Codemagic
 
-The `ios-testflight` workflow exports this Godot project, runs the seven gameplay
+The `ios-testflight` workflow exports this Godot project, runs the ten gameplay
 checks, signs a Release IPA and uploads it to App Store Connect. It does not
 submit a public App Store release or automatically invite testers. First cloud
 build/signing/upload is still to be verified on your Apple account.

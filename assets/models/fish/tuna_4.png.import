@@ -3,9 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://itko5b1gbeai"
-path="res://.godot/imported/tuna_4.png-d5590e250c101216c1c5f77c0da2a10e.ctex"
+path.s3tc="res://.godot/imported/tuna_4.png-d5590e250c101216c1c5f77c0da2a10e.s3tc.ctex"
+path.etc2="res://.godot/imported/tuna_4.png-d5590e250c101216c1c5f77c0da2a10e.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "40d0db66dc8dff32ea78285af8d79e2d"
@@ -14,11 +16,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/fish/tuna_4.png"
-dest_files=["res://.godot/imported/tuna_4.png-d5590e250c101216c1c5f77c0da2a10e.ctex"]
+dest_files=["res://.godot/imported/tuna_4.png-d5590e250c101216c1c5f77c0da2a10e.s3tc.ctex", "res://.godot/imported/tuna_4.png-d5590e250c101216c1c5f77c0da2a10e.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +42,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

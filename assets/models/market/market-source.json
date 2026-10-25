@@ -1,0 +1,34 @@
+{
+  "register": {
+    "creator": "Kenney",
+    "url": "https://kenney.nl/assets/mini-market",
+    "license": "CC0 1.0"
+  },
+  "currency": {
+    "creator": "Maldives Monetary Authority",
+    "url": "https://www.mma.gov.mv/Public%20Education/currency/RDF%20book/RDF%20booklet.pdf",
+    "page": 13,
+    "description": "Official educational specimen images of the 2015 MVR 100 note, extracted for an in-game payment prop. Original serial A000000 retained. Banknote artwork is not covered by the model CC0 license."
+  },
+  "customers": {
+    "creator": "Quaternius",
+    "url": "https://quaternius.com/packs/ultimatemodularcharacters.html",
+    "download_mirror": "https://github.com/agentkaerf/FreeModels/tree/db3df04d1e4714298a09510b26fb6de6645138a2/Ultimate%20Modular%20Men-%20Feb%202022",
+    "license": "CC0 1.0",
+    "models": [
+      "Beach",
+      "Casual_2",
+      "Worker"
+    ],
+    "changes": "Retained idle/walk/interact clips; merged skinned mesh surfaces with baked vertex colours and a clothing tint mask; removed unused animation data; packed as GLB; game scale and orientation."
+  },
+  "files": {
+    "cash_register.glb": "155f2eb666dea3a931d133a4953379898c8adb4b827ab60b86cae07235b9b598",
+    "customer_casual.glb": "8d49fe7d1a286d9e4b145a8f3a77cf4dc91f8a194208ce7c8cd74ea33f595b7f",
+    "mvr100_front.png": "ce674467e1372cd7f874eead7157b741c18ac2c525cc4a95a8c68efae2fb5a07",
+    "mvr100_back.png": "523e6fc567ba91aafd80b815aaa511d36e0916049a61f9e778fdb3227fd3b8dd",
+    "customer_worker.glb": "c60536a0be16e48f117487578ae294a62eb6988427b0f0dbdf819c9c43c7b4d8",
+    "customer_beach.glb": "4cb806952be7e697b8dc68750b3e364122545eb1eeeb16d6691c2ad153478aeb",
+    "Textures/colormap.png": "0d4947d34ff32acf4a359c7f22ca784e057e7e72f622170a9a77b6fc88fdb70e"
+  }
+}

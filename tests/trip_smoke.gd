@@ -23,6 +23,8 @@ func run_checks() -> void:
 	game.upgrade = 0
 	game.boat.position = game.SPOT
 	game.speed = 0
+	# Catch weights/prices vary; keep this market/upgrade scenario reproducible.
+	game.rng.seed = 731
 	game.cast()
 	check(game.fishing and game.fishing_view,"Casting enters first-person fishing")
 	game.fish_timer = 3

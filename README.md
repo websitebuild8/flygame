@@ -233,3 +233,9 @@ The earlier Sketchfab “Ryba mahi mahi” scan was rejected after visual inspec
 The existing skiff and launch upgrades now use BoatUS Foundation’s Scout 17 Centre Console and Boston Whaler 285 Conquest models (CC BY 4.0), with detailed consoles/cabin, independent steering wheels, throttles, original outboards/props, and individual driving/fishing cameras. Existing purchases and saves keep their IDs and game stats. See [model sources and preparation](docs/real-boat-models.md).
 
 Glacier Bay and Grady-White Freedom 325 are additional BoatUS Foundation CC BY 4.0 boat upgrades with original 3D cockpit hardware, twin outboards and per-boat helm skins. Unlock at 22/30 catches for MVR 4,200/6,000 respectively; ownership persists in saves. See [real boat models](docs/real-boat-models.md).
+
+Fishing now includes timed hook strikes, crank-linked gloved hands, a curved tension gauge, swipe-up power reeling (R on keyboard), camera response and individually weighted/priced MVR catches. See [fishing reference adaptation](docs/fishing-gameplay-reference.md).
+
+The fishing line runs from the spool/pickup through all four bent rod guides to the fish. POV helm hands grip the physical wheel and throttle on all six boats; POV steering retains its angle when released. `tests/line_helm_checks.gd` verifies the new line and hand-contact paths and runs in all Codemagic workflows.
+
+Kelaa market now uses animated Quaternius customers, a Kenney register showing the sale total, authored gloved seller hands, and a two-sided MVR 100 specimen payment texture extracted from MMA's currency booklet. Asset sources and licences are in `assets/models/market/`; `tests/market_art_checks.gd` checks the updated scene and preserves exact MVR payment amounts.

@@ -4,6 +4,10 @@ var customers: Array[Node3D] = []
 var displayed_fish: Node3D
 var payment: MeshInstance3D
 var serve_motion = 0.0
+var cash_motion=0.0
+var seller_hands: Node3D
+var register: Node3D
+var register_total: Label3D
 var queue_moving = false
 var customer_number = 0
 var handing_over = false
@@ -36,33 +40,65 @@ func _ready() -> void:
 		Art.block(self,Vector3(x,0.35,-2),Vector3(1.2,0.7,0.8),Color("ad8453"))
 		Art.fish(self,0.4).position = Vector3(x,0.76,-2)
 	for i in range(5):
-		var person = Art.customer(self,i)
+		var person=preload("res://scripts/market_customer.gd").new();person.variation=i;add_child(person)
 		person.position = queue_spot(i)
 		customers.append(person)
-	payment = Art.block(self,Vector3(0.8,1.28,0.05),Vector3(0.35,0.025,0.18),Color("82bc7c"))
+	payment=make_banknote()
+	add_child(payment);payment.position=Vector3(.12,1.242,.12);payment.rotation.y=-.15
 	payment.visible = false
-	displayed_fish = Art.fish(self,0.65)
-	displayed_fish.position = Vector3(-0.5,1.43,0.1)
+	displayed_fish = Art.fish(self,0.50)
+	displayed_fish.position = Vector3(0.0,1.36,0.1)
 	displayed_fish.rotation.y = PI/2
-	# Seller's forearms are visible at the counter from the first-person camera.
-	for side in [-1,1]:
-		Art.pole(self,Vector3(side*0.65,1,1.5),Vector3(side*0.55,1.3,0.65),0.085,Color("d6dfca"))
-		Art.oval(self,Vector3(side*0.55,1.3,0.58),Vector3(0.16,0.12,0.25),Color("ac7c58"))
+	register=preload("res://assets/models/market/cash_register.glb").instantiate();add_child(register)
+	register.name="CashRegister";register.set_meta("imported_model",true)
+	var bounds=AABB();var first=true
+	for mesh in register.find_children("*","MeshInstance3D",true,false):
+		var box=(register.global_transform.affine_inverse()*mesh.global_transform)*mesh.get_aabb()
+		bounds=box if first else bounds.merge(box);first=false
+	var factor=.65/maxf(bounds.size.x,.01)
+	register.scale*=factor
+	register.rotation.y=PI
+	register.position=Vector3(-.92,1.225,0)-register.basis*Vector3(bounds.get_center().x,bounds.position.y,bounds.get_center().z)
+	register_total=Art.label(self,"MVR 0",Vector3(-.835,1.685,.23),22)
+	register_total.pixel_size=.00105
+
+func make_banknote() -> MeshInstance3D:
+	var note=MeshInstance3D.new();note.name="MVR100Payment";note.set_meta("denomination",100)
+	var mesh=ArrayMesh.new()
+	for side in range(2):
+		var a=[];a.resize(Mesh.ARRAY_MAX)
+		var y=.001 if side==0 else 0.0
+		a[Mesh.ARRAY_VERTEX]=PackedVector3Array([Vector3(-.175,y,-.0815),Vector3(.175,y,-.0815),Vector3(.175,y,.0815),Vector3(-.175,y,.0815)])
+		a[Mesh.ARRAY_NORMAL]=PackedVector3Array([Vector3.UP if side==0 else Vector3.DOWN,Vector3.UP if side==0 else Vector3.DOWN,Vector3.UP if side==0 else Vector3.DOWN,Vector3.UP if side==0 else Vector3.DOWN])
+		a[Mesh.ARRAY_TEX_UV]=PackedVector2Array([Vector2(0,0),Vector2(1,0),Vector2(1,1),Vector2(0,1)])
+		a[Mesh.ARRAY_INDEX]=PackedInt32Array([0,2,1,0,3,2] if side==0 else [0,1,2,0,2,3])
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES,a)
+		var mat=StandardMaterial3D.new();mat.albedo_texture=preload("res://assets/models/market/mvr100_front.png") if side==0 else preload("res://assets/models/market/mvr100_back.png")
+		mat.roughness=.85;mesh.surface_set_material(side,mat)
+	note.mesh=mesh
+	return note
 
 func queue_spot(index: int) -> Vector3:
 	return Vector3(minf(index*0.8,2.8),0,-1.8-index*0.7)
 
 func pose_camera(camera: Camera3D) -> void:
-	camera.position = global_position + Vector3(0,2.1,2.7)
+	camera.position = global_position + Vector3(0,1.85,1.35)
 	camera.look_at(global_position+Vector3(0,1.4,-1.5))
+
+func update_hands(camera: Camera3D,active: bool):
+	if active and not seller_hands:
+		seller_hands=preload("res://scripts/market_hands.gd").new();camera.add_child(seller_hands)
+	if seller_hands:
+		seller_hands.visible=active
+		if active:seller_hands.update_pose(self)
 
 func set_species(species: String) -> void:
 	if species==shown_species or handing_over:
 		return
 	shown_species = species
 	displayed_fish.queue_free()
-	displayed_fish = Art.fish(self,0.65,species)
-	displayed_fish.position = Vector3(-0.5,1.43,0.1)
+	displayed_fish = Art.fish(self,0.50,species)
+	displayed_fish.position = Vector3(0.0,1.36,0.1)
 	displayed_fish.rotation.y = PI/2
 
 func set_sale(has_fish: bool, waiting_payment: bool) -> void:
@@ -71,6 +107,7 @@ func set_sale(has_fish: bool, waiting_payment: bool) -> void:
 
 func hand_over() -> void:
 	handing_over = true
+	var reach=create_tween();reach.tween_property(self,"serve_motion",1.0,.18);reach.tween_property(self,"serve_motion",0.0,.25)
 	var tween = create_tween()
 	tween.tween_property(displayed_fish,"position:z",-1.1,0.35)
 	tween.tween_callback(func():
@@ -80,6 +117,7 @@ func hand_over() -> void:
 	)
 
 func collect_cash() -> void:
+	var reach=create_tween();reach.tween_property(self,"cash_motion",1.0,.16);reach.tween_property(self,"cash_motion",0.0,.30)
 	var cash = payment.duplicate() as MeshInstance3D
 	add_child(cash)
 	cash.visible = true
@@ -91,7 +129,9 @@ func advance_queue() -> void:
 	if queue_moving:
 		return
 	queue_moving = true
+	for person in customers:person.set_walking(true)
 	var first = customers.pop_front()
+	first.rotation.y=PI/2
 	var tween = create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(first,"position",Vector3(4,0,-1.5),0.7)
@@ -100,10 +140,11 @@ func advance_queue() -> void:
 	tween.chain().tween_callback(func():
 		first.position = queue_spot(4)
 		customers.append(first)
+		for person in customers:person.rotation.y=0;person.set_walking(false)
 		queue_moving = false
 		customer_number += 1
 	)
 
 func animate(time: float) -> void:
 	for i in range(customers.size()):
-		customers[i].rotation.z = sin(time*1.5+i)*0.012
+		customers[i].rotation.z = sin(time*1.5+i)*0.004

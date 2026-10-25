@@ -79,11 +79,12 @@ static func reel(parent: Node3D, kind: String, model: String = "island_reel") ->
 			Art.pole(rotor,Vector3(side*0.12,0,-0.02),Vector3(side*0.08,0,0.07),0.012,dark)
 	var crank = Node3D.new()
 	root.add_child(crank)
-	crank.position = Vector3(0.18,0,0.04) if kind=="overhead" else Vector3(-0.12,-0.02,0.05)
-	var side = 1 if kind=="overhead" else -1
+	crank.position = Vector3(0.18,0,0.04) if kind=="overhead" else Vector3(0.12,-0.02,0.05)
+	var side = 1
 	Art.pole(crank,Vector3.ZERO,Vector3(side*0.03,-0.13,0),0.012,silver)
 	Art.pole(crank,Vector3(side*0.03,-0.13,0),Vector3(side*0.10,-0.13,0),0.014,gold)
 	Art.oval(crank,Vector3(side*0.11,-0.13,0),Vector3(0.07,0.075,0.12),dark)
+	crank.set_meta("grip_point",Vector3(side*.11,-.13,0))
 	for i in range(8):
 		if kind=="overhead":
 			ring(rotor,Vector3(-0.085+i*0.024,0,0),0.083,0.0015,line_color.lightened(0.15),Vector3.RIGHT)
@@ -93,6 +94,13 @@ static func reel(parent: Node3D, kind: String, model: String = "island_reel") ->
 	root.set_meta("rotor",rotor)
 	root.set_meta("spool",spool)
 	root.set_meta("kind",kind)
+	root.set_meta("right_hand_retrieve",true)
+	var lip=Marker3D.new();lip.name="SpoolLip";root.add_child(lip)
+	lip.position=Vector3(0,.08,-.07) if kind=="overhead" else Vector3(0,.08,-.16)
+	root.set_meta("spool_lip",lip)
+	if kind=="spinning":
+		var roller=Marker3D.new();roller.name="LineRoller";rotor.add_child(roller);roller.position=Vector3(.12,0,-.02)
+		root.set_meta("line_roller",roller)
 	return root
 
 static func rod(parent: Node3D, kind: String, reel_id: String, rod_id: String, braided: bool) -> Node3D:
@@ -100,20 +108,19 @@ static func rod(parent: Node3D, kind: String, reel_id: String, rod_id: String, b
 	parent.add_child(root)
 	var segments: Array[MeshInstance3D] = []
 	var rod_color={"island_rod":Color("237b99"),"grappler":Color("613c8f"),"offshore_rod":Color("b9523c")}.get(rod_id,Color("2b7665"))
-	Art.pole(root,Vector3(0,-0.04,0.38),Vector3(0,0.10,-0.05),0.035,Color("233640"))
-	for i in range(4):
-		ring(root,Vector3(0,0.03-i*0.025,0.12+i*0.06),0.034,0.003,Color("b39c60"),Vector3(0,0.14,-0.43).normalized())
-	for i in range(9):
-		var start = Vector3(0,0.1+i*0.13,-i*0.22)
-		var end = start+Vector3(0,0.13,-0.22)
-		var segment = Art.pole(root,start,end,0.014-i*0.0011,rod_color)
-		segments.append(segment)
-		var wrap=ring(segment,Vector3(0,0.06,0),0.015-i*0.0011,0.002,Color("d9ad54"))
-		wrap.name="ThreadWrap"
-		var guide = ring(segment,Vector3(0,0.1,0.018),0.022-i*0.0015,0.0025,Color("aebdbe"))
-		guide.name = "Guide"
+	var blank=preload("res://scripts/imported_tackle.gd").live_blank(root,rod_id)
+	for surface in range(blank.mesh.get_surface_count()):
+		(blank.get_surface_override_material(surface) as ShaderMaterial).set_shader_parameter("overhead",kind=="overhead")
+	root.set_meta("authored_blank",blank)
 	var equipment = reel(root,kind,reel_id)
-	equipment.position = Vector3(0,0.19,-0.04) if kind=="overhead" else Vector3(0,-0.14,-0.03)
+	var rod_axis=Vector3(0,.47,-.882666).normalized()
+	var seat=Vector3(0,-.04,.38)+rod_axis*.35
+	var foot=equipment.get_meta("mount_foot",Vector3(0,-.16,0) if kind=="overhead" else Vector3(0,.19,.05)) as Vector3
+	equipment.basis=Basis(Vector3.RIGHT,atan2(rod_axis.y,-rod_axis.z))*equipment.basis
+	equipment.position=seat-equipment.basis*foot
+	equipment.set_meta("mount_foot",foot)
+	root.set_meta("reel_seat",seat)
+	for offset in [-.045,.045]:ring(root,seat+rod_axis*offset,.023,.003,Color("aebfc4"),rod_axis)
 	root.set_meta("segments",segments)
 	root.set_meta("reel",equipment)
 	root.set_meta("braided",braided)

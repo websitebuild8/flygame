@@ -22,6 +22,20 @@ var bend_amount=0.0
 var bend_velocity=0.0
 var spray: Array[CPUParticles3D]=[]
 var spray_cursor=0
+var hands: Node3D
+var routed_line_points=PackedVector3Array()
+var strike_kick=0.0
+var hook_rating=""
+var hook_rating_time=0.0
+var winding_speed=0.0
+var spool: Node3D
+var spool_rest=Vector3.ZERO
+
+func hook_feedback(quality: float) -> void:
+	strike_kick=1
+	hook_rating="PERFECT HOOK" if quality>.8 else ("GOOD HOOK" if quality>.45 else "HOOKED")
+	hook_rating_time=1.2
+	haptic(70,.65)
 
 func _ready() -> void:
 	for key in ["reel", "splash", "bite", "snap", "payment"]:
@@ -85,7 +99,10 @@ func attach_camera(camera: Camera3D) -> void:
 	camera.add_child(rig)
 	rig.position = Vector3(-0.55,-0.18,-1.25)
 	equip("island_reel","island_rod","mono")
+	hands=preload("res://scripts/fishing_hands.gd").new()
+	rig.add_child(hands)
 	line = MeshInstance3D.new()
+	line.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	line.mesh = line_mesh
 	var mat = StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -124,6 +141,8 @@ func bite_feedback() -> void:
 
 func finish(success: bool, at: Vector3) -> void:
 	reel_audio.stop()
+	line.visible=false
+	line_mesh.clear_surfaces()
 	if success:
 		splash(at)
 		haptic(100, 0.7)
@@ -136,20 +155,23 @@ func update_feedback(delta: float, active: bool, pulling: bool, tension: float, 
 	rig.visible = active
 	line.visible = active
 	cast_age += delta
+	strike_kick=maxf(0,strike_kick-delta*2.8)
+	hook_rating_time=maxf(0,hook_rating_time-delta)
 	pulse_time -= delta
 	if active:
 		var landing=get_parent().fight.landing_lift if get_parent().fishing else 0.0
-		var raise_rod=sin(minf(cast_age, 0.7) / 0.7 * PI)*0.7+landing*0.16
-		rig.rotation.x=lerpf(rig.rotation.x,raise_rod,1-exp(-delta*5))
+		var raise_rod=sin(minf(cast_age, 0.7) / 0.7 * PI)*0.6+landing*.30+strike_kick*.72
+		rig.rotation.x=lerpf(rig.rotation.x,raise_rod,1-exp(-delta*(18 if strike_kick>.2 else 5)))
 		var local=rig.get_parent().to_local(target)
-		var aim=clampf(atan2(-local.x,-local.z),-0.4,0.4)
+		var aim=clampf(atan2(-local.x,-local.z),-0.5,0.5)
 		rig.rotation.y=lerpf(rig.rotation.y,aim,1-exp(-delta*4))
 		var desired=0.12+tension*0.78+landing*0.55 if get_parent().bite_announced else 0.0
 		var dt=minf(delta,0.04)
 		bend_velocity+=((desired-bend_amount)*65-bend_velocity*14)*dt
 		bend_amount=clampf(bend_amount+bend_velocity*dt,0,1)
-		var pump=sin(cast_age*3.4)*(0.018+0.055*tension)*(1-landing*0.7)
-		rig.position=Vector3(-0.55,-0.18+pump,-1.25+pump*0.3)
+		var pump=sin(cast_age*3.4)*(.018+.065*tension)*(1-landing*.7)
+		var power=get_parent().fight.power_time>0 and get_parent().fishing
+		rig.position=Vector3(-.32+sin(cast_age*2.2)*tension*.012,-.30+pump+strike_kick*.06,-.68+pump*.3)
 		rig.rotation.x+=pump*0.65
 		rig.rotation.z=sin(Time.get_ticks_msec()*0.004)*0.015*bend_amount
 		if overhead and pulling:
@@ -162,12 +184,23 @@ func update_feedback(delta: float, active: bool, pulling: bool, tension: float, 
 			segments[i].position = (start+end)*0.5
 			segments[i].quaternion = Quaternion(Vector3.UP,(end-start).normalized())
 			segments[i].scale.y=start.distance_to(end)/0.2555
-		if pulling:
-			crank.rotate_object_local(crank.get_meta("spin_axis",Vector3.RIGHT),delta*13)
+		var authored=equipment.get_meta("authored_blank",null) as MeshInstance3D
+		if authored:
+			for surface in range(authored.mesh.get_surface_count()):
+				(authored.get_surface_override_material(surface) as ShaderMaterial).set_shader_parameter("bend",bend_amount)
+		winding_speed=lerpf(winding_speed,(19.0 if power else 10.0) if pulling else 0.0,1-exp(-delta*15))
+		if winding_speed>.02:
+			crank.rotate_object_local(crank.get_meta("spin_axis",Vector3.RIGHT),delta*winding_speed)
 			if overhead:
-				rotor.rotation.x += delta*20
+				rotor.rotation.x += delta*winding_speed*1.8
 			else:
-				rotor.rotate_object_local(rotor.get_meta("spin_axis",Vector3.BACK),delta*20)
+				rotor.rotate_object_local(rotor.get_meta("spin_axis",Vector3.BACK),delta*winding_speed*2.3)
+		if spool and not overhead:
+			var spindle=(rotor.global_basis*rotor.get_meta("spin_axis",Vector3.BACK)).normalized()
+			var travel=spool.get_parent().global_basis.inverse()*spindle*.006
+			spool.position=spool_rest+travel*sin(cast_age*5)*minf(winding_speed,1)
+		if hands:
+			hands.pose(rig.to_local(crank.to_global(crank.get_meta("grip_point",Vector3.ZERO))),pulling,overhead)
 		if pulling and sound_enabled:
 			reel_audio.pitch_scale=lerpf(1.12,0.78,tension)
 			reel_audio.volume_db=lerpf(-14,-9,tension)
@@ -180,8 +213,27 @@ func update_feedback(delta: float, active: bool, pulling: bool, tension: float, 
 			pulse_time = 0.35
 		line_mesh.clear_surfaces()
 		line_mesh.surface_begin(Mesh.PRIMITIVE_LINES)
-		line_mesh.surface_add_vertex(segments[-1].global_position)
-		line_mesh.surface_add_vertex(target)
+		routed_line_points.clear()
+		var reel=equipment.get_meta("reel") as Node3D
+		var lip=reel.get_meta("spool_lip") as Node3D if reel.has_meta("spool_lip") else null
+		var roller=reel.get_meta("line_roller") as Node3D if reel.has_meta("line_roller") else null
+		var start=lip.global_position if lip else spool.global_position
+		routed_line_points.append(start)
+		if roller and (pulling or cast_age>.8):routed_line_points.append(roller.global_position)
+		var curve=preload("res://scripts/rod_curve.gd")
+		for guide in curve.guides(overhead):routed_line_points.append(equipment.to_global(curve.point(guide,bend_amount)))
+		for span in range(routed_line_points.size()-1):
+			line_mesh.surface_add_vertex(routed_line_points[span])
+			line_mesh.surface_add_vertex(routed_line_points[span+1])
+		var tip=routed_line_points[-1]
+		var previous=tip
+		for i in range(1,13):
+			var t=float(i)/12
+			var point=tip.lerp(target,t)+Vector3.DOWN*sin(t*PI)*(.025 if pulling else .22)
+			line_mesh.surface_add_vertex(previous)
+			line_mesh.surface_add_vertex(point)
+			routed_line_points.append(point)
+			previous=point
 		line_mesh.surface_end()
 	else:
 		reel_audio.stop()
@@ -212,5 +264,7 @@ func equip(reel_id: String, rod_id: String, line_id: String) -> void:
 	var reel = equipment.get_meta("reel") as Node3D
 	crank = reel.get_meta("crank")
 	rotor = reel.get_meta("rotor")
+	spool=reel.get_meta("spool")
+	spool_rest=spool.position
 	if line:
 		(line.material_override as StandardMaterial3D).albedo_color = Color("82d0a9") if line_id=="powerpro" else Color("d5e4d5")

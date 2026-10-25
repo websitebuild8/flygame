@@ -10,6 +10,7 @@ const DOCK = Vector3(2.3, 0, 12) # Moor beside the jetty, clear of its posts and
 const SPOT = Vector3(0, 0, -45)
 var boat: Node3D
 var camera: Camera3D
+var helm_hands: Node3D
 var status: Label
 var info: Label
 var fish_button: Button
@@ -74,6 +75,19 @@ var boat_visual: Node3D
 var first_person_driving=false
 var active_spot: Dictionary={}
 var active_species: Dictionary={}
+var active_catch: Dictionary={}
+var hook_clock=0.0
+var fishing_camera_offset=Vector3.ZERO
+var fishing_camera_look=Vector3.ZERO
+var catch_show_age=0.0
+
+func hook_timing() -> float:
+	return .5+.5*sin(hook_clock*3.8)
+
+func power_reel() -> void:
+	if fishing and fight.request_power():
+		message="POWER REEL!"
+		feedback.haptic(90,.75)
 var fight=preload("res://scripts/fish_fight.gd").new()
 var fish_actor: Node3D
 var fish_splash_timer=0.0
@@ -257,6 +271,9 @@ func build_world() -> void:
 	camera.fov = 65
 	camera.position = boat.position + Vector3(0, 10, 15)
 	camera.look_at(boat.position)
+	helm_hands=preload("res://scripts/helm_hands.gd").new()
+	camera.add_child(helm_hands)
+	helm_hands.configure(boat_visual)
 	day_cycle.apply_lighting()
 
 func build_ui() -> void:
@@ -285,14 +302,16 @@ func _physics_process(delta: float) -> void:
 		save_trip()
 	if catch_overlay.visible:
 		engine_audio.update_audio(delta,0,0,false,feedback.sound_enabled)
-		catch_model.rotate(Vector3.UP,delta*0.45)
+		catch_show_age+=delta
+		catch_model.position.y=sin(catch_show_age*2)*.045
+		catch_model.rotation.z=-PI/2+sin(catch_show_age*2.7)*.045
 		feedback.update_feedback(delta,false,false,0,line_target())
 		return
 	var space_down = Input.is_physical_key_pressed(KEY_SPACE)
 	if space_down and not space_was_down and not fishing and not market_mode and not shop_mode:
 		cast()
 	space_was_down = space_down
-	var pulling = (reeling or space_down) and fishing and fish_timer >= 2.5
+	var pulling = (reeling or space_down or fight.power_time>0) and fishing and fish_timer >= 2.5
 	if fishing:
 		speed = 0
 		if landing_to_boat:
@@ -307,6 +326,11 @@ func _physics_process(delta: float) -> void:
 				bite_announced = true
 				feedback.bite_feedback()
 				feedback.splash(line_target())
+			hook_clock+=delta
+			if not fight.hooked and pulling:
+				var quality=clampf(1-absf(hook_timing()-.83)/.33,0,1)
+				fight.strike(quality)
+				feedback.hook_feedback(quality)
 			var reel_stats = Catalog.item(str(equipped.Reels))
 			var rod_stats = Catalog.item(str(equipped.Rods))
 			var line_stats = Catalog.item(str(equipped.Line))
@@ -315,13 +339,14 @@ func _physics_process(delta: float) -> void:
 			progress=fight.progress
 			update_hooked_fish(delta)
 			message = "%s · %s · %d m away" % [active_species.get("name","Fish"),"MAKING A RUN" if fight.running else "Hold to reel",int(fight.position.distance_to(boat.position))]
+			if not fight.hooked:message="Bite! Tap HOOK when the marker reaches the green zone."
 			if fight.landing_lift>0.55:
 				message="%s is clear of the water. Put fish on boat." % active_species.name
-			if tension >= 1:
+			if tension >= 1 or fight.escaped:
 				fishing = false
 				feedback.finish(false,line_target())
 				clear_hooked_fish()
-				message = "The line snapped. Ease off the reel next time."
+				message = "The fish escaped on slack line. Keep some pressure on." if fight.escaped else "The line snapped. Ease off the reel next time."
 
 	elif not fishing_view and not market_mode and not shop_mode:
 		var keyboard_steer = float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT))-float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT))
@@ -378,15 +403,30 @@ func _physics_process(delta: float) -> void:
 		camera.position=boat_visual.get_node("FishingView").global_position if boat_visual.has_node("FishingView") else boat_visual.to_global(Vector3(0,1.55,-1.7))
 		var forward=-boat.basis.z
 		var view_target=camera.position+forward*12+Vector3(0,-0.6,0)
+		var focus=fight.position-camera.position if fishing and bite_announced else forward*12
+		var desired_look=Vector3(clampf(focus.dot(boat.basis.x)*.70,-4,4),0,0)
+		fishing_camera_look=fishing_camera_look.lerp(desired_look,1-exp(-delta*3.8))
+		view_target+=boat.basis.x*fishing_camera_look.x
+		var load=tension if fishing and bite_announced else 0.0
+		var kick=feedback.strike_kick
+		var burst=fight.power_time>0 and fishing
+		var bob=Vector3(sin(elapsed*5.1)*load*.018,sin(elapsed*4.4)*(.012+load*.018)+kick*.08, kick*.16)
+		fishing_camera_offset=fishing_camera_offset.lerp(bob,1-exp(-delta*5))
+		camera.position+=fishing_camera_offset
+		view_target.y+=kick*3.5+(fight.landing_lift*.65 if fishing else 0.0)
 		camera.look_at(view_target)
+		camera.rotate_object_local(Vector3.BACK,sin(elapsed*3.5)*load*.018-kick*.035+(sin(elapsed*12)*.012 if burst else 0.0))
+		camera.fov=lerpf(camera.fov,77.0 if burst else (73.0 if kick>.1 else 70.0),1-exp(-delta*5))
 	elif first_person_driving:
 		camera.position=boat_visual.get_node("DrivingView").global_position if boat_visual.has_node("DrivingView") else boat_visual.to_global(Vector3(0.53,1.30,1.37))
 		camera.look_at(boat.position-boat.basis.z*35+Vector3(0,1.13,0))
 	else:
+		camera.fov=70
 		var desired = boat.position + boat.basis.z * 12 + Vector3(0, 7, 0)
 		camera.position = camera.position.lerp(desired, 1 - exp(-delta * 3))
 		camera.look_at(boat.position + Vector3(0, 0.5, 0))
 	camera.h_offset=1.2 if shop_mode else 0.0
+	market.update_hands(camera,market_mode)
 	driving_controls.pov=first_person_driving and driving
 	if driving_controls.pov:
 		var transform=driving_controls.get_global_transform_with_canvas().affine_inverse()
@@ -396,6 +436,7 @@ func _physics_process(delta: float) -> void:
 		driving_controls.pov_wheel_radius=maxf(87,(transform*wheel_edge).distance_to(driving_controls.pov_wheel))
 		# The POV touch throttle stays docked inside the screen during waves and turns.
 	feedback.update_feedback(delta, fishing_view and not market_mode, pulling, tension if fishing else 0.0, line_target())
+	helm_hands.update_pose(delta,first_person_driving and driving and not intro_visible,drive.steering)
 	interface.refresh()
 
 func cast() -> void:
@@ -422,10 +463,14 @@ func cast() -> void:
 		speed=0
 	var species_index=int(active_spot.fish[rng.randi_range(0,active_spot.fish.size()-1)])
 	active_species=World.FISH[species_index]
+	active_catch=preload("res://scripts/catch_profile.gd").roll(active_species,rng)
+	hook_clock=0
 	fight=preload("res://scripts/fish_fight.gd").new()
-	fight.start(boat.position,-boat.basis.z,float(active_species.fight))
+	fight.start(boat.position,-boat.basis.z,float(active_catch.strength))
+	fight.individual_phase=rng.randf_range(-PI,PI)
+	fight.hooked=false
 	clear_hooked_fish()
-	fish_actor=Art.fish(self,0.45,str(active_species.name))
+	fish_actor=Art.fish(self,0.45*float(active_catch.size),str(active_species.name))
 	fish_actor.position=fight.position
 	fish_actor.visible=false
 	fish_actor.swim_intensity=2.0
@@ -474,18 +519,22 @@ func land_fish() -> void:
 	feedback.finish(true, line_target())
 	var definition=active_species if not active_species.is_empty() else World.FISH[0]
 	var species=str(definition.name)
-	var value=int(definition.value)+rng.randi_range(-5,10)
+	# Preserve an individual's weight and offer from hook through market payment.
+	if active_catch.get("species","")!=species:
+		active_catch=preload("res://scripts/catch_profile.gd").roll(definition,rng)
+	var value=int(active_catch.value)
 	clear_hooked_fish()
 	catches += 1
 	hold_value += value
-	var weight = snappedf(rng.randf_range(float(definition.min),float(definition.max)),0.1)
+	var weight = float(active_catch.weight)
 	inventory.append({"species":species,"value":value,"weight":weight})
-	catch_text.text = "%s\n%.1f kg   ·   MVR %d" % [species,weight,value]
+	catch_text.text = "%s\n%s\n%.1f kg   ·   MVR %d\nMarket offer · MVR %.2f / kg" % [active_catch.grade,species,weight,value,float(value)/weight]
 	catch_model.queue_free()
-	catch_model = Art.fish(camera,0.8,species)
+	catch_model = Art.fish(camera,0.8*float(active_catch.size),species)
 	catch_model.position = Vector3(-0.8,0,-3)
 	catch_model.basis = Basis(Vector3(0,0,1),-PI/2) * Basis(Vector3.UP,PI/2)
 	catch_model.rotate(Vector3.UP,-0.24)
+	catch_show_age=0
 	catch_overlay.visible = true
 	hud.visible = false
 	catch_model.visible = true
@@ -654,6 +703,8 @@ func load_trip() -> void:
 		update_boat_parts()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode==KEY_R and not interface.menu_visible and not interface.map_visible:
+		power_reel()
 	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode==KEY_M and not intro_visible and not catch_overlay.visible and not shop_mode and not market_mode:
 		interface.toggle_map()
 		get_viewport().set_input_as_handled()
@@ -775,6 +826,7 @@ func apply_boat() -> void:
 		boat.remove_child(boat_visual)
 		boat_visual.queue_free()
 	boat_visual=preload("res://scripts/boat_models.gd").build(boat,equipped_boat)
+	if helm_hands:helm_hands.configure(boat_visual)
 	if driving_controls:
 		driving_controls.set_skin(equipped_boat)
 	update_boat_parts()

@@ -71,7 +71,7 @@ func pointer(id: int, point: Vector2, down: bool) -> void:
 	else:
 		if wheel_pointer == id:
 			wheel_pointer = -99
-			wheel_command = 0
+			if not pov:wheel_command = 0
 		if lever_pointer == id:
 			lever_pointer = -99
 	queue_redraw()

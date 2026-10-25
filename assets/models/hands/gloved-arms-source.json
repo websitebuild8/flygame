@@ -1,0 +1,9 @@
+{
+  "title": "Hand With Gloves",
+  "creator": "JUST (@teenjust500)",
+  "source": "https://sketchfab.com/3d-models/hand-with-gloves-5a6a434b8ec943ffacc581358781eecb",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "original_sha256": "c93b94a69940656937e35848e9eb7f706e63c214f1972bf662ae64acc9630455",
+  "changes": "Authored glove/sleeve geometry and 1k textures retained. Runtime camera/controllers hidden; fingers posed for fishing, arm targets animated for left grip/right winding."
+}

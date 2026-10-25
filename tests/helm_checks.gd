@@ -68,6 +68,10 @@ func checks() -> void:
 	helm.update_lever(helm.rail_center()+Vector2(0,4))
 	check(helm.lever_value==0,"Lever snaps at neutral")
 	helm.pov=true
+	helm.wheel_command=.4
+	helm.pointer(5,helm.wheel_center()+Vector2(60,0),true)
+	helm.pointer(5,helm.wheel_center(),false)
+	check(is_equal_approx(helm.wheel_command,.4),"POV marine helm holds its angle after release")
 	for viewport_size in [Vector2(496,224),Vector2(1100,224),Vector2(760,300)]:
 		helm.size=viewport_size
 		helm.pov_lever=Vector2(-500,2000)

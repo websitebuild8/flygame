@@ -5,5 +5,5 @@
   "license": "CC BY 4.0",
   "license_url": "https://creativecommons.org/licenses/by/4.0/",
   "original_sha256": "793eaf6024964ebe3c9ce0af3a39437b74ed3e884bde5b86a393fc2e41c686b3",
-  "changes": "Source GLB retained at supplied 1k resolution. Runtime extracts reel meshes, centres/scales them and adds crank/rotor pivots. Full rod used for the starter rod showroom preview; live blank retains game bending."
+  "changes": "Authored 1k rod/reel geometry and UV maps retained. Live rod mesh aligned to game grips with a bend shader; original reel bearing frames retained and mirrored to right-hand retrieve. Full source remains used in the showroom."
 }
