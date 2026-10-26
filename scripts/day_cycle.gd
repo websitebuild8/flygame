@@ -1,4 +1,6 @@
 extends Node
+var shadows_allowed = true
+var effects_quality = 2
 var hours = 8.0
 const DAY_SECONDS = 1200.0
 var sun: DirectionalLight3D
@@ -36,7 +38,7 @@ func apply_lighting() -> void:
 	var sunset = (1-smoothstep(0.0,0.4,absf(height)))*day_amount
 	sun.rotation_degrees = Vector3(-height*75,-45+(hours-12)*9,0)
 	sun.light_energy = lerpf(0.08,0.78,day_amount)
-	sun.shadow_enabled=day_amount>0.2
+	sun.shadow_enabled=shadows_allowed and day_amount>0.2
 	sun.light_color = Color("a5bde8").lerp(Color("fff4dc"),day_amount).lerp(Color("ffb177"),sunset*0.6)
 	if height<0:
 		sun.rotation_degrees.x = -35
@@ -105,5 +107,5 @@ func update_rain(at: Vector3, outdoors: bool) -> void:
 		rain.material_override=material
 	rain.global_position=at+Vector3(0,8,0)
 	rain.emitting=outdoors and rain_amount>0.1
-	var density=50+int(rain_amount*7)*50
+	var density=int((50+int(rain_amount*7)*50)*[0.25,0.55,1.0][effects_quality])
 	if rain.amount!=density: rain.amount=density

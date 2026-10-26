@@ -33,7 +33,7 @@ func checks() -> void:
 	check(game.equipped.Line=="powerpro","Braid equips after purchase")
 	game.purchase_item("propeller")
 	game.purchase_item("icebox")
-	check(game.icebox_capacity()==24 and "propeller" in game.boat_parts,"Boat parts change capacity and performance options")
+	check(game.icebox_capacity()==28 and "propeller" in game.boat_parts,"Boat parts change capacity and performance options")
 	game.purchase_item("engine")
 	check(game.upgrade==1 and game.item_price("engine")==200,"Engine stages have escalating game prices")
 	game.save_trip()
@@ -41,7 +41,7 @@ func checks() -> void:
 	game.boat_parts = []
 	game.equipped = {}
 	game.load_trip()
-	check(game.equipped.Reels=="ocea" and game.equipped.Line=="powerpro" and game.icebox_capacity()==24,"Ownership and loadout persist through saves")
+	check(game.equipped.Reels=="ocea" and game.equipped.Line=="powerpro" and game.icebox_capacity()==28,"Ownership and loadout persist through saves")
 	var imported=preload("res://scripts/tackle_art.gd").reel(game,"spinning","island_reel")
 	check(imported.get_meta("imported_model",false),"Starter reel uses the imported textured model")
 	check(is_instance_valid(imported.get_meta("crank")) and is_instance_valid(imported.get_meta("rotor")),"Imported reel keeps independent animation pivots")

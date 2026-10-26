@@ -3,6 +3,11 @@ extends Node3D
 var rig: Node3D
 var crank: Node3D
 var segments: Array[MeshInstance3D] = []
+var ambience: AudioStreamPlayer
+var reel_variants: Array[AudioStream] = []
+var splash_variants: Array[AudioStream] = []
+var splash_players: Array[AudioStreamPlayer] = []
+var splash_sound_cursor=0
 var reel_audio: AudioStreamPlayer
 var effects: Dictionary = {}
 var splash_rings: Array[MeshInstance3D] = []
@@ -45,10 +50,25 @@ func _ready() -> void:
 		add_child(player)
 		effects[key] = player
 	reel_audio = effects.reel
-	var stream = reel_audio.stream as AudioStreamWAV
-	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	stream.loop_begin = 0
-	stream.loop_end = stream.data.size() / 2
+	for suffix in ["01","04","07"]:
+		var stream=load("res://assets/audio/supplied/audio_fishing_drawing%s.ogg" % suffix) as AudioStreamOggVorbis
+		stream.loop=true
+		reel_variants.append(stream)
+	reel_audio.stream=reel_variants[0]
+	effects.bite.stream=reel_variants[1].duplicate()
+	effects.bite.stream.loop=false
+	effects.bite.volume_db=-12
+	for suffix in ["01","02","03","05"]:
+		splash_variants.append(load("res://assets/audio/supplied/audio_fishing_drawing_hpevent_%s.ogg" % suffix))
+	splash_players.append(effects.splash)
+	for index in range(2):
+		var splash_player=AudioStreamPlayer.new()
+		add_child(splash_player);splash_players.append(splash_player)
+	ambience=AudioStreamPlayer.new()
+	var background=load("res://assets/audio/supplied/background.ogg") as AudioStreamOggVorbis
+	background.loop=true
+	ambience.stream=background;ambience.volume_db=-19
+	add_child(ambience)
 	for i in range(3):
 		var particles=CPUParticles3D.new()
 		particles.emitting=false
@@ -117,7 +137,15 @@ func haptic(duration: int, amplitude: float) -> void:
 
 func play_effect(key: String) -> void:
 	if sound_enabled:
-		effects[key].play()
+		if key=="splash":
+			var splash_player=splash_players[splash_sound_cursor]
+			splash_sound_cursor=(splash_sound_cursor+1)%splash_players.size()
+			splash_player.stream=splash_variants.pick_random()
+			splash_player.pitch_scale=randf_range(.94,1.06)
+			splash_player.volume_db=-9
+			splash_player.play()
+		else:
+			effects[key].play()
 
 func splash(at: Vector3) -> void:
 	splash_position = Vector3(at.x,-0.5,at.z)
@@ -190,11 +218,15 @@ func update_feedback(delta: float, active: bool, pulling: bool, tension: float, 
 				(authored.get_surface_override_material(surface) as ShaderMaterial).set_shader_parameter("bend",bend_amount)
 		winding_speed=lerpf(winding_speed,(19.0 if power else 10.0) if pulling else 0.0,1-exp(-delta*15))
 		if winding_speed>.02:
-			crank.rotate_object_local(crank.get_meta("spin_axis",Vector3.RIGHT),delta*winding_speed)
+			crank.rotate_object_local(crank.get_meta("spin_axis",Vector3.RIGHT),delta*winding_speed*(1.0 if overhead else -1.0))
 			if overhead:
 				rotor.rotation.x += delta*winding_speed*1.8
 			else:
-				rotor.rotate_object_local(rotor.get_meta("spin_axis",Vector3.BACK),delta*winding_speed*2.3)
+				rotor.rotate_object_local(rotor.get_meta("spin_axis",Vector3.BACK),-delta*winding_speed*2.3)
+		var active_reel=equipment.get_meta("reel") as Node3D
+		if overhead and active_reel.has_meta("level_wind"):
+			var level_wind=active_reel.get_meta("level_wind") as Node3D
+			level_wind.position=level_wind.get_meta("rest_position")+Vector3.RIGHT*sin(cast_age*3)*.09*minf(winding_speed,1)
 		if spool and not overhead:
 			var spindle=(rotor.global_basis*rotor.get_meta("spin_axis",Vector3.BACK)).normalized()
 			var travel=spool.get_parent().global_basis.inverse()*spindle*.006
@@ -205,6 +237,7 @@ func update_feedback(delta: float, active: bool, pulling: bool, tension: float, 
 			reel_audio.pitch_scale=lerpf(1.12,0.78,tension)
 			reel_audio.volume_db=lerpf(-14,-9,tension)
 			if not reel_audio.playing:
+				reel_audio.stream=reel_variants.pick_random()
 				reel_audio.play()
 		else:
 			reel_audio.stop()
@@ -268,3 +301,9 @@ func equip(reel_id: String, rod_id: String, line_id: String) -> void:
 	spool_rest=spool.position
 	if line:
 		(line.material_override as StandardMaterial3D).albedo_color = Color("82d0a9") if line_id=="powerpro" else Color("d5e4d5")
+
+func update_ambience(outdoors: bool) -> void:
+	if outdoors and sound_enabled:
+		if not ambience.playing:ambience.play()
+	else:
+		ambience.stop()

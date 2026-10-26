@@ -24,9 +24,7 @@ const SPOTS = [
  {"id":"sunset","name":"Dhidhdhoo Reef","at":Vector2(-165,65),"unlock":4,"fish":[0,1,2,4]}
 ]
 const BOATS = [
- {"id":"dinghy","name":"Island Dinghy","price":0,"unlock":0,"speed":12.5,"handling":1.0,"accel":1.0,"storage":10,"detail":"Classic mint helm · light and easy to handle"},
- {"id":"skiff","name":"Scout 17 Centre Console","price":600,"unlock":3,"speed":18.0,"handling":1.15,"accel":1.15,"storage":14,"detail":"Real Scout hull · centre console · single outboard"},
- {"id":"runner","name":"Atoll Runner","price":1400,"unlock":8,"speed":24.0,"handling":0.95,"accel":1.3,"storage":18,"detail":"Carbon sport helm · amber controls · T-top canopy"},
+ {"id":"skiff","name":"Scout 17 Centre Console","price":0,"unlock":0,"speed":18.0,"handling":1.15,"accel":1.15,"storage":14,"detail":"Real Scout hull · centre console · single outboard"},
  {"id":"launch","name":"Boston Whaler 285 Conquest","price":2800,"unlock":15,"speed":30.0,"handling":0.8,"accel":1.45,"storage":24,"detail":"Real Boston Whaler hull · cabin helm · twin outboards"},
  {"id":"glacier","name":"Glacier Bay","price":4200,"unlock":22,"speed":31.0,"handling":0.9,"accel":1.5,"storage":30,"detail":"Twin-hull fishing boat · navy canopy · twin outboards"},
  {"id":"grady","name":"Grady-White Freedom 325","price":6000,"unlock":30,"speed":35.0,"handling":0.85,"accel":1.6,"storage":36,"detail":"Blue sport hull · covered helm · twin outboards"}

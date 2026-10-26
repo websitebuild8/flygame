@@ -6,10 +6,10 @@ func checks():
 	for person in game.market.customers:
 		assert(person.get_meta("imported_model",false) and person.player,"Queue uses imported rigged characters with animation")
 	assert(game.market.register.get_meta("imported_model",false),"Counter uses the imported cash register")
-	var note=game.market.payment
-	assert(note.get_meta("denomination")==100 and note.mesh.get_surface_count()==2,"Payment has both faces of the MVR 100 specimen")
+	var note=preload("res://scripts/market_cash.gd").currency_mesh(100)
+	assert(note.get_surface_count()==2,"Payment has both faces of the MVR 100 specimen")
 	for surface in range(2):
-		assert(note.mesh.surface_get_material(surface).albedo_texture,"Banknote faces have their actual artwork textures")
+		assert(note.surface_get_material(surface).albedo_texture,"Banknote faces have their actual artwork textures")
 	game.coins=0;game.inventory=[{"species":"Yellowfin tuna","weight":8.2,"value":234}];game.hold_value=234
 	game.return_home();game.sell();game._physics_process(.016)
 	assert(game.market.seller_hands.visible and game.market.seller_hands.hands.get_meta("imported_model",false),"Market uses the same authored gloved hands")
@@ -22,6 +22,6 @@ func checks():
 	assert(game.market.customers.size()==5 and not game.market.queue_moving,"Animated customers complete the queue cycle")
 	game.leave_fishing();game._physics_process(.016)
 	assert(not game.market.seller_hands.visible,"Counter hands hide after leaving the market")
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(game.save_path));game.free()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(game.save_path));game.queue_free();await process_frame;await process_frame
 	print("PASS: rigged customer queue, imported register, two-sided MVR specimen, gloved counter hands, exact payment and queue cycling")
 	quit()

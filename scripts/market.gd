@@ -2,7 +2,7 @@ extends Node3D
 const Art = preload("res://scripts/world_art.gd")
 var customers: Array[Node3D] = []
 var displayed_fish: Node3D
-var payment: MeshInstance3D
+var payment: Node3D
 var serve_motion = 0.0
 var cash_motion=0.0
 var seller_hands: Node3D
@@ -43,8 +43,8 @@ func _ready() -> void:
 		var person=preload("res://scripts/market_customer.gd").new();person.variation=i;add_child(person)
 		person.position = queue_spot(i)
 		customers.append(person)
-	payment=make_banknote()
-	add_child(payment);payment.position=Vector3(.12,1.242,.12);payment.rotation.y=-.15
+	payment=preload("res://scripts/market_cash.gd").new()
+	add_child(payment);payment.position=Vector3(.12,1.226,.12);payment.rotation.y=-.15
 	payment.visible = false
 	displayed_fish = Art.fish(self,0.50)
 	displayed_fish.position = Vector3(0.0,1.36,0.1)
@@ -61,22 +61,6 @@ func _ready() -> void:
 	register.position=Vector3(-.92,1.225,0)-register.basis*Vector3(bounds.get_center().x,bounds.position.y,bounds.get_center().z)
 	register_total=Art.label(self,"MVR 0",Vector3(-.835,1.685,.23),22)
 	register_total.pixel_size=.00105
-
-func make_banknote() -> MeshInstance3D:
-	var note=MeshInstance3D.new();note.name="MVR100Payment";note.set_meta("denomination",100)
-	var mesh=ArrayMesh.new()
-	for side in range(2):
-		var a=[];a.resize(Mesh.ARRAY_MAX)
-		var y=.001 if side==0 else 0.0
-		a[Mesh.ARRAY_VERTEX]=PackedVector3Array([Vector3(-.175,y,-.0815),Vector3(.175,y,-.0815),Vector3(.175,y,.0815),Vector3(-.175,y,.0815)])
-		a[Mesh.ARRAY_NORMAL]=PackedVector3Array([Vector3.UP if side==0 else Vector3.DOWN,Vector3.UP if side==0 else Vector3.DOWN,Vector3.UP if side==0 else Vector3.DOWN,Vector3.UP if side==0 else Vector3.DOWN])
-		a[Mesh.ARRAY_TEX_UV]=PackedVector2Array([Vector2(0,0),Vector2(1,0),Vector2(1,1),Vector2(0,1)])
-		a[Mesh.ARRAY_INDEX]=PackedInt32Array([0,2,1,0,3,2] if side==0 else [0,1,2,0,2,3])
-		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES,a)
-		var mat=StandardMaterial3D.new();mat.albedo_texture=preload("res://assets/models/market/mvr100_front.png") if side==0 else preload("res://assets/models/market/mvr100_back.png")
-		mat.roughness=.85;mesh.surface_set_material(side,mat)
-	note.mesh=mesh
-	return note
 
 func queue_spot(index: int) -> Vector3:
 	return Vector3(minf(index*0.8,2.8),0,-1.8-index*0.7)
@@ -101,7 +85,9 @@ func set_species(species: String) -> void:
 	displayed_fish.position = Vector3(0.0,1.36,0.1)
 	displayed_fish.rotation.y = PI/2
 
-func set_sale(has_fish: bool, waiting_payment: bool) -> void:
+func set_sale(has_fish: bool, payment_amount: int) -> void:
+	var waiting_payment=payment_amount>0
+	payment.set_amount(payment_amount)
 	displayed_fish.visible = preload("res://scripts/world_data.gd").has_fish_model(shown_species) and (handing_over or (has_fish and not waiting_payment))
 	payment.visible = waiting_payment
 
@@ -118,7 +104,7 @@ func hand_over() -> void:
 
 func collect_cash() -> void:
 	var reach=create_tween();reach.tween_property(self,"cash_motion",1.0,.16);reach.tween_property(self,"cash_motion",0.0,.30)
-	var cash = payment.duplicate() as MeshInstance3D
+	var cash = payment.duplicate() as Node3D
 	add_child(cash)
 	cash.visible = true
 	var tween = create_tween()

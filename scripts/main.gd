@@ -65,14 +65,18 @@ var shop: Node3D
 var app_active = true
 var navigation=preload("res://scripts/sea_navigation.gd").new()
 var day_cycle: Node
+var graphics_quality = 0 if OS.has_feature("mobile") else 2
+var graphics_shadows = not OS.has_feature("mobile")
+var ocean_mesh: PlaneMesh
 var saved_hours=8.0
 var saved_waypoint: Array=[]
 var route_tick=0.0
 var autosave_tick=0.0
-var owned_boats: Array=["dinghy"]
-var equipped_boat="dinghy"
+var owned_boats: Array=["skiff"]
+var equipped_boat="skiff"
 var boat_visual: Node3D
 var first_person_driving=false
+var cockpit_displays: Node3D
 var active_spot: Dictionary={}
 var active_species: Dictionary={}
 var active_catch: Dictionary={}
@@ -118,6 +122,7 @@ func _ready() -> void:
 	navigation.configure(unlocked)
 	if saved_waypoint.size()==2:
 		set_waypoint(Vector2(float(saved_waypoint[0]),float(saved_waypoint[1])),"Saved waypoint")
+	apply_graphics()
 
 func material(color: Color) -> StandardMaterial3D:
 	var mat = StandardMaterial3D.new()
@@ -162,6 +167,7 @@ func build_world() -> void:
 	add_child(sun)
 	var ocean = MeshInstance3D.new()
 	var plane = PlaneMesh.new()
+	ocean_mesh=plane
 	plane.size = Vector2(700,700)
 	plane.subdivide_width = 100
 	plane.subdivide_depth = 100
@@ -284,6 +290,7 @@ func build_ui() -> void:
 func _physics_process(delta: float) -> void:
 	elapsed += delta
 	market.animate(elapsed)
+	feedback.update_ambience(not intro_visible and not market_mode and not shop_mode and app_active and not interface.menu_visible and not interface.map_visible)
 	if interface.menu_visible or interface.map_visible or not app_active:
 		feedback.reel_audio.stop()
 		engine_audio.update_audio(delta,0,0,false,feedback.sound_enabled)
@@ -428,13 +435,14 @@ func _physics_process(delta: float) -> void:
 	camera.h_offset=1.2 if shop_mode else 0.0
 	market.update_hands(camera,market_mode)
 	driving_controls.pov=first_person_driving and driving
+	driving_controls.cockpit_screen=cockpit_displays!=null and not cockpit_displays.displays.is_empty()
 	if driving_controls.pov:
 		var transform=driving_controls.get_global_transform_with_canvas().affine_inverse()
 		driving_controls.pov_wheel=transform*camera.unproject_position(boat_visual.get_node("HelmWheel").global_position)
 		var wheel_node=boat_visual.get_node("HelmWheel")
 		var wheel_edge=camera.unproject_position(wheel_node.global_position+camera.global_basis.x*wheel_node.global_basis.x.length()*0.18)
 		driving_controls.pov_wheel_radius=maxf(87,(transform*wheel_edge).distance_to(driving_controls.pov_wheel))
-		# The POV touch throttle stays docked inside the screen during waves and turns.
+		driving_controls.pov_lever=transform*camera.unproject_position(helm_hands.lever.to_global(helm_hands.lever_grip))
 	feedback.update_feedback(delta, fishing_view and not market_mode, pulling, tension if fishing else 0.0, line_target())
 	helm_hands.update_pose(delta,first_person_driving and driving and not intro_visible,drive.steering)
 	interface.refresh()
@@ -453,7 +461,7 @@ func cast() -> void:
 		message="%s unlocks after %d catches." % [active_spot.name,active_spot.unlock]
 		return
 	if absf(speed) > 1 or (drive.engine_running and drive.gear != 0):
-		message = "Select neutral and let the dinghy slow before casting."
+		message = "Select neutral and let the boat slow before casting."
 		return
 	if drive.engine_running:
 		drive.reset()
@@ -592,13 +600,13 @@ func buy_upgrade() -> void:
 	if boat.position.distance_to(DOCK) > 18:
 		message = "Boat upgrades are available at the home dock."
 	elif upgrade >= 2:
-		message = "Your prototype dinghy is fully upgraded."
+		message = "Your boat engine is fully upgraded."
 	elif coins < item_price("engine"):
 		message = "Earn MVR %d to upgrade the engine." % item_price("engine")
 	else:
 		coins -= item_price("engine")
 		upgrade += 1
-		message = "Engine upgraded! Your dinghy now travels faster."
+		message = "Engine upgraded! Your boat now travels faster."
 		save_trip()
 
 func line_target() -> Vector3:
@@ -633,18 +641,20 @@ func return_home() -> void:
 	boat.rotation = Vector3.ZERO
 	camera.position = DOCK + Vector3(0,7,12)
 	camera.look_at(DOCK)
-	message = "Back at the dock. Sell your catch or upgrade your dinghy."
+	message = "Back at the dock. Sell your catch or upgrade your boat."
 
 func save_trip() -> void:
 	var file = FileAccess.open(save_path, FileAccess.WRITE)
 	if file:
-		file.store_string(JSON.stringify({"coins": coins, "catches": catches, "hold_value": hold_value, "upgrade": upgrade, "inventory": inventory, "pending_payment": pending_payment,"owned_items":owned_items,"equipped":equipped,"boat_parts":boat_parts,"owned_boats":owned_boats,"equipped_boat":equipped_boat,"hours":day_cycle.hours if day_cycle else saved_hours,"waypoint":[navigation.destination.x,navigation.destination.y] if navigation.has_destination else []}))
+		file.store_string(JSON.stringify({"graphics_quality": graphics_quality, "graphics_shadows": graphics_shadows, "coins": coins, "catches": catches, "hold_value": hold_value, "upgrade": upgrade, "inventory": inventory, "pending_payment": pending_payment,"owned_items":owned_items,"equipped":equipped,"boat_parts":boat_parts,"owned_boats":owned_boats,"equipped_boat":equipped_boat,"hours":day_cycle.hours if day_cycle else saved_hours,"waypoint":[navigation.destination.x,navigation.destination.y] if navigation.has_destination else []}))
 
 func load_trip() -> void:
 	if not FileAccess.file_exists(save_path):
 		return
 	var parsed = JSON.parse_string(FileAccess.get_file_as_string(save_path))
 	if parsed is Dictionary:
+		graphics_quality=clampi(int(parsed.get("graphics_quality",graphics_quality)),0,2)
+		graphics_shadows=bool(parsed.get("graphics_shadows",graphics_shadows))
 		coins = maxi(0, int(parsed.get("coins", 0)))
 		catches = maxi(0, int(parsed.get("catches", 0)))
 		hold_value = maxi(0, int(parsed.get("hold_value", 0)))
@@ -684,13 +694,13 @@ func load_trip() -> void:
 		if Catalog.item(str(equipped.Reels)).kind != Catalog.item(str(equipped.Rods)).kind:
 			equipped.Reels = "island_reel"
 			equipped.Rods = "island_rod"
-		owned_boats=["dinghy"]
+		owned_boats=["skiff"]
 		for id in parsed.get("owned_boats",[]):
 			if Catalog.item(str(id)).get("category")=="Boats" and id not in owned_boats:
 				owned_boats.append(id)
-		equipped_boat=str(parsed.get("equipped_boat","dinghy"))
+		equipped_boat=str(parsed.get("equipped_boat","skiff"))
 		if equipped_boat not in owned_boats:
-			equipped_boat="dinghy"
+			equipped_boat="skiff"
 		saved_hours=fposmod(float(parsed.get("hours",8.0)),24.0)
 		saved_waypoint=parsed.get("waypoint",[])
 		unlocked = catches >= 3
@@ -826,9 +836,13 @@ func apply_boat() -> void:
 		boat.remove_child(boat_visual)
 		boat_visual.queue_free()
 	boat_visual=preload("res://scripts/boat_models.gd").build(boat,equipped_boat)
+	cockpit_displays=preload("res://scripts/cockpit_displays.gd").new()
+	boat_visual.add_child(cockpit_displays)
+	cockpit_displays.configure(self,equipped_boat)
 	if helm_hands:helm_hands.configure(boat_visual)
 	if driving_controls:
 		driving_controls.set_skin(equipped_boat)
+		driving_controls.configure_models(boat_visual)
 	update_boat_parts()
 
 func update_outboards(delta: float) -> void:
@@ -876,3 +890,17 @@ func toggle_driving_camera() -> void:
 	first_person_driving=not first_person_driving
 	driving_controls.release_pointers()
 	message="Helm view: drag the wheel and throttle in front of you." if first_person_driving else "External boat camera."
+
+func apply_graphics() -> void:
+	# UI remains native resolution; only the 3D scene is scaled.
+	get_viewport().scaling_3d_scale=[0.60,0.80,1.0][graphics_quality]
+	Engine.max_fps=30 if graphics_quality==0 else 60
+	if ocean_mesh:
+		ocean_mesh.subdivide_width=[32,64,100][graphics_quality]
+		ocean_mesh.subdivide_depth=[32,64,100][graphics_quality]
+	if day_cycle:
+		day_cycle.shadows_allowed=graphics_shadows
+		day_cycle.effects_quality=graphics_quality
+		day_cycle.sun.directional_shadow_max_distance=[30.0,60.0,110.0][graphics_quality]
+		day_cycle.water.set_shader_parameter("detail_quality",float(graphics_quality))
+		day_cycle.apply_lighting()

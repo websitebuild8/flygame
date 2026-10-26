@@ -1,3 +1,5 @@
-MVR 100 specimen note images: Maldives Monetary Authority, Ran Dhihafaheh booklet, page 13.
+Currency artwork: Maldives Monetary Authority.
+https://www.mma.gov.mv/#/currency/notesincirculation
+MVR 10/20/50/100/500/1000 specimens extracted from Ran Dhihafaheh booklet, PDF pages 10–15:
 https://www.mma.gov.mv/Public%20Education/currency/RDF%20book/RDF%20booklet.pdf
-Extracted original embedded educational specimen images (serial A000000). Used for an in-game payment prop. Banknote artwork is not covered by the CC0 model licenses.
+MVR 5: official 2025 obverse specimen and available 2017 reverse artwork; MVR 1/2: official coin denomination thumbnails. Exact source URLs and hashes in market-source.json. Original pixels retained; orientation handled by mesh UVs. These images are in-game props. Currency artwork is not covered by the CC0 model licences.

@@ -1,0 +1,9 @@
+Fishing Rod (download contains a spinning reel) by Sobrom
+https://sketchfab.com/3d-models/fishing-rod-2445514b50494ae8a751e24b976b294d
+CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Adaptations: 1K texture download; mirrored to right-hand retrieve; split disconnected mesh components into independently animated body, bail, spool and crank; mounted to existing authored rod.
+
+Level wind mechanism (baitcasting fishing reel) by C. Yamahata
+https://sketchfab.com/3d-models/level-wind-mechanism-baitcasting-fishing-reel-0d4a3f6123eb409a9ce6391ddcd72048
+CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Adaptations: Game scale/orientation; opaque metallic materials; independently animated spool and traversing line guide; wound line added; assembled with Ergin ERYILDIR authored crank. This is an adapted generic reel, not a branded replica.

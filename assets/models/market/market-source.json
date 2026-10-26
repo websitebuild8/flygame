@@ -6,9 +6,36 @@
   },
   "currency": {
     "creator": "Maldives Monetary Authority",
-    "url": "https://www.mma.gov.mv/Public%20Education/currency/RDF%20book/RDF%20booklet.pdf",
-    "page": 13,
-    "description": "Official educational specimen images of the 2015 MVR 100 note, extracted for an in-game payment prop. Original serial A000000 retained. Banknote artwork is not covered by the model CC0 license."
+    "url": "https://www.mma.gov.mv/#/currency/notesincirculation",
+    "booklet": "https://www.mma.gov.mv/Public%20Education/currency/RDF%20book/RDF%20booklet.pdf",
+    "booklet_pages": {
+      "10": 10,
+      "20": 11,
+      "50": 12,
+      "100": 13,
+      "500": 14,
+      "1000": 15
+    },
+    "notes": [
+      5,
+      10,
+      20,
+      50,
+      100,
+      500,
+      1000
+    ],
+    "coins": [
+      1,
+      2
+    ],
+    "description": "Low-resolution official educational banknote specimen images and official coin denomination thumbnails. MVR 5 uses the available 2025 obverse and 2017 reverse design. Original image artwork retained; portrait images oriented using mesh UVs. Currency artwork is not covered by model CC0 licences.",
+    "additional_images": {
+      "mvr5_front.png": "https://www.mma.gov.mv/images/notes/5%20Specimen%20new%20Front.png",
+      "mvr5_back.jpg": "https://www.mma.gov.mv/images/notes/rotated/5-back.png",
+      "mvr1_coin.jpg": "https://www.mma.gov.mv/images/coins/cropped/1ruf.jpg",
+      "mvr2_coin.jpg": "https://www.mma.gov.mv/images/coins/cropped/2rufnew.jpg"
+    }
   },
   "customers": {
     "creator": "Quaternius",
@@ -23,12 +50,26 @@
     "changes": "Retained idle/walk/interact clips; merged skinned mesh surfaces with baked vertex colours and a clothing tint mask; removed unused animation data; packed as GLB; game scale and orientation."
   },
   "files": {
+    "mvr5_front.png": "8d017298ef70a519bed1e5f00aff1917b064b5ba02177df531a7892245655fec",
+    "mvr50_front.png": "f868d5f66afb1029941dfd363af0c4987d625559a23d70e91eb0de4aa3dbc449",
     "cash_register.glb": "155f2eb666dea3a931d133a4953379898c8adb4b827ab60b86cae07235b9b598",
     "customer_casual.glb": "8d49fe7d1a286d9e4b145a8f3a77cf4dc91f8a194208ce7c8cd74ea33f595b7f",
     "mvr100_front.png": "ce674467e1372cd7f874eead7157b741c18ac2c525cc4a95a8c68efae2fb5a07",
+    "mvr1000_front.png": "c657c1254ce7e53ac8ef9854c54f5d7b080f748835bc8ccbaa621bec7f8d57ef",
     "mvr100_back.png": "523e6fc567ba91aafd80b815aaa511d36e0916049a61f9e778fdb3227fd3b8dd",
+    "mvr2_coin.jpg": "4118b0a43e5fa3569b0b15daa38d2a8c1792b8f28884c46f16acbada50d755a1",
     "customer_worker.glb": "c60536a0be16e48f117487578ae294a62eb6988427b0f0dbdf819c9c43c7b4d8",
+    "mvr20_back.png": "8b7df3e3908ca34347ce9eb58863e914bb5212969877ccb39283bced366bb3d6",
+    "mvr10_back.png": "e8ab07ba277e22ca3597b7cdeaff8e4527fcf18a1ea73116c4c66a77420d2135",
+    "mvr50_back.png": "cefb6db9b71bb986804d5267eaad13d8a6c143e107fd50c323ff98f6003c4b80",
+    "mvr1_coin.jpg": "ceb8cd77c76ef8df45908ffe3a888fd059452537357fc59d468ba9026ea8edaf",
     "customer_beach.glb": "4cb806952be7e697b8dc68750b3e364122545eb1eeeb16d6691c2ad153478aeb",
+    "mvr500_back.png": "d3ac160ef6a0780cbb2e4e09b8f0290b2a1167284e22fda9c410f5d0ce79abd6",
+    "mvr500_front.png": "bcab20cad052b676cf4561cca019e47cba8300d72d883f5ab80001af1d24c5a6",
+    "mvr20_front.png": "8ece55ef7a8f7b0b24d4405b9bb08ab38dd6a914022bac50a97b994d902e6cde",
+    "mvr5_back.jpg": "769dee4e3712a774251f33ca8adedb4cef7b907427b6745a3106dbc7598f939c",
+    "mvr10_front.png": "d5c0f17f8b15b51991ea3cb936e7c1537866f00f33ff78fabac2c41d0aaddce5",
+    "mvr1000_back.png": "17565a0b21dfe601ccda266119faaf3ede67f6fc76d9b05e230b57564ded6019",
     "Textures/colormap.png": "0d4947d34ff32acf4a359c7f22ca784e057e7e72f622170a9a77b6fc88fdb70e"
   }
 }

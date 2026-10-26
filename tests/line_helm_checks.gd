@@ -3,7 +3,7 @@ func _initialize():call_deferred("checks")
 func checks():
 	var game=load("res://scenes/main.tscn").instantiate();game.save_path="user://line-helm-check.json";root.add_child(game);game.interface.start_trip();game.set_physics_process(false)
 	game.boat.position=game.SPOT;game.first_person_driving=true
-	for id in ["dinghy","runner","skiff","launch","grady","glacier"]:
+	for id in ["skiff","launch","grady","glacier"]:
 		game.equipped_boat=id;game.apply_boat();game.drive.reset()
 		game.driving_controls.wheel_command=.4;game.driving_controls.lever_value=.6
 		for i in range(30):game._physics_process(1.0/60)
@@ -38,9 +38,9 @@ func checks():
 	assert(roller.global_position.distance_to(before)>.005,"Line pickup travels with the rotating bail")
 	feedback.equip("ocea","grappler","powerpro");feedback.bend_amount=.6
 	feedback.update_feedback(0,true,true,.5,game.line_target())
-	assert(feedback.routed_line_points.size()==17,"Overhead reel feeds directly to the guides without a spinning bail")
+	assert(feedback.routed_line_points.size()==18,"Overhead line passes through the traversing level-wind guide")
 	for i in range(4):
 		var expected=feedback.equipment.to_global(curve.point(curve.guides(true)[i],.6))
-		assert(feedback.routed_line_points[i+1].distance_to(expected)<.0001,"Overhead line follows the upper-side guide holes")
-	print("PASS: all six POV helm grips, lever motion, camera visibility, spool/roller routing, all four bent guides and final fish endpoint")
+		assert(feedback.routed_line_points[i+2].distance_to(expected)<.0001,"Overhead line follows the upper-side guide holes")
+	print("PASS: all four POV helm grips, lever motion, camera visibility, spool/roller routing, all four bent guides and final fish endpoint")
 	game.free();quit()

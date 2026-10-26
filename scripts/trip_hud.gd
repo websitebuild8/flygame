@@ -25,7 +25,7 @@ var map_visible=false
 var map_panel: PanelContainer
 var map_chart: Control
 var mini_map: Button
-var engine_button: Button
+var engine_button
 var put_fish_button: Button
 var map_button: Button
 var camera_button: Button
@@ -257,11 +257,13 @@ func build(owner_game: Node3D) -> void:
 	mini_map.offset_top=66
 	mini_map.offset_bottom=246
 	mini_map.pressed.connect(toggle_map)
-	engine_button=action(stage,"⏻ Engine off",game.toggle_engine)
+	engine_button=preload("res://scripts/engine_power_button.gd").new()
+	stage.add_child(engine_button)
+	engine_button.pressed.connect(game.toggle_engine)
 	engine_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	engine_button.offset_left=-175
-	engine_button.offset_right=-5
-	engine_button.offset_top=-295
+	engine_button.offset_left=-106
+	engine_button.offset_right=-30
+	engine_button.offset_top=-315
 	engine_button.offset_bottom=-239
 	build_market()
 	build_menu()
@@ -270,6 +272,7 @@ func build(owner_game: Node3D) -> void:
 	build_preview_card()
 	build_map()
 	build_intro()
+	game.driving_controls.configure_models(game.boat_visual)
 	apply_glass(body)
 	refresh()
 
@@ -296,23 +299,56 @@ func build_market() -> void:
 func build_menu() -> void:
 	menu = PanelContainer.new()
 	menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var style = panel_style(Color(0.025,0.075,0.105,0.98),0)
-	style.content_margin_left = 180
-	style.content_margin_right = 180
+	menu.anchor_left=.18;menu.anchor_right=.82
+	menu.anchor_top=.04;menu.anchor_bottom=.96
+	menu.clip_contents=true
+	var style = panel_style(Color(0.025,0.075,0.105,0.98),24)
+	style.content_margin_left = 20
+	style.content_margin_right = 20
 	style.content_margin_top = 20
 	menu.add_theme_stylebox_override("panel",style)
 	add_child(menu)
 	var column = VBoxContainer.new()
 	column.add_theme_constant_override("separation",10)
 	var scroll=ScrollContainer.new()
+	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	menu.add_child(scroll)
 	scroll.add_child(column)
 	column.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	column.add_child(label("TAKE A BREATHER",13,MINT))
-	column.add_child(label("Your trip",34))
+	var heading=HBoxContainer.new();column.add_child(heading)
+	var menu_title=label("Your trip",26);menu_title.size_flags_horizontal=Control.SIZE_EXPAND_FILL;heading.add_child(menu_title)
+	var close_menu=action(heading,"Close",toggle_menu)
+	close_menu.size_flags_horizontal=Control.SIZE_SHRINK_END
+	close_menu.custom_minimum_size=Vector2(90,42)
 	column.add_child(label("Drag the wheel to steer.\nLever up: forward. Centre: neutral.\nLever down: reverse. The throttle stays set.",18,MUTED))
 	column.add_child(label("Keyboard: A/D steer · W/S adjust throttle\nN selects neutral · Space casts/reels",15,MUTED))
+	column.add_child(label("Graphics",22))
+	var quality=OptionButton.new()
+	for title in ["Low · smoother on older phones","Medium · balanced","High · full detail"]:
+		quality.add_item(title)
+	quality.select(game.graphics_quality)
+	quality.custom_minimum_size.y=54
+	quality.add_theme_font_size_override("font_size",20)
+	quality.item_selected.connect(func(index):
+		game.graphics_quality=index
+		game.apply_graphics()
+		game.save_trip()
+	)
+	column.add_child(quality)
+	var shadows=CheckButton.new()
+	shadows.text="Shadows"
+	shadows.button_pressed=game.graphics_shadows
+	shadows.custom_minimum_size.y=54
+	shadows.add_theme_font_size_override("font_size",20)
+	shadows.toggled.connect(func(enabled):
+		game.graphics_shadows=enabled
+		game.apply_graphics()
+		game.save_trip()
+	)
+	column.add_child(shadows)
+	column.add_child(label("Low: 30 FPS target, lighter water and rain. Shadows can be switched separately.",15,MUTED))
 	for text in ["Sound","Vibration"]:
 		var toggle = CheckButton.new()
 		toggle.text = text
@@ -350,7 +386,8 @@ func build_menu() -> void:
 	credits.text+="\n\nSkipjack Tuna by [url=https://sketchfab.com/3d-models/cc0-skipjack-tuna-katsuwonus-pelamis-9431157b2fce4ea9a72d9cfe3ce37a6d]ffish.asia / floraZia.com[/url] · CC0\nAdapted: scan reduction, alignment and swimming.\n\nSailfish by [url=https://sketchfab.com/3d-models/sailfish-78249838285d4f67a24c3832464c37ae]RED SIDE[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: geometry reduction, materials, alignment and swimming.\n\nCoryphaena hippurus by [url=https://randibu.itch.io/3dfish]Randibu[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: FBX conversion, 1k texture, alignment, wet material and swimming."
 	credits.text+="\n\n2004 17-foot Scout, 285 Conquest Boston Whaler, Freedom 325 Grady White and Glacier Bay by [url=https://sketchfab.com/boatusfoundation]BoatUS Foundation[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: mesh optimisation, trailer removal, wheel/throttle/outboard pivots, camera mounts and game integration. Manufacturers do not endorse this game."
 	credits.text+="\n\nHand With Gloves by [url=https://sketchfab.com/3d-models/hand-with-gloves-5a6a434b8ec943ffacc581358781eecb]JUST (@teenjust500)[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: finger poses, fishing grips and two arm IK chains. Authored rod blank by Ergin ERYILDIR: live geometry alignment, bending material and right-hand reel conversion."
-	credits.text+="\n\nMarket customers: [url=https://quaternius.com/packs/ultimatemodularcharacters.html]Quaternius Ultimate Modular Men[/url] · CC0 1.0. Adapted: retained idle/walk/interact clips, GLB packing, scale and clothing colours.\nCash register: [url=https://kenney.nl/assets/mini-market]Kenney Mini Market[/url] · CC0 1.0.\nMVR 100 specimen artwork: [url=https://www.mma.gov.mv/Public%20Education/currency/RDF%20book/RDF%20booklet.pdf]Maldives Monetary Authority, Ran Dhihafaheh booklet[/url], page 13. Used as an in-game payment prop; not covered by the CC0 model licences."
+	credits.text+="\n\nMarket customers: [url=https://quaternius.com/packs/ultimatemodularcharacters.html]Quaternius Ultimate Modular Men[/url] · CC0 1.0. Adapted: retained idle/walk/interact clips, GLB packing, scale and clothing colours.\nCash register: [url=https://kenney.nl/assets/mini-market]Kenney Mini Market[/url] · CC0 1.0.\nCurrency specimen artwork: [url=https://www.mma.gov.mv/Public%20Education/currency/RDF%20book/RDF%20booklet.pdf]Maldives Monetary Authority, Ran Dhihafaheh booklet[/url], pages 10–15, plus MMA’s currency-in-circulation images for MVR 5 and MVR 1/2 coins. Used as in-game payment props; not covered by the CC0 model licences."
+	credits.text+="\n\nAdditional tackle: Fishing Rod (spinning reel) by [url=https://sketchfab.com/3d-models/fishing-rod-2445514b50494ae8a751e24b976b294d]Sobrom[/url] · CC BY 4.0. Adapted: right-hand retrieve, mesh separation and live reel pivots.\nLevel wind mechanism by [url=https://sketchfab.com/3d-models/level-wind-mechanism-baitcasting-fishing-reel-0d4a3f6123eb409a9ce6391ddcd72048]C. Yamahata[/url] · CC BY 4.0. Adapted: opaque housing, materials, wound line and moving spool/guide; combined with Ergin ERYILDIR’s imported crank. These are generic adapted reels."
 	credits.meta_clicked.connect(func(url): OS.shell_open(str(url)))
 	column.add_child(credits)
 	menu.visible = false
@@ -379,7 +416,9 @@ func build_catch() -> void:
 func build_intro() -> void:
 	game.intro = PanelContainer.new()
 	game.intro.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var style = panel_style(Color(0.025,0.075,0.105,0.5),0)
+	game.intro.anchor_left=.23;game.intro.anchor_right=.77
+	game.intro.anchor_top=.16;game.intro.anchor_bottom=.84
+	var style = panel_style(Color(0.025,0.075,0.105,0.5),24)
 	style.content_margin_left = 30
 	style.content_margin_right = 30
 	game.intro.add_theme_stylebox_override("panel",style)
@@ -387,14 +426,14 @@ func build_intro() -> void:
 	var center=CenterContainer.new()
 	game.intro.add_child(center)
 	var column=VBoxContainer.new()
-	column.custom_minimum_size.x=480
+	column.custom_minimum_size.x=360
 	column.add_theme_constant_override("separation",14)
 	center.add_child(column)
 	var space = Control.new()
 	space.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(space)
 	for text in ["THE MALDIVES AWAIT", "Ishaq's", "Fishing Trip", "A small boat. An ocean of possibilities."]:
-		var item = label(text,48 if text in ["Ishaq's","Fishing Trip"] else 16,MINT if text=="THE MALDIVES AWAIT" else WHITE)
+		var item = label(text,36 if text in ["Ishaq's","Fishing Trip"] else 15,MINT if text=="THE MALDIVES AWAIT" else WHITE)
 		item.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		column.add_child(item)
 	action(column,"Set sail",start_trip,true)
@@ -439,13 +478,13 @@ func refresh() -> void:
 	var nearest=game.World.nearest(game.boat.position)
 	var spot_distance=Vector2(game.boat.position.x,game.boat.position.z).distance_to(nearest.at)
 	var at_spot=spot_distance<14 and game.catches>=int(nearest.unlock)
-	mini_map.visible = driving and not menu_visible and not map_visible
+	mini_map.visible = driving and not menu_visible and not map_visible and not (game.first_person_driving and game.cockpit_displays and game.cockpit_displays.has_map)
 	game.driving_controls.visible = driving and not menu_visible and not map_visible
 	game.fish_button.visible = not game.market_mode and not game.shop_mode and not game.can_put_fish_on_boat() and not game.landing_to_boat
 	game.fish_button.disabled = driving and (not at_spot or absf(game.speed)>1 or (game.drive.engine_running and game.drive.gear!=0))
 	var stopped_safe=absf(game.speed)<1 and (not game.drive.engine_running or game.drive.gear==0)
 	engine_button.visible=driving and not menu_visible and not map_visible
-	engine_button.text="⏻ Cut engine" if game.drive.engine_running else "⏻ Start engine"
+	engine_button.set_running(game.drive.engine_running)
 	put_fish_button.visible=game.can_put_fish_on_boat()
 	put_fish_button.custom_minimum_size.y=70
 	game.market_button.disabled=not stopped_safe
@@ -492,7 +531,7 @@ func refresh() -> void:
 		else:
 			customer_label.text+="Your icebox is empty."
 		game.market.set_species(str(game.inventory[0].species) if not game.inventory.is_empty() else "Yellowfin tuna")
-		game.market.set_sale(not game.inventory.is_empty(),game.pending_payment>0)
+		game.market.set_sale(not game.inventory.is_empty(),game.pending_payment)
 		game.market.register_total.text="MVR %d" % (game.pending_payment if game.pending_payment>0 else (int(game.inventory[0].value) if not game.inventory.is_empty() else 0))
 		game.market_action.disabled = game.market.queue_moving or game.market.handing_over or (game.inventory.is_empty() and game.pending_payment==0)
 		game.market_action.text = "Collect MVR %d" % game.pending_payment if game.pending_payment>0 else "Serve next customer"
@@ -589,7 +628,7 @@ func build_shop() -> void:
 	shop_list.add_theme_constant_override("separation",14)
 	scroll.add_child(shop_list)
 	column.add_child(label("Earned MVR · in-game currency · tap a name to preview",12,MUTED))
-	action(column,"Return to dinghy",game.leave_fishing)
+	action(column,"Return to boat",game.leave_fishing)
 	shop_panel.visible = false
 
 func show_shop(category: String) -> void:

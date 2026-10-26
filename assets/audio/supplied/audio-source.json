@@ -1,0 +1,54 @@
+{
+  "source": "Audio supplied by the user; no independent licence claimed.",
+  "processing": "Ogg Vorbis quality 4, 32 kHz stereo; originals untouched.",
+  "clips": [
+    {
+      "source": "/home/ahusan/ft/out/audio/background.wav",
+      "duration_seconds": 11.507,
+      "file": "background.ogg",
+      "use": "outdoor ambience"
+    },
+    {
+      "source": "/home/ahusan/ft/out/audio/audio_fishing_drawing01.wav",
+      "duration_seconds": 0.5,
+      "file": "audio_fishing_drawing01.ogg",
+      "use": "retrieval loop variant"
+    },
+    {
+      "source": "/home/ahusan/ft/out/audio/audio_fishing_drawing04.wav",
+      "duration_seconds": 0.5,
+      "file": "audio_fishing_drawing04.ogg",
+      "use": "retrieval loop variant"
+    },
+    {
+      "source": "/home/ahusan/ft/out/audio/audio_fishing_drawing07.wav",
+      "duration_seconds": 0.5,
+      "file": "audio_fishing_drawing07.ogg",
+      "use": "retrieval loop variant"
+    },
+    {
+      "source": "/home/ahusan/ft/out/audio/audio_fishing_drawing_hpevent_01.wav",
+      "duration_seconds": 1.533,
+      "file": "audio_fishing_drawing_hpevent_01.ogg",
+      "use": "fish splash / cast impact variant"
+    },
+    {
+      "source": "/home/ahusan/ft/out/audio/audio_fishing_drawing_hpevent_02.wav",
+      "duration_seconds": 1.161,
+      "file": "audio_fishing_drawing_hpevent_02.ogg",
+      "use": "fish splash / cast impact variant"
+    },
+    {
+      "source": "/home/ahusan/ft/out/audio/audio_fishing_drawing_hpevent_03.wav",
+      "duration_seconds": 1.37,
+      "file": "audio_fishing_drawing_hpevent_03.ogg",
+      "use": "fish splash / cast impact variant"
+    },
+    {
+      "source": "/home/ahusan/ft/out/audio/audio_fishing_drawing_hpevent_05.wav",
+      "duration_seconds": 1.068,
+      "file": "audio_fishing_drawing_hpevent_05.ogg",
+      "use": "fish splash / cast impact variant"
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 extends Control
 ## Independent pointer ownership permits wheel and throttle simultaneously.
+var model_wheel: SubViewportContainer
+var model_throttle: SubViewportContainer
 var wheel_command = 0.0
 var lever_value = 0.0
 var wheel_display = 0.0
@@ -9,6 +11,9 @@ var shown_rpm = 0.0
 var shift_waiting = false
 var skin="dinghy"
 var pov=false
+var cockpit_screen=false
+var lever_drag_y=0.0
+var lever_drag_value=0.0
 var pov_wheel=Vector2.ZERO
 var pov_wheel_radius=87.0
 var pov_lever=Vector2.ZERO
@@ -27,11 +32,11 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func wheel_center() -> Vector2:
-	return pov_wheel if pov else Vector2(94,size.y*0.5)
+	return pov_wheel if pov else Vector2(113,size.y*0.5)
 
 func rail_center() -> Vector2:
 	# Throttle is a fixed touch instrument, never a projected moving 3D point.
-	return Vector2(size.x-70,size.y*0.5) if pov else Vector2(size.x-63,size.y*0.5)
+	return pov_lever if pov and cockpit_screen else (Vector2(size.x-70,size.y*0.5) if pov else Vector2(size.x-63,size.y*0.5))
 
 func local_point(point: Vector2) -> Vector2:
 	return get_global_transform_with_canvas().affine_inverse()*point
@@ -60,13 +65,14 @@ func _input(event: InputEvent) -> void:
 
 func pointer(id: int, point: Vector2, down: bool) -> void:
 	if down:
-		if point.distance_to(wheel_center()) < (pov_wheel_radius if pov else 87.0) and wheel_pointer == -99:
+		if point.distance_to(wheel_center()) < (pov_wheel_radius if pov else 108.0) and wheel_pointer == -99:
 			wheel_pointer = id
 			previous_angle = (point-wheel_center()).angle()
 			get_viewport().set_input_as_handled()
 		elif Rect2(rail_center()-Vector2(60,108),Vector2(120,216)).has_point(point) and lever_pointer == -99:
 			lever_pointer = id
-			update_lever(point)
+			lever_drag_y=point.y;lever_drag_value=lever_value
+			if not (pov and cockpit_screen):update_lever(point)
 			get_viewport().set_input_as_handled()
 	else:
 		if wheel_pointer == id:
@@ -88,7 +94,7 @@ func drag(id: int, point: Vector2) -> void:
 	queue_redraw()
 
 func update_lever(point: Vector2) -> void:
-	lever_value = clampf((rail_center().y-point.y)/74,-1,1)
+	lever_value = clampf(lever_drag_value+(lever_drag_y-point.y)/130,-1,1) if pov and cockpit_screen else clampf((rail_center().y-point.y)/74,-1,1)
 	if absf(lever_value)<0.13:
 		lever_value = 0
 
@@ -112,6 +118,7 @@ func set_skin(id: String) -> void:
 
 func _draw() -> void:
 	if pov:
+		if cockpit_screen:return
 		var wheel=wheel_center()
 		draw_arc(wheel,pov_wheel_radius*.9,-PI*.85,-PI*.15,30,Color(accent,0.5),2,true)
 		text_at("DRAG WHEEL",wheel+Vector2(-45,100),12,accent)
@@ -119,6 +126,10 @@ func _draw() -> void:
 		draw_throttle()
 		panel(Rect2(size.x-320,size.y-70,165,70))
 		text_at("%.1f kn · %s" % [shown_speed*1.94384,shown_gear],Vector2(size.x-308,size.y-28),22,white)
+		return
+	if model_wheel:
+		draw_throttle()
+		text_at("%.1f kn · %s" % [shown_speed*1.94384,shown_gear],Vector2(244,size.y-22),22,white)
 		return
 	panel(Rect2(0,0,188,size.y))
 	panel(Rect2(size.x-130,0,130,size.y))
@@ -158,22 +169,40 @@ func _draw() -> void:
 
 func draw_throttle() -> void:
 	var rail = rail_center()
-	var label={"launch":"TWIN DRIVE","glacier":"CAT DRIVE","grady":"FREEDOM","runner":"SPORT"}.get(skin,"THROTTLE")
+	var label="THROTTLE"
+	var throttle_accent=preload("res://scripts/marine_power.gd").color_for(lever_value)
 	text_at(label,rail+Vector2(-38,-89),13,muted)
 	draw_line(rail+Vector2(0,-72),rail+Vector2(0,74),Color("344e5b"),14,true)
-	if skin in ["launch","glacier","grady"]:
-		draw_line(rail+Vector2(-15,-72),rail+Vector2(-15,74),Color(accent,.65),5,true)
 	for i in range(9):
 		var y = rail.y-72+i*18
 		draw_line(Vector2(rail.x-16,y),Vector2(rail.x+16,y),Color("729095"),1,true)
-	text_at("F",rail+Vector2(33,-64),18,accent)
+	text_at("F",rail+Vector2(33,-64),18,throttle_accent)
 	text_at("N",rail+Vector2(33,6),18,white)
 	text_at("R",rail+Vector2(33,78),18,Color("f0bf82"))
+	for level in range(10):
+		var lit=absf(lever_value)>=float(level+1)/10.0
+		draw_rect(Rect2(rail+Vector2(-50,68-level*14),Vector2(9,10)),throttle_accent if lit else Color("344e5b"))
+	text_at("%d%%" % roundi(absf(lever_value)*100),rail+Vector2(-29,104),16,white)
 	var handle = rail-Vector2(0,lever_value*74)
 	draw_line(rail,handle,Color("c3d7d4"),6,true)
 	var knob = StyleBoxFlat.new()
-	knob.bg_color = accent if lever_value>=0 else Color("edb877")
+	knob.bg_color = throttle_accent if lever_value>=0 else Color("edb877")
 	knob.set_corner_radius_all(10)
 	draw_style_box(knob,Rect2(handle-Vector2(27,14),Vector2(54,28)))
 	for i in [-1,0,1]:
 		draw_line(handle+Vector2(i*7,-6),handle+Vector2(i*7,6),Color("31666b"),2,true)
+
+func configure_models(boat_visual: Node3D) -> void:
+	for control in [model_wheel,model_throttle]:
+		if is_instance_valid(control):
+			remove_child(control);control.queue_free()
+	model_wheel=preload("res://scripts/helm_instrument.gd").new()
+	add_child(model_wheel)
+	model_wheel.configure(boat_visual.get_node("HelmWheel"),true)
+	model_throttle=null
+func _process(_delta: float) -> void:
+	if not model_wheel:return
+	var active=is_visible_in_tree() and not pov
+	model_wheel.position=wheel_center()-Vector2(110,110)
+	model_wheel.size=Vector2(220,220)
+	model_wheel.pose(wheel_display,active)

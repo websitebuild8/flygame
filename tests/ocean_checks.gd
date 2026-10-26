@@ -49,7 +49,7 @@ func checks() -> void:
 	game.catches=0
 	game.return_home()
 	game.open_shop("Boats")
-	check(not game.purchase_item("skiff"),"Boat purchase requires catch milestone as well as coins")
+	check(not game.purchase_item("launch"),"Boat purchase requires catch milestone as well as coins")
 	game.catches=3
 	check(game.purchase_item("skiff") and game.equipped_boat=="skiff","Unlocked speedboat can be bought and equipped")
 	check(game.driving_controls.skin=="skiff" and game.icebox_capacity()==14,"Boat changes helm design and capacity")
@@ -88,8 +88,8 @@ func checks() -> void:
 	game.day_cycle.advance(10)
 	check(game.day_cycle.hours<1,"Game clock rolls over midnight")
 	game.save_trip()
-	game.equipped_boat="dinghy"
-	game.owned_boats=["dinghy"]
+	game.equipped_boat="skiff"
+	game.owned_boats=["skiff"]
 	game.load_trip()
 	check(game.equipped_boat=="launch" and "skiff" in game.owned_boats and game.day_cycle.hours<1,"Boats and time persist through saves")
 	game.return_home()

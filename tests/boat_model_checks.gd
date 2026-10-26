@@ -42,7 +42,7 @@ func checks():
 	var game=load("res://scenes/main.tscn").instantiate()
 	game.save_path="user://boat-model-checks.json";root.add_child(game);game.set_physics_process(false);game.interface.start_trip()
 	game._physics_process(.016)
-	assert(game.boat_visual.get_node("HelmWheel").scale.is_equal_approx(Vector3.ONE*1.65),"Starter helm retains its enlarged rim after steering updates")
+	assert(game.boat_visual.get_node("HelmWheel").scale.is_equal_approx(Vector3.ONE*1.2),"Starter helm retains its enlarged rim after steering updates")
 	for id in ["skiff","launch","glacier","grady"]:
 		game.equipped_boat=id;game.apply_boat();game.return_home();game.first_person_driving=true;game._physics_process(.016)
 		var wheel=game.boat_visual.get_node("HelmWheel") as Node3D
