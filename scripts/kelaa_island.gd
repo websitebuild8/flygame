@@ -181,26 +181,25 @@ func harbour_box(port: Dictionary,u: float,y: float,v: float,size: Vector3,color
 
 func harbour_details() -> void:
 	var port=Harbours.get_port(island_title)
-	for wall in port.walls:
-		var a: Vector2=wall[0];var b: Vector2=wall[1];var at=(a+b)*.5
-		box(Vector3(at.x,.0,at.y),Vector3(a.distance_to(b),.9,1.2),Color("92968a"),atan2(-(b.y-a.y),b.x-a.x))
-		box(Vector3(at.x,.48,at.y),Vector3(a.distance_to(b),.12,1.35),Color("c2c3b1"),atan2(-(b.y-a.y),b.x-a.x))
-		var steps=maxi(1,int(a.distance_to(b)/1.8))
-		for i in range(steps):
-			var p=a.lerp(b,(i+.5)/steps)
-			box(Vector3(p.x,-.28,p.y),Vector3(.9,.45,1.65),Color("858d84"),atan2(-(b.y-a.y),b.x-a.x)+.10*sin(i))
-	harbour_box(port,port.land+.6,.25,0,Vector3(2.2,.55,port.half*2+1),Color("bcbba7"))
+	for wall_index in range(port.walls.size()):
+		var wall=port.walls[wall_index];var a: Vector2=wall[0];var b: Vector2=wall[1];var at=(a+b)*.5
+		# Continuous submerged core and concrete inner face; rough armour covers the seaward slope.
+		box(Vector3(at.x,-.40,at.y),Vector3(a.distance_to(b),1.08,.75),Color("777e76"),atan2(-(b.y-a.y),b.x-a.x))
+		box(Vector3(at.x,.16,at.y),Vector3(a.distance_to(b),.10,1.08),Color("c5c4b4"),atan2(-(b.y-a.y),b.x-a.x))
+	var rocks=preload("res://scripts/harbour_rocks.gd").new();add_child(rocks);rocks.configure(port)
+	harbour_box(port,port.land+.6,.07,0,Vector3(2.2,.16,port.half*2+1),Color("bcbba7"))
 	for side in [-1,1]:harbour_box(port,port.land-2,.10,side*(port.half-4),Vector3(5,.25,1.1),Color("a99977"))
 	for v in [-port.half+4,-4,4,port.half-4]:
-		harbour_box(port,port.land-.6,.05,v,Vector3(.24,.7,.50),Color("313e40"))
-		harbour_box(port,port.land+.1,.68,v,Vector3(.13,.35,.13),Color("536669"))
-		harbour_box(port,port.land+.1,.83,v,Vector3(.35,.09,.15),Color("536669"))
+		harbour_box(port,port.land-.6,-.22,v,Vector3(.24,.7,.50),Color("313e40"))
+		harbour_box(port,port.land+.1,.26,v,Vector3(.13,.35,.13),Color("536669"))
+		harbour_box(port,port.land+.1,.41,v,Vector3(.35,.09,.15),Color("536669"))
 	for v in [-port.half+5,port.half-5]:
 		moored_boat(Harbours.local_point(port,port.land-4,v),atan2(-port.inward.y,port.inward.x))
 	for side in [-1,1]:
-		var color=Color("bf534d") if side<0 else Color("438b68")
-		harbour_box(port,-port.depth,.88,side*port.gate,Vector3(.32,.9,.32),color)
-		harbour_box(port,-port.depth,1.4,side*port.gate,Vector3(.38,.16,.38),color.lightened(.3))
+		var v=side*(port.gate+.55)
+		harbour_box(port,-port.depth,.12,v,Vector3(1.5,.24,1.4),Color("c3c2b4"))
+		var point=Harbours.local_point(port,-port.depth,v)
+		var beacon=preload("res://scripts/harbour_beacon.gd").new();beacon.red=side<0;beacon.position=Vector3(point.x,.25,point.y);add_child(beacon)
 	var roof=[Color("3c8584"),Color("b49c6f"),Color("427eaa"),Color("ab654c"),Color("55774b")][port.theme]
 	for side in [-1,1]:
 		harbour_box(port,port.land+3,1.0,side*5,Vector3(3.4,1.6,3.4),Color("e4dcc4"))

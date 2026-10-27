@@ -1,0 +1,26 @@
+HARBOUR ARMOUR ROCK
+Boulder 01 by Rico Cilliers / Poly Haven.
+https://polyhaven.com/a/boulder_01
+CC0 1.0: https://polyhaven.com/license
+https://creativecommons.org/publicdomain/zero/1.0/
+Source geometry:
+https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/boulder_01/boulder_01_1k.gltf
+https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/boulder_01/boulder_01.bin
+Source photographic maps (diff, nor_gl, arm):
+https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/boulder_01/
+Adaptations: 66,122 → 580 triangles using Godot's mesh LOD optimiser, compacted
+vertices, 512-pixel compressed texture maps, instancing, colour and wet shading.
+
+WHITE HARBOUR BEACON
+Lighthouse by the Codels library.
+https://codels.download/models/lighthouse
+https://codels.download/m/lighthouse.glb
+Publisher declares CC0 1.0 / Public Domain, free for any use.
+https://creativecommons.org/publicdomain/zero/1.0/
+The publisher describes the model as made in code (AI-assisted/parametric).
+Adaptations: removed landscape rocks/steps, changed striped tower to white,
+merged into three shared meshes, resized to a short harbour light, widened
+proportions, red and green lantern material variants with night emission.
+
+Retrieved 2026-10-27. These are adapted assets, not scans of actual Maldivian
+harbour structures. Photographs supplied by the user are visual references only.

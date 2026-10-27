@@ -1,0 +1,23 @@
+{
+  "retrieved": "2026-10-27",
+  "rock": {
+    "name": "Boulder 01",
+    "author": "Rico Cilliers / Poly Haven",
+    "url": "https://polyhaven.com/a/boulder_01",
+    "license": "CC0 1.0",
+    "original_triangles": 66122,
+    "game_triangles": 580,
+    "texture_cap": 512
+  },
+  "beacon": {
+    "name": "Lighthouse",
+    "author": "Codels library",
+    "url": "https://codels.download/models/lighthouse",
+    "license": "CC0 1.0",
+    "adaptation": "short white harbour beacon, red/green lenses; three merged surfaces"
+  },
+  "sha256": {
+    "white_beacon.glb": "063843be447008764d3651bbbfed5cf1515d2aede1ae0f4841f651acb66c30da",
+    "armour_rock.glb": "e827a0aeb60f71dcc79351bc419afc73de370401e17eb98679baed2b38fe502b"
+  }
+}

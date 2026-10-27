@@ -1,0 +1,36 @@
+ISHAQ'S FISHING TRIP — 20-second promotional video
+Actual staged footage of the local in-development Godot project. No release date
+or store availability is asserted. Editing/titling: Hyperframes.
+
+Music: Happy Beats / Business Moves Vol. 12 — Sascha Ende, ende.app.
+CC BY 4.0 https://creativecommons.org/licenses/by/4.0/
+Publisher: https://ende.app/en/standard-license
+Adaptation: 20-second excerpt, gain adjustment and fades; mixed with SFX.
+
+SFX: impactSoft_medium_001 and drop_001, Kenney audio library — CC0.
+https://kenney.nl/
+
+Game assets appearing in the footage:
+Boat models (Scout, Grady-White, Glacier Bay and Whaler): BoatUS Foundation.
+https://sketchfab.com/boatusfoundation — CC BY 4.0.
+Fishing Rod, Rigged and Animated: Ergin ERYILDIR — CC BY 4.0.
+https://sketchfab.com/3d-models/fishing-rod-rigged-and-animated-78991bf44cf54acb8660bef317d72c7a
+Hand With Gloves: JUST / @teenjust500 — CC BY 4.0.
+https://sketchfab.com/3d-models/hand-with-gloves-5a6a434b8ec943ffacc581358781eecb
+Tuna Fish: GoldenZtuff — CC BY 4.0.
+https://www.fab.com/listings/6b90bbe2-3031-4b36-93ad-90f1cb2d01f5
+Market characters: Quaternius Ultimate Modular Men — CC0.
+Cash register: Kenney Mini Market — CC0.
+Island map source: © OpenStreetMap contributors — ODbL 1.0.
+https://www.openstreetmap.org/copyright
+Seabed sand: Aerial Beach 01 by Rob Tuytel / Poly Haven — CC0.
+Marine buoy: 1DesignTool / StoicSoft — free 3D library licence.
+MVR specimen art: Maldives Monetary Authority, as credited in the game.
+
+Models/textures were adapted for the game (scale, mesh/texture optimisation,
+rigs and motion). Full individual source/licence records remain in the game
+under assets/models/, assets/maps/ and assets/textures/ocean/.
+Updated harbour shots: Boulder 01 by Rico Cilliers / Poly Haven — CC0;
+white harbour beacon adapted from Lighthouse by Codels — CC0.
+https://polyhaven.com/a/boulder_01
+https://codels.download/models/lighthouse

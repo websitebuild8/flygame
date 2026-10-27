@@ -23,6 +23,23 @@ func checks():
   assert(World.outline(island).size()>40,"Harbour cuts preserve the natural island coastline")
   if island.name!="HA. Kelaa":assert(island.at.distance_to(World.ISLANDS[0].at)>280,"Neighbouring islands have open sea between them")
  var game=load("res://scenes/main.tscn").instantiate();game.save_path="user://harbour-world-check.json";root.add_child(game);game.interface.start_trip();game.set_physics_process(false)
+ var armour=get_nodes_in_group("harbour_rock_groups");var beacons=get_nodes_in_group("harbour_beacons")
+ assert(armour.size()==5 and beacons.size()==10,"Every harbour has imported rock armour and a beacon pair")
+ for group in armour:
+  assert(group.rock_count>80 and group.rock_count<300,"Armour stone instance counts remain bounded")
+  assert(group.shared_mesh.surface_get_arrays(0)[Mesh.ARRAY_INDEX].size()/3<=600,"Shared photogrammetry rock is mobile simplified")
+  var color=group.shared_material.get_shader_parameter("stone_color")
+  assert(color!=null and color.get_width()<=512,"Photographic stone maps stay mobile sized")
+  group.apply_quality(0);var low=group.groups[0].multimesh.visible_instance_count
+  group.apply_quality(2);assert(group.groups[0].multimesh.visible_instance_count>low,"Low quality reduces distributed rock instances")
+ var red=0;var green=0
+ for beacon in beacons:
+  assert(beacon.lamp!=null,"Adapted model retains an actual lantern mesh")
+  beacon.update_light(0,0);var day=beacon.lamp.emission_energy_multiplier
+  beacon.update_light(1,0);assert(beacon.lamp.emission_energy_multiplier>day,"Entrance lanterns brighten at night")
+  if beacon.red:red+=1
+  else:green+=1
+ assert(red==5 and green==5,"Each island has a red and green entrance beacon")
  for id in ["skiff","launch","glacier","grady"]:
   game.equipped_boat=id;game.apply_boat()
   var bounds=AABB();var first=true

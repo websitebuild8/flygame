@@ -1,4 +1,5 @@
 extends Node
+var beacon_clock=0.0
 var lighting_tick=0.0
 var shadows_allowed = true
 var effects_quality = 2
@@ -23,6 +24,7 @@ const WEATHER_NAMES=["Sunny","Cloudy","Rain showers","Rough sea"]
 const CONDITIONS=[Vector3(0,0,0),Vector3(0.75,0.2,0),Vector3(0.95,0.5,1),Vector3(0.85,1,0.65)]
 
 func advance(delta: float) -> void:
+	beacon_clock+=delta
 	weather_age+=delta
 	if weather_age>=150: next_weather()
 	var target: Vector3=CONDITIONS[weather]
@@ -68,6 +70,7 @@ func apply_lighting() -> void:
 	water.set_shader_parameter("daylight",day_amount)
 	water.set_shader_parameter("rough_sea",roughness)
 	water.set_shader_parameter("rain",rain_amount)
+	for beacon in get_tree().get_nodes_in_group("harbour_beacons"):beacon.update_light(1-day_amount,beacon_clock)
 	for light in harbor_lights:
 		light.light_energy = (1-day_amount)*1.8
 

@@ -84,7 +84,9 @@ func update(delta: float,active: bool) -> void:
  for actor in actors:pose(actor)
 func pose(actor: Dictionary):
  actor.node.position=Vector3(actor.position.x,game.surface.height(actor.position)-game.surface.BASE,actor.position.y)
- actor.node.rotation.y=actor.heading;actor.node.set_speed(actor.speed)
+ actor.node.rotation.y=actor.heading
+ if not actor.node.imported_id.is_empty():preload("res://scripts/outboard_waterline.gd").update(actor.node.hull,game.surface)
+ actor.node.set_speed(actor.speed)
 func motion_blocked(from: Vector2,to: Vector2,radius: float) -> bool:
  for actor in actors:
   if Collision.sweeps_circle(from,to,actor.position,radius+actor.radius):return true

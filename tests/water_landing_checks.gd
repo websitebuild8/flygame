@@ -61,8 +61,26 @@ func checks():
    game._physics_process(1.0/30)
    var height=game.surface.height(Vector2(game.boat.position.x,game.boat.position.z))
    assert(absf(game.boat.position.y-(height-Surface.BASE))<.001,"Player hull follows the current sea height")
+  var Mount=preload("res://scripts/outboard_waterline.gd")
+  for item in Mount.motors(game.boat_visual):
+   var hub=item.prop.global_position
+   assert(hub.y+item.radius<game.surface.height(Vector2(hub.x,hub.z))-.04,"Entire propeller disk stays submerged on every boat")
+  var sources=Mount.positions(game.boat_visual)
+  for direction in [-1,1]:
+   game.wake.timer=0
+   game.wake.update_wake(.016,game.boat.position,game.boat.basis.z,direction*2,sources,.8,direction)
+   assert(game.wake.emitted_origins.size()==sources.size(),"Twin engines each emit prop wash")
+   for i in range(sources.size()):
+    var offset=game.wake.emitted_origins[i]-sources[i]
+    assert(absf(offset.dot(game.boat.basis.z)-.025)<.001,"Forward and reverse wash both originate at the stern propeller")
+   var last=(game.wake.cursor-1+game.wake.pieces.size())%game.wake.pieces.size()
+   assert(game.wake.velocities[last].dot(game.boat.basis.z)*direction>0,"Reversing changes jet direction without moving the emission source")
   for actor in game.traffic.actors:
    assert(absf(actor.node.position.y-(game.surface.height(actor.position)-Surface.BASE))<.002,"NPC hulls share the player waterline sampler")
+   if not actor.node.imported_id.is_empty():
+    for item in Mount.motors(actor.node.hull):
+     var hub=item.prop.global_position
+     assert(hub.y+item.radius<game.surface.height(Vector2(hub.x,hub.z))-.04,"Imported NPC propellers also remain submerged")
  game.queue_free();await create_timer(.2).timeout
  print("PASS: shader-matched water height at all qualities, five species hanging by the mouth on four boats, fully dry tails/showcases, safe fishing eye and two imported NPC vessels")
  quit()

@@ -21,6 +21,12 @@ func _ready():
  var material=StandardMaterial3D.new();material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;material.albedo_color=Color(.7,.9,.88,.25);material.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;wake.material_override=material;wake.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;wake.visibility_range_end=180
 func set_speed(speed: float):
  wake.visible=speed>.5;wake.scale.y=1+speed*.08
+ if not imported_id.is_empty():
+  var sources=preload("res://scripts/outboard_waterline.gd").positions(hull)
+  if not sources.is_empty():
+   var origin=Vector3.ZERO
+   for point in sources:origin+=to_local(point)
+   origin/=sources.size();wake.position=Vector3(origin.x,-.585,origin.z+.15)
 static func mesh_for(style: int) -> ArrayMesh:
  if meshes.has(style):return meshes[style]
  var tool=SurfaceTool.new();tool.begin(Mesh.PRIMITIVE_TRIANGLES)

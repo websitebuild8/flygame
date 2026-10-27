@@ -63,3 +63,18 @@ The asset licence is saved in `assets/textures/ocean/LICENSE.txt`. Regenerate th
 coastal map with Godot's `tools/export_ocean_coasts.gd` followed by
 `tools/prepare_ocean.py` using Python with NumPy/Pillow; those tools are build-time
 only and add no Python dependency to the game.
+
+## Propeller depth and reverse wash
+
+`outboard_waterline.gd` measures the imported blade radius and lowers each
+outboard assembly enough to keep its complete rotating disk at least 0.045
+world units beneath the local rendered surface. It preserves the authored
+mount height as its reference and recalculates after hull heave/lean, so the
+adjustment does not accumulate. Player vessels and imported NPCs share it.
+
+The player's existing 22-patch wake pool now emits soft foam from each actual
+propeller hub at the stern. Forward/reverse changes the wash drift, not the
+emission point. Cutoff and neutral stop powered wash, existing foam fades, and
+all patches follow the sampled surface. Twin motors emit at both hubs. The
+water/landing test also verifies full blade submersion and stern emission in
+both directions on all four boats.

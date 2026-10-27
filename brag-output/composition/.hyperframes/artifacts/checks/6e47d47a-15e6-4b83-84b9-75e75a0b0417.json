@@ -1,0 +1,370 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "filesScanned": 6
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "clip_media_fit",
+        "severity": "warning",
+        "message": "Audio \"market-accent\" is 0.11s but its slot (data-duration) is 0.60s — the slot is shortened to the media length when rendered. Set data-duration to ~0.11s if that isn't intended.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {
+          "data-composition-id": "main",
+          "data-start": "0",
+          "data-duration": "20",
+          "data-width": "1920",
+          "data-height": "1080"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "time": 0
+      }
+    ]
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "duration": 20,
+    "samples": [
+      0.833,
+      2.5,
+      4.167,
+      5.833,
+      7.5,
+      9.167,
+      10.833,
+      12.5,
+      14.167,
+      15.833,
+      17.5,
+      19.167
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 0,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      0.833,
+      4.167,
+      9.167,
+      14.167,
+      19.167
+    ],
+    "checked": 20,
+    "passed": 20
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 5,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 3 text elements stay under it for 0.5 s or more, the smallest \"ISHAQ'S FISHING TRIP\" at 21 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "ISHAQ'S FISHING TRIP",
+        "selector": "#island-footer",
+        "dataAttributes": {},
+        "sourceFile": "compositions/island.html",
+        "bbox": {
+          "x": 192,
+          "y": 925,
+          "width": 253.19,
+          "height": 28
+        },
+        "time": 1.125,
+        "times": [
+          0.25,
+          0.875,
+          1.125
+        ],
+        "fontPx": 21,
+        "floorPx": 28,
+        "seconds": 1.875,
+        "elements": [
+          {
+            "selector": "#island-footer",
+            "text": "ISHAQ'S FISHING TRIP",
+            "fontPx": 21,
+            "time": 1.125,
+            "seconds": 1.875
+          },
+          {
+            "selector": "#island-kicker",
+            "text": "THE MALDIVES AWAIT",
+            "fontPx": 23,
+            "time": 0.25,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#island-sub",
+            "text": "HAA ALIF · MALDIVES",
+            "fontPx": 23,
+            "time": 0.875,
+            "seconds": 2.125
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 3 text elements stay under it for 0.5 s or more, the smallest \"ISHAQ'S FISHING TRIP\" at 21 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "ISHAQ'S FISHING TRIP",
+        "selector": "#helm-footer",
+        "dataAttributes": {},
+        "sourceFile": "compositions/helm.html",
+        "bbox": {
+          "x": 192,
+          "y": 925,
+          "width": 253.19,
+          "height": 28
+        },
+        "time": 4.125,
+        "times": [
+          3.25,
+          3.875,
+          4.125
+        ],
+        "fontPx": 21,
+        "floorPx": 28,
+        "seconds": 2.375,
+        "elements": [
+          {
+            "selector": "#helm-footer",
+            "text": "ISHAQ'S FISHING TRIP",
+            "fontPx": 21,
+            "time": 4.125,
+            "seconds": 2.375
+          },
+          {
+            "selector": "#helm-kicker",
+            "text": "YOUR BOAT. YOUR COURSE.",
+            "fontPx": 23,
+            "time": 3.25,
+            "seconds": 3.25
+          },
+          {
+            "selector": "#helm-sub",
+            "text": "HANDS-ON BOAT DRIVING",
+            "fontPx": 23,
+            "time": 3.875,
+            "seconds": 2.625
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 3 text elements stay under it for 0.5 s or more, the smallest \"FEEL THE FIGHT\" at 21 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "FEEL THE FIGHT",
+        "selector": "#fishing-kicker",
+        "dataAttributes": {},
+        "sourceFile": "compositions/fishing.html",
+        "bbox": {
+          "x": 192,
+          "y": 193.7,
+          "width": 201.73,
+          "height": 28
+        },
+        "time": 6.75,
+        "times": [
+          6.75,
+          7.375,
+          7.625
+        ],
+        "fontPx": 21,
+        "floorPx": 28,
+        "seconds": 4.75,
+        "elements": [
+          {
+            "selector": "#fishing-kicker",
+            "text": "FEEL THE FIGHT",
+            "fontPx": 21,
+            "time": 6.75,
+            "seconds": 4.75
+          },
+          {
+            "selector": "#fishing-footer",
+            "text": "ISHAQ'S FISHING TRIP",
+            "fontPx": 21,
+            "time": 7.625,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#fishing-sub",
+            "text": "FIRST-PERSON FISHING",
+            "fontPx": 23,
+            "time": 7.375,
+            "seconds": 4.125
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 3 text elements stay under it for 0.5 s or more, the smallest \"MAKE THE CATCH COUNT\" at 21 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "MAKE THE CATCH COUNT",
+        "selector": "#market-kicker",
+        "dataAttributes": {},
+        "sourceFile": "compositions/market.html",
+        "bbox": {
+          "x": 192,
+          "y": 193.7,
+          "width": 321.05,
+          "height": 28
+        },
+        "time": 11.75,
+        "times": [
+          11.75,
+          12.375,
+          12.625
+        ],
+        "fontPx": 21,
+        "floorPx": 28,
+        "seconds": 3.625,
+        "elements": [
+          {
+            "selector": "#market-kicker",
+            "text": "MAKE THE CATCH COUNT",
+            "fontPx": 21,
+            "time": 11.75,
+            "seconds": 3.625
+          },
+          {
+            "selector": "#market-footer",
+            "text": "ISHAQ'S FISHING TRIP",
+            "fontPx": 21,
+            "time": 12.625,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#market-sub",
+            "text": "ISLAND MARKETS · EARNED MVR",
+            "fontPx": 23,
+            "time": 12.375,
+            "seconds": 3
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 3 text elements stay under it for 0.5 s or more, the smallest \"Music: Sascha Ende, ende.app · CC BY 4.0\" at 18 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Music: Sascha Ende, ende.app · CC BY 4.0",
+        "selector": "p.credit",
+        "dataAttributes": {},
+        "sourceFile": "compositions/outro.html",
+        "bbox": {
+          "x": 192,
+          "y": 968,
+          "width": 344.8,
+          "height": 24
+        },
+        "time": 15.375,
+        "times": [
+          15.375,
+          15.5,
+          16.375
+        ],
+        "fontPx": 18,
+        "floorPx": 28,
+        "seconds": 4.625,
+        "elements": [
+          {
+            "selector": "p.credit",
+            "text": "Music: Sascha Ende, ende.app · CC BY 4.0",
+            "fontPx": 18,
+            "time": 15.375,
+            "seconds": 4.625
+          },
+          {
+            "selector": "#outro-footer",
+            "text": "IN DEVELOPMENT · MOBILE FISHING ADVENTURE",
+            "fontPx": 21,
+            "time": 16.375,
+            "seconds": 3.625
+          },
+          {
+            "selector": "#outro-kicker",
+            "text": "THE MALDIVES AWAIT",
+            "fontPx": 23,
+            "time": 15.5,
+            "seconds": 4.5
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 160
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": true,
+    "files": [
+      ".hyperframes/artifacts/snapshots/46d2861f-2713-49cc-9ae8-d5cdbdb746f5/frame-00-at-0.8s.png",
+      ".hyperframes/artifacts/snapshots/46d2861f-2713-49cc-9ae8-d5cdbdb746f5/frame-01-at-4.2s.png",
+      ".hyperframes/artifacts/snapshots/46d2861f-2713-49cc-9ae8-d5cdbdb746f5/frame-02-at-9.2s.png",
+      ".hyperframes/artifacts/snapshots/46d2861f-2713-49cc-9ae8-d5cdbdb746f5/frame-03-at-14.2s.png",
+      ".hyperframes/artifacts/snapshots/46d2861f-2713-49cc-9ae8-d5cdbdb746f5/frame-04-at-19.2s.png"
+    ],
+    "times": [
+      0.833,
+      4.167,
+      9.167,
+      14.167,
+      19.167
+    ],
+    "findingFiles": []
+  }
+}

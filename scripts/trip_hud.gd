@@ -392,6 +392,7 @@ func build_menu() -> void:
 	credits.text+="\n\nAdditional tackle: Fishing Rod (spinning reel) by [url=https://sketchfab.com/3d-models/fishing-rod-2445514b50494ae8a751e24b976b294d]Sobrom[/url] · CC BY 4.0. Adapted: right-hand retrieve, mesh separation and live reel pivots.\nLevel wind mechanism by [url=https://sketchfab.com/3d-models/level-wind-mechanism-baitcasting-fishing-reel-0d4a3f6123eb409a9ce6391ddcd72048]C. Yamahata[/url] · CC BY 4.0. Adapted: opaque housing, materials, wound line and moving spool/guide; combined with Ergin ERYILDIR’s imported crank. These are generic adapted reels."
 	credits.text+="\n\nMarine fishing-point buoy: [url=https://1designtool.com/3d/models/fishing-harbour-buoys]1DesignTool / StoicSoft[/url] · Free 3D library licence. Adapted: shared mesh batching, scale and wave motion."
 	credits.text+="\n\nSeabed texture: [url=https://polyhaven.com/a/aerial_beach_01]Aerial Beach 01 by Rob Tuytel / Poly Haven[/url] · CC0. Downscaled for mobile. Coastal appearance maps derive from the credited OSM coastlines; depths are fictional."
+	credits.text+="\n\nHarbour armour stone: [url=https://polyhaven.com/a/boulder_01]Boulder 01 by Rico Cilliers / Poly Haven[/url] · CC0. Adapted mesh, textures and wet shading.\nWhite harbour beacons: [url=https://codels.download/models/lighthouse]Lighthouse by Codels[/url] · CC0. Adapted white tower, proportions and red/green lanterns."
 	credits.meta_clicked.connect(func(url): OS.shell_open(str(url)))
 	column.add_child(credits)
 	menu.visible = false

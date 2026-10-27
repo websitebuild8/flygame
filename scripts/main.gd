@@ -414,9 +414,10 @@ func _physics_process(delta: float) -> void:
 	boat.position.y = surface.height(Vector2(boat.position.x,boat.position.z))-surface.BASE
 	boat.rotation.z = lerpf(boat.rotation.z,-drive.steering*absf(speed)*0.009+sin(elapsed*1.1)*day_cycle.roughness*0.035,1-exp(-delta*3))
 	boat.rotation.x = lerpf(boat.rotation.x,-clampf(absf(speed)/12,0,1)*0.035,1-exp(-delta*2))
+	preload("res://scripts/outboard_waterline.gd").update(boat_visual,surface)
 	var driving = not fishing_view and not market_mode and not shop_mode
 	engine_audio.update_audio(delta,drive.rpm,speed,driving,feedback.sound_enabled,drive.engine_running)
-	wake.update_wake(delta,boat.global_position,boat.basis.z,speed if driving else 0)
+	wake.update_wake(delta,boat.global_position,boat.basis.z,speed if driving else 0,preload("res://scripts/outboard_waterline.gd").positions(boat_visual),drive.rpm if driving and drive.engine_running else 0,drive.gear if driving and drive.engine_running else 0)
 	driving_controls.wheel_display = drive.steering
 	driving_controls.shown_speed = absf(speed)
 	driving_controls.shown_gear = drive.gear_name()
@@ -911,6 +912,7 @@ func apply_boat() -> void:
 		driving_controls.configure_models(boat_visual)
 	update_boat_parts()
 	boat.position.y=surface.height(Vector2(boat.position.x,boat.position.z))-surface.BASE
+	preload("res://scripts/outboard_waterline.gd").update(boat_visual,surface)
 
 func update_outboards(delta: float) -> void:
 	for node_name in ["OutboardPivot","OutboardPivot2"]:
@@ -972,6 +974,7 @@ func apply_graphics() -> void:
 	get_viewport().scaling_3d_scale=[0.60,0.80,1.0][graphics_quality]
 	Engine.max_fps=30 if graphics_quality==0 else 60
 	Engine.physics_ticks_per_second=30 if graphics_quality==0 else 60
+	for rocks in get_tree().get_nodes_in_group("harbour_rock_groups"):rocks.apply_quality(graphics_quality)
 	if feedback:feedback.apply_quality(graphics_quality)
 	if interface:interface.apply_glass_quality(graphics_quality)
 	if ocean_mesh:

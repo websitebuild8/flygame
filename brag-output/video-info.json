@@ -1,0 +1,21 @@
+{
+    "programs": [
+
+    ],
+    "streams": [
+        {
+            "codec_type": "video",
+            "width": 1920,
+            "height": 1080,
+            "nb_frames": "600"
+        },
+        {
+            "codec_type": "audio",
+            "nb_frames": "939"
+        }
+    ],
+    "format": {
+        "duration": "20.000000",
+        "size": "6809548"
+    }
+}
