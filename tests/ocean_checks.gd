@@ -8,9 +8,10 @@ func check(condition: bool,text: String) -> void:
 func checks() -> void:
 	var nav=preload("res://scripts/sea_navigation.gd").new()
 	nav.configure(false)
-	check(not nav.set_destination(Vector2(0,12),Vector2(125,-45),"Locked east"),"Locked eastern region cannot be routed into")
-	check(not nav.set_destination(Vector2(0,12),Vector2(-25,30),"Land"),"Waypoints cannot be set on land")
-	check(nav.set_destination(Vector2(-80,-60),Vector2(0,120),"Around home"),"A navigable route around an island exists")
+	check(not nav.set_destination(Vector2(0,12),Vector2(330,-190),"Locked east"),"Locked eastern region cannot be routed into")
+	check(not nav.set_destination(Vector2(0,12),Vector2(36,40),"Land"),"Waypoints cannot be set on land")
+	nav.configure(true)
+	check(nav.set_destination(Vector2(0,12),Vector2(75,115),"Around home"),"A navigable route around an island exists")
 	check(nav.route.size()>2,"Route around island must bend rather than cross land")
 	for i in range(nav.route.size()-1):
 		check(nav.clear_line(nav.route[i],nav.route[i+1]),"Every smoothed map route segment clears land")
@@ -100,7 +101,7 @@ func checks() -> void:
 	game.fish_timer=3
 	game.reeling=true
 	game._physics_process(0.1)
-	check(game.fish_actor.visible and game.line_target().is_equal_approx(game.fight.position+Vector3.UP*0.5*game.fight.landing_lift),"Line endpoint follows the actual hooked fish")
+	check(game.fish_actor.visible and game.line_target().is_equal_approx(game.fish_actor.to_global(game.fish_actor.get_meta("mouth_local"))),"Line endpoint follows the actual hooked fish")
 	check(game.feedback.bend_amount>0,"Rod bends under fish load")
 	game.fight.progress=0.94
 	game.fight.step(.1,false,1,1,1,1)

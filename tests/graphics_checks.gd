@@ -11,6 +11,8 @@ func checks():
 		game.apply_graphics()
 		assert(is_equal_approx(root.scaling_3d_scale,[.6,.8,1.0][quality]))
 		assert(game.ocean_mesh.subdivide_width==[32,64,100][quality])
+		var glass=game.interface.glass_panels[0].material
+		assert(glass.shader.resource_path.ends_with("ui_glass_light.gdshader" if quality==0 else "ui_glass.gdshader"),"Low avoids expensive screen-copy blur, other presets retain it")
 		game.day_cycle.hours=12
 		game.day_cycle.apply_lighting()
 		assert(not game.day_cycle.sun.shadow_enabled,"Day cycle must respect shadows off")

@@ -208,7 +208,7 @@ func build(owner_game: Node3D) -> void:
 	cast_round_pressed.bg_color=Color.TRANSPARENT
 	game.fish_button.button_down.connect(func():
 		reel_swipe=0
-		if not game.fishing: game.cast()
+		if not game.fishing: game.fishing_action()
 		game.reeling=true
 	)
 	game.fish_button.button_up.connect(func(): game.reeling=false)
@@ -363,8 +363,8 @@ func build_menu() -> void:
 		)
 		column.add_child(toggle)
 	game.upgrade_button = action(column,"Upgrade engine · MVR 100",game.buy_upgrade)
-	game.home_button = action(column,"Return to home dock",func():
-		game.return_home()
+	game.home_button = action(column,"Plot route to Kelaa harbour",func():
+		game.plot_home_course()
 		toggle_menu()
 	)
 	action(column,"Next time of day",func():
@@ -387,7 +387,11 @@ func build_menu() -> void:
 	credits.text+="\n\n2004 17-foot Scout, 285 Conquest Boston Whaler, Freedom 325 Grady White and Glacier Bay by [url=https://sketchfab.com/boatusfoundation]BoatUS Foundation[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: mesh optimisation, trailer removal, wheel/throttle/outboard pivots, camera mounts and game integration. Manufacturers do not endorse this game."
 	credits.text+="\n\nHand With Gloves by [url=https://sketchfab.com/3d-models/hand-with-gloves-5a6a434b8ec943ffacc581358781eecb]JUST (@teenjust500)[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: finger poses, fishing grips and two arm IK chains. Authored rod blank by Ergin ERYILDIR: live geometry alignment, bending material and right-hand reel conversion."
 	credits.text+="\n\nMarket customers: [url=https://quaternius.com/packs/ultimatemodularcharacters.html]Quaternius Ultimate Modular Men[/url] · CC0 1.0. Adapted: retained idle/walk/interact clips, GLB packing, scale and clothing colours.\nCash register: [url=https://kenney.nl/assets/mini-market]Kenney Mini Market[/url] · CC0 1.0.\nCurrency specimen artwork: [url=https://www.mma.gov.mv/Public%20Education/currency/RDF%20book/RDF%20booklet.pdf]Maldives Monetary Authority, Ran Dhihafaheh booklet[/url], pages 10–15, plus MMA’s currency-in-circulation images for MVR 5 and MVR 1/2 coins. Used as in-game payment props; not covered by the CC0 model licences."
+	credits.text+="\n\nIsland coastlines, roads and mapped footprints: [url=https://www.openstreetmap.org/copyright]© OpenStreetMap contributors[/url] · [url=https://opendatacommons.org/licenses/odbl/1-0/]ODbL 1.0[/url]. Compressed for gameplay; extra houses and architecture are fictional. Derived geometry and source information: assets/maps/kelaa/ and assets/maps/neighbours/."
+	credits.text+="\n\nFree saltwater lure: [url=https://sketchfab.com/3d-models/blue-fishing-lure-with-treble-hooks-1803688419f14b3eb961326006ea038b]Blue Fishing lure with Treble Hooks by davidg.dev[/url] · CC BY 4.0. Adapted scale, line-eye mount and mobile texture compression."
 	credits.text+="\n\nAdditional tackle: Fishing Rod (spinning reel) by [url=https://sketchfab.com/3d-models/fishing-rod-2445514b50494ae8a751e24b976b294d]Sobrom[/url] · CC BY 4.0. Adapted: right-hand retrieve, mesh separation and live reel pivots.\nLevel wind mechanism by [url=https://sketchfab.com/3d-models/level-wind-mechanism-baitcasting-fishing-reel-0d4a3f6123eb409a9ce6391ddcd72048]C. Yamahata[/url] · CC BY 4.0. Adapted: opaque housing, materials, wound line and moving spool/guide; combined with Ergin ERYILDIR’s imported crank. These are generic adapted reels."
+	credits.text+="\n\nMarine fishing-point buoy: [url=https://1designtool.com/3d/models/fishing-harbour-buoys]1DesignTool / StoicSoft[/url] · Free 3D library licence. Adapted: shared mesh batching, scale and wave motion."
+	credits.text+="\n\nSeabed texture: [url=https://polyhaven.com/a/aerial_beach_01]Aerial Beach 01 by Rob Tuytel / Poly Haven[/url] · CC0. Downscaled for mobile. Coastal appearance maps derive from the credited OSM coastlines; depths are fictional."
 	credits.meta_clicked.connect(func(url): OS.shell_open(str(url)))
 	column.add_child(credits)
 	menu.visible = false
@@ -474,7 +478,7 @@ func apply_safe_area() -> void:
 
 func refresh() -> void:
 	var driving = not game.fishing_view and not game.market_mode and not game.shop_mode
-	var at_dock = game.boat.position.distance_to(game.DOCK)<18 and absf(game.speed)<1
+	var at_dock = game.at_home_dock() and absf(game.speed)<1
 	var nearest=game.World.nearest(game.boat.position)
 	var spot_distance=Vector2(game.boat.position.x,game.boat.position.z).distance_to(nearest.at)
 	var at_spot=spot_distance<14 and game.catches>=int(nearest.unlock)
@@ -516,10 +520,11 @@ func refresh() -> void:
 	travel_box.visible=not game.shop_mode and not game.market_mode and not game.fishing_view
 	map_button.visible=not game.shop_mode and not game.market_mode
 	camera_button.visible=driving
-	camera_button.text="External" if game.first_person_driving else "POV"
+	camera_button.text=game.camera_label()
+	camera_button.tooltip_text="Tap to cycle: External, POV, Bird’s-eye, Close external"
 	game.upgrade_button.text = "Engine fully upgraded" if game.upgrade>=2 else "Upgrade engine · MVR %d" % game.item_price("engine")
 	game.upgrade_button.disabled = not at_dock or game.coins<game.item_price("engine") or game.upgrade>=2
-	pause_tip.text = "Dock at home to upgrade your engine." if not at_dock else "Engine level %d / 3 · MVR %d" % [game.upgrade+1,game.coins]
+	pause_tip.text = "Approach an island harbour berth to upgrade your engine." if not at_dock else "Engine level %d / 3 · MVR %d" % [game.upgrade+1,game.coins]
 	if game.market_mode:
 		var customer_names=["Aishath","Hassan","Mariyam","Ibrahim","Fathimath"]
 		customer_label.text="%s · customer %d\n" % [customer_names[game.market.customer_number%5],game.market.customer_number+1]
@@ -563,7 +568,7 @@ func refresh() -> void:
 	else:
 		game.fish_button.text = ("DROP JIG" if game.feedback.overhead else "CAST") if game.fishing_view else ("Start fishing" if at_spot else "%s · %d m" % [nearest.name,spot_distance])
 	game.info.text = "MVR %d  /  %d fish  /  %s" % [game.coins,game.inventory.size(),game.World.vessel(game.equipped_boat).name]
-	zone.text = ("BOAT SHOWROOM" if shop_category=="Boats" else ("BOAT WORKSHOP" if shop_category=="Boat" else "TACKLE HOUSE")) if game.shop_mode else ("KELAA FISH MARKET" if game.market_mode else ("ON THE LINE" if game.fishing_view else "HA. KELAA"))
+	zone.text = ("BOAT SHOWROOM" if shop_category=="Boats" else ("BOAT WORKSHOP" if shop_category=="Boat" else "TACKLE HOUSE")) if game.shop_mode else (game.active_market_island.to_upper()+" FISH MARKET" if game.market_mode else ("ON THE LINE" if game.fishing_view else game.location_name()))
 	objective.visible = not game.market_mode and not game.shop_mode
 	objective.text = "Eastern waters unlocked" if game.unlocked else "Discover eastern waters · %d / 3 catches" % mini(game.catches,3)
 	if game.fishing_view:
@@ -715,9 +720,9 @@ func build_map() -> void:
 	selected.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	sidebar.add_child(selected)
 	map_chart.selected_label=selected
-	for legend in ["▲  Your boat / heading","□  Home dock and shops","○  Fishing spot","○  Grey: locked spot","─  Gold: planned route","+  Your waypoint"]:
+	for legend in ["▲  Your boat / heading","□  Island harbour / market","○  Fishing spot","○  Grey: locked spot","─  Gold: planned route","+  Your waypoint"]:
 		sidebar.add_child(label(legend,16,MUTED))
-	var note=label("Prototype chart · fictional geography",12,MUTED)
+	var note=label("© OpenStreetMap contributors\nCompressed game geography",12,MUTED)
 	note.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	sidebar.add_child(note)
 	action(sidebar,"Clear route",func(): game.navigation.clear())
@@ -756,9 +761,18 @@ func build_preview_card() -> void:
 	action(row,"+",func(): game.shop.zoom=clampf(game.shop.zoom+0.15,0.7,1.5))
 	preview_card.visible=false
 
+var glass_panels: Array[PanelContainer]=[]
+var glass_full: ShaderMaterial
+var glass_light: ShaderMaterial
+
+func apply_glass_quality(quality: int) -> void:
+	if not glass_full:
+		glass_full=ShaderMaterial.new();glass_full.shader=preload("res://shaders/ui_glass.gdshader")
+		glass_light=ShaderMaterial.new();glass_light.shader=preload("res://shaders/ui_glass_light.gdshader")
+	for panel in glass_panels:panel.material=glass_light if quality==0 else glass_full
+
 func apply_glass(root: Node) -> void:
 	if root is PanelContainer:
-		var glass=ShaderMaterial.new()
-		glass.shader=preload("res://shaders/ui_glass.gdshader")
-		root.material=glass
+		glass_panels.append(root)
+		apply_glass_quality(game.graphics_quality)
 	for child in root.get_children(): apply_glass(child)

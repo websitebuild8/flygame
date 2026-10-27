@@ -14,8 +14,9 @@ func _draw():
 		var scale_factor=minf(size.x,size.y)/300.0
 		var boat_at=Vector2(game.boat.position.x,game.boat.position.z)
 		for island in World.ISLANDS:
-			draw_circle(center+(island.at-boat_at)*scale_factor,island.radius*scale_factor+3,Color("285b61"))
-			draw_circle(center+(island.at-boat_at)*scale_factor,island.radius*scale_factor,Color("b6bd85"))
+			var outline=PackedVector2Array()
+			for p in World.outline(island):outline.append(center+(p-boat_at)*scale_factor)
+			draw_colored_polygon(outline,Color("b6bd85"))
 		if game.navigation.has_destination:
 			var route=game.navigation.route
 			for i in range(route.size()-1):draw_line(center+(route[i]-boat_at)*scale_factor,center+(route[i+1]-boat_at)*scale_factor,Color("f2c37e"),3,true)
@@ -27,6 +28,7 @@ func _draw():
 		for point in [Vector2(0,-13),Vector2(9,10),Vector2(0,5),Vector2(-9,10)]:arrow.append(center+point.rotated(-game.boat.rotation.y))
 		draw_colored_polygon(arrow,Color("65e6a1"))
 		text("N  •  KELAA",Vector2(12,23),20)
+		text("© OpenStreetMap contributors",Vector2(12,size.y-10),12,Color("9abcb9"))
 		return
 	var power=game.drive.throttle if game.drive.engine_running and game.drive.gear!=0 else 0.0
 	var color=Power.color_for(power)

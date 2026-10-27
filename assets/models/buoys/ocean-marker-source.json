@@ -1,0 +1,14 @@
+{
+  "title": "Buoys \u2014 Fishing Harbour",
+  "author": "1DesignTool / StoicSoft",
+  "page": "https://1designtool.com/3d/models/fishing-harbour-buoys",
+  "license": "https://1designtool.com/3d/license",
+  "sha256": "130363c70e5e9eded1ec30c70d8c5e6b202407c634ab61b8e6653728a14d1d2d",
+  "source_bytes": 89432,
+  "source_triangles": 1064,
+  "adaptations": [
+    "one shared vertex-colour surface",
+    "game scale and waterline",
+    "wave motion"
+  ]
+}

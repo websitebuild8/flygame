@@ -49,6 +49,11 @@ workflows:
           /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/free_tackle_checks.gd
           /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/cockpit_display_checks.gd
           /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/market_cash_checks.gd
+          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/casting_checks.gd
+          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/kelaa_checks.gd
+          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/harbour_world_checks.gd
+          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/sailing_expansion_checks.gd
+          /tmp/ishaq-godot/Godot.app/Contents/MacOS/Godot --headless --path "$CM_BUILD_DIR" --script res://tests/water_landing_checks.gd
 
   android-test:
     name: Ishaq's Fishing Trip - Android test APK
@@ -73,7 +78,7 @@ workflows:
           GODOT=/tmp/ishaq-android-godot/Godot.app/Contents/MacOS/Godot
           "$GODOT" --headless --path "$CM_BUILD_DIR" --script res://tools/check-mobile-config.gd
           "$GODOT" --headless --path "$CM_BUILD_DIR" --editor --import --quit
-          for suite in trip_smoke helm_checks gear_checks ocean_checks fish_checks species_market_checks boat_model_checks fishing_gameplay_checks line_helm_checks market_art_checks graphics_checks audio_helm_menu_checks free_tackle_checks cockpit_display_checks market_cash_checks; do
+          for suite in trip_smoke helm_checks gear_checks ocean_checks fish_checks species_market_checks boat_model_checks fishing_gameplay_checks line_helm_checks market_art_checks graphics_checks audio_helm_menu_checks free_tackle_checks cockpit_display_checks market_cash_checks casting_checks kelaa_checks harbour_world_checks sailing_expansion_checks water_landing_checks; do
             "$GODOT" --headless --path "$CM_BUILD_DIR" --script "res://tests/${suite}.gd"
           done
       - name: Export installable Android APK
@@ -125,7 +130,7 @@ workflows:
           export IOS_BUILD_NUMBER="${IOS_BUILD_NUMBER:-$NEXT_IOS_BUILD}"
           "$GODOT" --headless --path "$CM_BUILD_DIR" --script res://tools/prepare-ios.gd
           "$GODOT" --headless --path "$CM_BUILD_DIR" --editor --import --quit
-          for suite in trip_smoke helm_checks gear_checks ocean_checks fish_checks species_market_checks boat_model_checks fishing_gameplay_checks line_helm_checks market_art_checks graphics_checks audio_helm_menu_checks free_tackle_checks cockpit_display_checks market_cash_checks; do
+          for suite in trip_smoke helm_checks gear_checks ocean_checks fish_checks species_market_checks boat_model_checks fishing_gameplay_checks line_helm_checks market_art_checks graphics_checks audio_helm_menu_checks free_tackle_checks cockpit_display_checks market_cash_checks casting_checks kelaa_checks harbour_world_checks sailing_expansion_checks water_landing_checks; do
             "$GODOT" --headless --path "$CM_BUILD_DIR" --script "res://tests/${suite}.gd"
           done
       - name: Export Xcode project

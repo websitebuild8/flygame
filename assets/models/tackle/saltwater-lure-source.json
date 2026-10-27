@@ -1,0 +1,10 @@
+{
+  "title": "Blue Fishing lure with Treble Hooks",
+  "author": "davidg.dev",
+  "source": "https://sketchfab.com/3d-models/blue-fishing-lure-with-treble-hooks-1803688419f14b3eb961326006ea038b",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "download": "Free converted GLB, 1K texture, 2026-10-27",
+  "changes": "Embedded texture externalized for mobile compression; runtime scale/orientation, front nose eye and wrapped leader knot. No generative processing of the model.",
+  "original_sha256": "eff75d899a8ed5137952a04f52f04d37c059b8d3a29d1f263cf2be7a925d536c"
+}

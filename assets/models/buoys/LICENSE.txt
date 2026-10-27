@@ -1,0 +1,14 @@
+Buoys — Fishing Harbour, by 1DesignTool / StoicSoft
+Model: https://1designtool.com/3d/models/fishing-harbour-buoys
+Download: https://assets.stoicsoft.com/1designtool/3d/models/fishing-harbour-buoys/9fea23d408/model.glb
+Licence: https://1designtool.com/3d/license
+Retrieved 2026-10-27.
+
+The publisher permits personal/commercial use, modification, and shipping inside
+compiled games/apps, without attribution. Standalone redistribution or resale as
+model files/packs, marketplace uploads, claiming authorship and AI training are
+not permitted. The publisher describes this as an AI-generated model.
+
+In-game adaptation: combined material colours into a shared vertex-colour mesh,
+scaled to the game world, waterline placement and mild wave motion. Original
+GLB retained as the game import source; not offered as a standalone asset pack.

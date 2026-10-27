@@ -41,4 +41,6 @@ static func build(parent: Node3D,id: String) -> Node3D:
 	Art.block(box,Vector3(0,.22,0),Vector3(.53,.06,.63),Color("315b75") if id=="skiff" else Color("b79a5c"))
 	root.set_meta("imported_model",true)
 	root.set_meta("model_id",{"skiff":"scout","launch":"whaler","glacier":"glacier","grady":"grady"}[id])
+	root.scale=Vector3.ONE*preload("res://scripts/world_data.gd").BOAT_SCALE
+	root.position.y=-.6*(1-preload("res://scripts/world_data.gd").BOAT_SCALE)
 	return root

@@ -1,5 +1,6 @@
 extends Node3D
 ## Original procedural equipment and audio, replaceable with authored assets.
+const PLAYER_SCALE=preload("res://scripts/world_data.gd").BOAT_SCALE
 var rig: Node3D
 var crank: Node3D
 var segments: Array[MeshInstance3D] = []
@@ -35,6 +36,9 @@ var hook_rating_time=0.0
 var winding_speed=0.0
 var spool: Node3D
 var spool_rest=Vector3.ZERO
+var cast_motion=preload("res://scripts/lure_cast.gd").new()
+var lure: Node3D
+var effects_quality=2
 
 func hook_feedback(quality: float) -> void:
 	strike_kick=1
@@ -78,14 +82,14 @@ func _ready() -> void:
 		particles.explosiveness=0.95
 		particles.direction=Vector3.UP
 		particles.spread=42
-		particles.gravity=Vector3(0,-7,0)
-		particles.initial_velocity_min=1.0
-		particles.initial_velocity_max=3.0
+		particles.gravity=Vector3(0,-7,0)*PLAYER_SCALE
+		particles.initial_velocity_min=1.0*PLAYER_SCALE
+		particles.initial_velocity_max=3.0*PLAYER_SCALE
 		particles.scale_amount_min=0.7
 		particles.scale_amount_max=1.8
 		var drop=SphereMesh.new()
-		drop.radius=0.025
-		drop.height=0.05
+		drop.radius=0.025*PLAYER_SCALE
+		drop.height=0.05*PLAYER_SCALE
 		drop.radial_segments=6
 		drop.rings=3
 		particles.mesh=drop
@@ -98,7 +102,7 @@ func _ready() -> void:
 	for i in range(3):
 		var ring = MeshInstance3D.new()
 		var torus = TorusMesh.new()
-		torus.inner_radius = 0.85
+		torus.inner_radius = 0.97
 		torus.outer_radius = 1.0
 		torus.rings = 20
 		torus.ring_segments = 8
@@ -117,10 +121,12 @@ func part(parent: Node3D, pos: Vector3, size: Vector3, color: Color) -> MeshInst
 func attach_camera(camera: Camera3D) -> void:
 	rig = Node3D.new()
 	camera.add_child(rig)
+	rig.scale=Vector3.ONE*PLAYER_SCALE
 	rig.position = Vector3(-0.55,-0.18,-1.25)
 	equip("island_reel","island_rod","mono")
 	hands=preload("res://scripts/fishing_hands.gd").new()
 	rig.add_child(hands)
+	hands.body_scale=PLAYER_SCALE
 	line = MeshInstance3D.new()
 	line.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	line.mesh = line_mesh
@@ -130,6 +136,7 @@ func attach_camera(camera: Camera3D) -> void:
 	line.material_override = mat
 	get_parent().add_child(line)
 	rig.visible = false
+	lure=preload("res://scripts/fishing_lure.gd").new();add_child(lure);lure.scale=Vector3.ONE*PLAYER_SCALE;lure.visible=false
 
 func haptic(duration: int, amplitude: float) -> void:
 	if vibration_enabled and OS.get_name() in ["Android", "iOS"]:
@@ -148,7 +155,7 @@ func play_effect(key: String) -> void:
 			effects[key].play()
 
 func splash(at: Vector3) -> void:
-	splash_position = Vector3(at.x,-0.5,at.z)
+	splash_position = Vector3(at.x,get_parent().surface.height(Vector2(at.x,at.z))+.006,at.z)
 	splash_age = 0
 	if not spray.is_empty():
 		var particles=spray[spray_cursor]
@@ -160,7 +167,7 @@ func splash(at: Vector3) -> void:
 
 func cast_feedback(at: Vector3) -> void:
 	cast_age = 0
-	splash(at)
+	cast_motion.begin(at,overhead)
 	haptic(35, 0.3)
 
 func bite_feedback() -> void:
@@ -183,27 +190,34 @@ func update_feedback(delta: float, active: bool, pulling: bool, tension: float, 
 	rig.visible = active
 	line.visible = active
 	cast_age += delta
+	if not get_parent().fishing and cast_motion.state!="ready":cast_motion.reset()
+	lure.visible=active and (not get_parent().fishing or not get_parent().bite_announced)
 	strike_kick=maxf(0,strike_kick-delta*2.8)
 	hook_rating_time=maxf(0,hook_rating_time-delta)
 	pulse_time -= delta
 	if active:
 		var landing=get_parent().fight.landing_lift if get_parent().fishing else 0.0
-		var raise_rod=sin(minf(cast_age, 0.7) / 0.7 * PI)*0.6+landing*.30+strike_kick*.72
-		rig.rotation.x=lerpf(rig.rotation.x,raise_rod,1-exp(-delta*(18 if strike_kick>.2 else 5)))
+		var raise_rod=cast_motion.rod_pitch()+landing*.30+strike_kick*.72
+		rig.rotation.x=lerpf(rig.rotation.x,raise_rod,1-exp(-delta*(22 if cast_motion.is_casting() or strike_kick>.2 else 7)))
 		var local=rig.get_parent().to_local(target)
-		var aim=clampf(atan2(-local.x,-local.z),-0.5,0.5)
+		var aim=clampf(atan2(-local.x,-local.z),-0.5,0.5) if get_parent().fishing and get_parent().bite_announced else 0.0
 		rig.rotation.y=lerpf(rig.rotation.y,aim,1-exp(-delta*4))
-		var desired=0.12+tension*0.78+landing*0.55 if get_parent().bite_announced else 0.0
+		var desired=0.12+tension*0.78+landing*0.55 if get_parent().bite_announced else cast_motion.bend_load()
 		var dt=minf(delta,0.04)
 		bend_velocity+=((desired-bend_amount)*65-bend_velocity*14)*dt
 		bend_amount=clampf(bend_amount+bend_velocity*dt,0,1)
 		var pump=sin(cast_age*3.4)*(.018+.065*tension)*(1-landing*.7)
 		var power=get_parent().fight.power_time>0 and get_parent().fishing
-		rig.position=Vector3(-.32+sin(cast_age*2.2)*tension*.012,-.30+pump+strike_kick*.06,-.68+pump*.3)
+		rig.position=Vector3(-.32+sin(cast_age*2.2)*tension*.012,-.30+pump+strike_kick*.06,-.68+pump*.3)*PLAYER_SCALE
 		rig.rotation.x+=pump*0.65
 		rig.rotation.z=sin(Time.get_ticks_msec()*0.004)*0.015*bend_amount
 		if overhead and pulling:
 			rig.rotation.x += sin(Time.get_ticks_msec()*0.009)*0.05
+		if landing>.55 and not get_parent().landing_to_boat:
+			var curve_tip=equipment.to_global(preload("res://scripts/rod_curve.gd").tip(bend_amount))
+			var minimum=get_parent().surface.ceiling()+get_parent().hanging_clearance()+.04
+			# Lift the entire rod/handle so both the short leader and the tail clear the sea.
+			rig.position.y+=maxf(0,minimum-curve_tip.y)
 		for i in range(segments.size()):
 			var bend = float(i)/8.0
 			var start = Vector3(0,0.1+float(i)*0.13-bend*bend*bend_amount*0.85,-float(i)*0.22)
@@ -252,17 +266,26 @@ func update_feedback(delta: float, active: bool, pulling: bool, tension: float, 
 		var roller=reel.get_meta("line_roller") as Node3D if reel.has_meta("line_roller") else null
 		var start=lip.global_position if lip else spool.global_position
 		routed_line_points.append(start)
-		if roller and (pulling or cast_age>.8):routed_line_points.append(roller.global_position)
+		if roller and (get_parent().bite_announced or cast_motion.state not in ["windup","flight"]):routed_line_points.append(roller.global_position)
 		var curve=preload("res://scripts/rod_curve.gd")
 		for guide in curve.guides(overhead):routed_line_points.append(equipment.to_global(curve.point(guide,bend_amount)))
 		for span in range(routed_line_points.size()-1):
 			line_mesh.surface_add_vertex(routed_line_points[span])
 			line_mesh.surface_add_vertex(routed_line_points[span+1])
 		var tip=routed_line_points[-1]
+		if get_parent().fishing and get_parent().bite_announced:get_parent().pose_hanging_fish(tip)
+		cast_motion.step(delta,tip,cast_age)
+		if cast_motion.splash_event:splash(cast_motion.destination)
+		var endpoint=get_parent().line_target() if get_parent().fishing and get_parent().bite_announced else cast_motion.position
+		lure.global_position=endpoint
+		if cast_motion.state=="flight" and cast_motion.velocity.length_squared()>.01:
+			lure.basis=Basis(Quaternion(Vector3.UP,cast_motion.velocity.normalized())).scaled(Vector3.ONE*PLAYER_SCALE)
+		else:
+			lure.basis=Basis.from_euler(Vector3(.1*sin(cast_age*2.1),cast_age*.35,.08*sin(cast_age*1.7))).scaled(Vector3.ONE*PLAYER_SCALE)
 		var previous=tip
 		for i in range(1,13):
 			var t=float(i)/12
-			var point=tip.lerp(target,t)+Vector3.DOWN*sin(t*PI)*(.025 if pulling else .22)
+			var point=tip.lerp(endpoint,t)+Vector3.DOWN*sin(t*PI)*(0.0 if landing>.55 else (.025 if pulling or cast_motion.state=="ready" else (.32 if cast_motion.state=="flight" else .12)))
 			line_mesh.surface_add_vertex(previous)
 			line_mesh.surface_add_vertex(point)
 			routed_line_points.append(point)
@@ -276,13 +299,15 @@ func update_feedback(delta: float, active: bool, pulling: bool, tension: float, 
 		var ring = splash_rings[i]
 		ring.visible = age >= 0 and age < 1.2
 		if ring.visible:
-			ring.position = splash_position + Vector3(0, float(i) * 0.015, 0)
-			ring.scale = Vector3.ONE * (0.2 + age * 2.5)
+			ring.position = splash_position + Vector3(0, .006+float(i) * 0.001, 0)
+			ring.scale = Vector3(1,.12,1) * (0.2 + age * 2.5)*PLAYER_SCALE
 			(ring.material_override as StandardMaterial3D).albedo_color.a = (1.0 - age / 1.2) * 0.65
 
 func _exit_tree() -> void:
-	for player in effects.values():
-		player.stop()
+	for player in effects.values()+splash_players+[ambience]:
+		if is_instance_valid(player):
+			player.stop()
+			player.stream=null
 
 func equip(reel_id: String, rod_id: String, line_id: String) -> void:
 	if not rig:
@@ -307,3 +332,8 @@ func update_ambience(outdoors: bool) -> void:
 		if not ambience.playing:ambience.play()
 	else:
 		ambience.stop()
+
+func apply_quality(quality: int) -> void:
+	effects_quality=quality
+	for particles in spray:
+		particles.amount=[10,16,24][quality]

@@ -6,7 +6,7 @@ const Catalog = preload("res://scripts/gear_catalog.gd")
 
 const SAVE_PATH = "user://trip.json"
 var save_path = SAVE_PATH
-const DOCK = Vector3(2.3, 0, 12) # Moor beside the jetty, clear of its posts and planks.
+const DOCK = Vector3(World.Harbour.HOME.x,0,World.Harbour.HOME.y) # Moor beside the jetty, clear of its posts and planks.
 const SPOT = Vector3(0, 0, -45)
 var boat: Node3D
 var camera: Camera3D
@@ -14,7 +14,7 @@ var helm_hands: Node3D
 var status: Label
 var info: Label
 var fish_button: Button
-var message = "Set your course for the golden fishing buoy."
+var message = "Set your course for the blue-and-white fishing buoy."
 var coins = 0
 var catches = 0
 var hold_value = 0
@@ -41,6 +41,7 @@ var hint_label: Label
 var inventory: Array = []
 var pending_payment = 0
 var market_mode = false
+var active_market_island="HA. Kelaa"
 var market: Node3D
 var market_button: Button
 var upgrade_button: Button
@@ -76,7 +77,16 @@ var owned_boats: Array=["skiff"]
 var equipped_boat="skiff"
 var boat_visual: Node3D
 var first_person_driving=false
+var camera_mode=0
+const CAMERA_NAMES=["External","POV","Bird’s-eye","Close external"]
 var cockpit_displays: Node3D
+var traffic: Node3D
+var collision_cooldown=0.0
+var water_port=""
+var shallow_life: RefCounted
+var surface=preload("res://scripts/water_surface.gd").new()
+var catch_leader: MeshInstance3D
+var catch_fill: OmniLight3D
 var active_spot: Dictionary={}
 var active_species: Dictionary={}
 var active_catch: Dictionary={}
@@ -95,6 +105,7 @@ func power_reel() -> void:
 var fight=preload("res://scripts/fish_fight.gd").new()
 var fish_actor: Node3D
 var fish_splash_timer=0.0
+var fishing_buoys: Array[Node3D]=[]
 var waypoint_marker: Node3D
 
 func _ready() -> void:
@@ -111,7 +122,7 @@ func _ready() -> void:
 	add_child(market)
 	catch_model = Art.fish(camera, 0.8)
 	catch_model.position = Vector3(0, -0.1, -3)
-	catch_model.basis = Basis(Vector3(0,0,1),-PI/2) * Basis(Vector3.UP,PI/2)
+	catch_model.basis = (Basis(Vector3(0,0,1),-PI/2) * Basis(Vector3.UP,PI/2)).scaled(Vector3.ONE*0.8*float(active_catch.get("size",1)))
 	catch_model.visible = false
 	engine_audio = preload("res://scripts/engine_audio.gd").new()
 	add_child(engine_audio)
@@ -123,6 +134,16 @@ func _ready() -> void:
 	if saved_waypoint.size()==2:
 		set_waypoint(Vector2(float(saved_waypoint[0]),float(saved_waypoint[1])),"Saved waypoint")
 	apply_graphics()
+	update_scene_activity()
+	traffic=preload("res://scripts/sea_traffic.gd").new();add_child(traffic);traffic.configure(self)
+
+func update_scene_activity() -> void:
+	# Keep every asset; suspend the off-screen shops and their skeletal animations.
+	for entry in [[market,market_mode],[shop,shop_mode]]:
+		var room=entry[0] as Node3D
+		if room:
+			room.visible=entry[1]
+			room.process_mode=Node.PROCESS_MODE_INHERIT if entry[1] else Node.PROCESS_MODE_DISABLED
 
 func material(color: Color) -> StandardMaterial3D:
 	var mat = StandardMaterial3D.new()
@@ -168,17 +189,24 @@ func build_world() -> void:
 	var ocean = MeshInstance3D.new()
 	var plane = PlaneMesh.new()
 	ocean_mesh=plane
-	plane.size = Vector2(700,700)
+	plane.size = Vector2(1800,1800)
 	plane.subdivide_width = 100
 	plane.subdivide_depth = 100
 	ocean.mesh = plane
 	var water = ShaderMaterial.new()
 	water.shader = load("res://shaders/ocean.gdshader")
+	water.set_shader_parameter("coast_map",load("res://assets/maps/ocean/coastal_depth.png"))
+	water.set_shader_parameter("sand_texture",load("res://assets/textures/ocean/seabed_sand.webp"))
+	water.set_shader_parameter("ripple_normal",load("res://assets/textures/ocean/ripple_normal.png"))
+	shallow_life=preload("res://scripts/shallow_life.gd").new()
 	ocean.material_override = water
 	add_child(ocean)
 	ocean.position.y = -0.6
 	for island in World.ISLANDS:
-		Art.island(self,Vector3(island.at.x,-0.4,island.at.y),island.radius)
+		if island.name=="HA. Kelaa":
+			add_child(preload("res://scripts/kelaa_island.gd").new())
+		else:
+			add_child(preload("res://scripts/neighbour_island.gd").new(island.name))
 	day_cycle=preload("res://scripts/day_cycle.gd").new()
 	day_cycle.sun=sun
 	day_cycle.environment=environment.environment
@@ -231,27 +259,12 @@ func build_world() -> void:
 	cloud_material.set_shader_parameter("cloud_noise",texture)
 	cloud_layer.material_override=cloud_material
 	day_cycle.clouds=cloud_material
-	for i in range(24):
-		Art.block(self, Vector3(-17 + i*0.75,0.5,14),Vector3(0.7,0.25,3.5),Color("a5865d"))
-	for x in [-17,-11,-5,0]:
-		for z in [12.5,15.5]:
-			Art.pole(self,Vector3(x,-1.6,z),Vector3(x,1.2,z),0.14,Color("826546"))
-	Art.label(self,"FISH MARKET",Vector3(-7,2.7,14),55)
-	for i in range(2):
-		var at = Vector3(-18-i*10,1.4,22)
-		Art.block(self,at,Vector3(7,2.8,4.5),Color("d3d8bd"))
-		Art.block(self,at+Vector3(0,1.7,0),Vector3(7.6,0.3,5),Color("2c6973") if i==0 else Color("9a7954"))
-		Art.block(self,at+Vector3(0,-0.2,-2.28),Vector3(1.5,2.2,0.08),Color("284d59"))
-		var sign = Art.label(self,"TACKLE HOUSE" if i==0 else "BOAT WORKSHOP",at+Vector3(0,1,-2.35),26)
-		sign.rotation.y = PI
 	for spot in World.SPOTS:
-		var buoy=Art.oval(self,Vector3(spot.at.x,0,spot.at.y),Vector3(0.7,1.3,0.7),Color("f3c36f"))
-		var material=buoy.material_override as StandardMaterial3D
-		material.emission_enabled=true
-		material.emission=Color("8d6830")*0.3
-		Art.pole(self,Vector3(spot.at.x,0,spot.at.y),Vector3(spot.at.x,1.8,spot.at.y),0.035,Color("d8e4de"))
-		Art.label(self,spot.name,Vector3(spot.at.x,2.1,spot.at.y),22)
-	for point in [Vector3(-5,2,14),Vector3(-17,2,14),Vector3(-28,2,19)]:
+		var buoy=preload("res://scripts/fishing_buoy.gd").new()
+		buoy.position=Vector3(spot.at.x,0,spot.at.y)
+		add_child(buoy);fishing_buoys.append(buoy)
+		Art.label(self,spot.name,Vector3(spot.at.x,1.1,spot.at.y),22)
+	for point in [Vector3(23,2,7),Vector3(23,2,25),Vector3(28,2,15)]:
 		var light=OmniLight3D.new()
 		add_child(light)
 		light.position=point
@@ -275,6 +288,7 @@ func build_world() -> void:
 	add_child(camera)
 	camera.current = true
 	camera.fov = 65
+	camera.near=.01
 	camera.position = boat.position + Vector3(0, 10, 15)
 	camera.look_at(boat.position)
 	helm_hands=preload("res://scripts/helm_hands.gd").new()
@@ -289,7 +303,8 @@ func build_ui() -> void:
 
 func _physics_process(delta: float) -> void:
 	elapsed += delta
-	market.animate(elapsed)
+	collision_cooldown=maxf(0,collision_cooldown-delta)
+	if market_mode:market.animate(elapsed)
 	feedback.update_ambience(not intro_visible and not market_mode and not shop_mode and app_active and not interface.menu_visible and not interface.map_visible)
 	if interface.menu_visible or interface.map_visible or not app_active:
 		feedback.reel_audio.stop()
@@ -299,24 +314,31 @@ func _physics_process(delta: float) -> void:
 	if intro_visible:
 		engine_audio.update_audio(delta,0,0,false,feedback.sound_enabled)
 		camera.position = DOCK + Vector3(10,6,13)
-		camera.look_at(Vector3(-12,1,15))
+		camera.look_at(Vector3(20,1,24))
 		return
+	update_port_water()
 	day_cycle.advance(delta)
+	surface.phase=elapsed;surface.roughness=day_cycle.roughness;surface.subdivisions=ocean_mesh.subdivide_width
+	day_cycle.water.set_shader_parameter("wave_time",elapsed)
+	day_cycle.water.set_shader_parameter("rough_sea",surface.roughness)
+	if traffic:traffic.update(delta,not market_mode and not shop_mode)
 	day_cycle.update_rain(camera.global_position,not shop_mode and not market_mode)
+	shallow_life.update(delta,camera.position,elapsed,day_cycle.water,graphics_quality)
 	autosave_tick+=delta
 	if autosave_tick>30:
 		autosave_tick=0
 		save_trip()
+	camera.cull_mask=1 if fishing_view else 3
 	if catch_overlay.visible:
 		engine_audio.update_audio(delta,0,0,false,feedback.sound_enabled)
 		catch_show_age+=delta
-		catch_model.position.y=sin(catch_show_age*2)*.045
-		catch_model.rotation.z=-PI/2+sin(catch_show_age*2.7)*.045
+		update_catch_presentation()
 		feedback.update_feedback(delta,false,false,0,line_target())
 		return
+	for buoy in fishing_buoys:buoy.advance(delta,day_cycle.roughness)
 	var space_down = Input.is_physical_key_pressed(KEY_SPACE)
 	if space_down and not space_was_down and not fishing and not market_mode and not shop_mode:
-		cast()
+		fishing_action()
 	space_was_down = space_down
 	var pulling = (reeling or space_down or fight.power_time>0) and fishing and fish_timer >= 2.5
 	if fishing:
@@ -327,7 +349,7 @@ func _physics_process(delta: float) -> void:
 			return
 		fish_timer += delta
 		if fish_timer < 2.5:
-			message = "Bait in the water… wait for a bite."
+			message = ("Dropping jig…" if feedback.overhead else "Casting…") if feedback.cast_motion.is_casting() else "Bait in the water… wait for a bite."
 		else:
 			if not bite_announced:
 				bite_announced = true
@@ -363,7 +385,7 @@ func _physics_process(delta: float) -> void:
 		if Input.is_physical_key_pressed(KEY_N):
 			driving_controls.neutral()
 		var vessel=World.vessel(equipped_boat)
-		drive.base_speed=float(vessel.speed)
+		drive.base_speed=minf(float(vessel.speed),4.0) if not World.Harbours.containing(Vector2(boat.position.x,boat.position.z)).is_empty() else float(vessel.speed)
 		drive.handling=float(vessel.handling)
 		drive.acceleration_multiplier=float(vessel.accel)
 		drive.performance_propeller = "propeller" in boat_parts
@@ -375,15 +397,21 @@ func _physics_process(delta: float) -> void:
 		update_outboards(delta)
 		boat.rotation.y += drive.yaw_rate()*delta
 		var next = boat.position - boat.basis.z * speed * delta
-		var blocked=not World.water(Vector2(next.x,next.z),unlocked,4.0)
-		if not unlocked and next.x>45:
+		var from=Vector2(boat.position.x,boat.position.z);var to=Vector2(next.x,next.z)
+		var blocked=not preload("res://scripts/marine_collision.gd").clear_water(from,to,unlocked,World.BOAT_CLEARANCE)
+		var boat_hit=traffic!=null and traffic.motion_blocked(from,to,World.BOAT_CLEARANCE)
+		blocked=blocked or boat_hit
+		if blocked and collision_cooldown<=0:
+			message="Boat ahead. Reverse or steer clear." if boat_hit else "Quay or shallow water. Reverse and steer clear."
+			feedback.haptic(45,.35);collision_cooldown=.8
+		if not unlocked and next.x>World.EAST_UNLOCK:
 			message="Catch 3 fish to unlock eastern waters."
-		if not blocked and Vector2(next.x, next.z).length() < 250:
+		if not blocked and Vector2(next.x, next.z).length() < World.SEA_RADIUS:
 			boat.position = next
 		else:
 			speed = 0
 			drive.speed = 0
-	boat.position.y = sin(elapsed * 1.6) * (0.07+absf(speed)*0.003+day_cycle.roughness*0.17)
+	boat.position.y = surface.height(Vector2(boat.position.x,boat.position.z))-surface.BASE
 	boat.rotation.z = lerpf(boat.rotation.z,-drive.steering*absf(speed)*0.009+sin(elapsed*1.1)*day_cycle.roughness*0.035,1-exp(-delta*3))
 	boat.rotation.x = lerpf(boat.rotation.x,-clampf(absf(speed)/12,0,1)*0.035,1-exp(-delta*2))
 	var driving = not fishing_view and not market_mode and not shop_mode
@@ -411,27 +439,36 @@ func _physics_process(delta: float) -> void:
 		var forward=-boat.basis.z
 		var view_target=camera.position+forward*12+Vector3(0,-0.6,0)
 		var focus=fight.position-camera.position if fishing and bite_announced else forward*12
-		var desired_look=Vector3(clampf(focus.dot(boat.basis.x)*.70,-4,4),0,0)
-		fishing_camera_look=fishing_camera_look.lerp(desired_look,1-exp(-delta*3.8))
-		view_target+=boat.basis.x*fishing_camera_look.x
+		var cast_pitch=feedback.cast_motion.camera_pitch()
+		# Track angles rather than world offsets: close fish should stay in frame too.
+		var forward_distance=maxf(.15,focus.dot(forward))
+		var yaw=clampf(atan2(focus.dot(boat.basis.x),forward_distance),-.45,.45) if fishing and bite_announced else 0.0
+		var pitch=clampf(atan2(focus.y,forward_distance),-.55,.42) if fishing and bite_announced else -.05
+		var desired_look=Vector3(yaw,pitch,0)
+		fishing_camera_look=fishing_camera_look.lerp(desired_look,1-exp(-delta*5.0))
+		view_target=camera.position+forward*12+boat.basis.x*tan(fishing_camera_look.x)*12
+		view_target.y+=tan(fishing_camera_look.y+cast_pitch)*12
 		var load=tension if fishing and bite_announced else 0.0
 		var kick=feedback.strike_kick
 		var burst=fight.power_time>0 and fishing
-		var bob=Vector3(sin(elapsed*5.1)*load*.018,sin(elapsed*4.4)*(.012+load*.018)+kick*.08, kick*.16)
+		var bob=Vector3(sin(elapsed*5.1)*load*.018,sin(elapsed*4.4)*(.012+load*.018)+kick*.08+cast_pitch*.10, kick*.16+cast_pitch*.15)*World.BOAT_SCALE
 		fishing_camera_offset=fishing_camera_offset.lerp(bob,1-exp(-delta*5))
 		camera.position+=fishing_camera_offset
-		view_target.y+=kick*3.5+(fight.landing_lift*.65 if fishing else 0.0)
+		camera.position.y=maxf(camera.position.y,surface.height(Vector2(camera.position.x,camera.position.z))+.24)
+		view_target.y+=kick*.6
 		camera.look_at(view_target)
-		camera.rotate_object_local(Vector3.BACK,sin(elapsed*3.5)*load*.018-kick*.035+(sin(elapsed*12)*.012 if burst else 0.0))
-		camera.fov=lerpf(camera.fov,77.0 if burst else (73.0 if kick>.1 else 70.0),1-exp(-delta*5))
+		camera.rotate_object_local(Vector3.BACK,sin(elapsed*3.5)*load*.018-kick*.035-cast_pitch*.08+(sin(elapsed*12)*.012 if burst else 0.0))
+		camera.fov=lerpf(camera.fov,77.0 if burst else (75.0 if feedback.cast_motion.is_casting() else (73.0 if kick>.1 else 70.0)),1-exp(-delta*5))
 	elif first_person_driving:
 		camera.position=boat_visual.get_node("DrivingView").global_position if boat_visual.has_node("DrivingView") else boat_visual.to_global(Vector3(0.53,1.30,1.37))
-		camera.look_at(boat.position-boat.basis.z*35+Vector3(0,1.13,0))
+		camera.look_at(camera.position-boat.basis.z*35+Vector3(0,-4,0))
 	else:
-		camera.fov=70
-		var desired = boat.position + boat.basis.z * 12 + Vector3(0, 7, 0)
-		camera.position = camera.position.lerp(desired, 1 - exp(-delta * 3))
-		camera.look_at(boat.position + Vector3(0, 0.5, 0))
+		camera.fov=55 if camera_mode==2 else 70
+		var desired=boat.position+boat.basis.z*7+Vector3(0,4,0)
+		if camera_mode==2:desired=boat.position+Vector3(0,24,.01)
+		elif camera_mode==3:desired=boat.position+boat.basis.z*3.2+boat.basis.x*1.0+Vector3(0,1.6,0)
+		camera.position=camera.position.lerp(desired,1-exp(-delta*5))
+		camera.look_at(boat.position+Vector3(0,-.25,0),Vector3.FORWARD if camera_mode==2 else Vector3.UP)
 	camera.h_offset=1.2 if shop_mode else 0.0
 	market.update_hands(camera,market_mode)
 	driving_controls.pov=first_person_driving and driving
@@ -447,7 +484,10 @@ func _physics_process(delta: float) -> void:
 	helm_hands.update_pose(delta,first_person_driving and driving and not intro_visible,drive.steering)
 	interface.refresh()
 
-func cast() -> void:
+func fishing_action() -> void:
+	cast(not fishing_view)
+
+func cast(preview_only: bool=false) -> void:
 	if fishing or market_mode or shop_mode or intro_visible or catch_overlay.visible:
 		return
 	if inventory.size()>=icebox_capacity():
@@ -469,16 +509,22 @@ func cast() -> void:
 	else:
 		drive.speed=0
 		speed=0
+	if preview_only:
+		fishing_view=true
+		feedback.cast_motion.reset()
+		fishing_camera_look=Vector3(0,-.05,0);fishing_camera_offset=Vector3.ZERO
+		message="Jig ready. Tap DROP to lower it." if feedback.overhead else "Lure ready. Tap CAST to send it out."
+		return
 	var species_index=int(active_spot.fish[rng.randi_range(0,active_spot.fish.size()-1)])
 	active_species=World.FISH[species_index]
 	active_catch=preload("res://scripts/catch_profile.gd").roll(active_species,rng)
 	hook_clock=0
 	fight=preload("res://scripts/fish_fight.gd").new()
-	fight.start(boat.position,-boat.basis.z,float(active_catch.strength))
+	fight.start(boat.position,-boat.basis.z,float(active_catch.strength),World.BOAT_SCALE)
 	fight.individual_phase=rng.randf_range(-PI,PI)
 	fight.hooked=false
 	clear_hooked_fish()
-	fish_actor=Art.fish(self,0.45*float(active_catch.size),str(active_species.name))
+	fish_actor=Art.fish(self,0.45*World.BOAT_SCALE*float(active_catch.size),str(active_species.name))
 	fish_actor.position=fight.position
 	fish_actor.visible=false
 	fish_actor.swim_intensity=2.0
@@ -491,7 +537,7 @@ func cast() -> void:
 	tension = 0
 
 func can_put_fish_on_boat() -> bool:
-	return fishing and not landing_to_boat and bite_announced and fight.landing_lift>=0.65 and fight.position.y>0.1
+	return fishing and not landing_to_boat and bite_announced and fight.landing_lift>=0.65 and fish_actor!=null and hooked_fish_bottom()>surface.height(Vector2(fish_actor.position.x,fish_actor.position.z))+.025
 
 func put_fish_on_boat() -> void:
 	if not can_put_fish_on_boat(): return
@@ -540,9 +586,10 @@ func land_fish() -> void:
 	catch_model.queue_free()
 	catch_model = Art.fish(camera,0.8*float(active_catch.size),species)
 	catch_model.position = Vector3(-0.8,0,-3)
-	catch_model.basis = Basis(Vector3(0,0,1),-PI/2) * Basis(Vector3.UP,PI/2)
+	catch_model.basis = (Basis(Vector3(0,0,1),-PI/2) * Basis(Vector3.UP,PI/2)).scaled(Vector3.ONE*0.8*float(active_catch.get("size",1)))
 	catch_model.rotate(Vector3.UP,-0.24)
 	catch_show_age=0
+	update_catch_presentation()
 	catch_overlay.visible = true
 	hud.visible = false
 	catch_model.visible = true
@@ -557,20 +604,28 @@ func close_catch() -> void:
 	hud.visible = true
 	catch_overlay.visible = false
 	catch_model.visible = false
+	if catch_leader:catch_leader.visible=false
+	if catch_fill:catch_fill.visible=false
 	message = "Catch stored on ice. Cast again or return to the island market."
+
+func at_home_dock() -> bool:
+	return not World.Harbours.berth_at(Vector2(boat.position.x,boat.position.z)).is_empty()
 
 func sell() -> void:
 	if fishing or catch_overlay.visible:
 		return
-	if boat.position.distance_to(DOCK) > 18:
-		message = "Return to the home dock to visit the fish market."
+	if not at_home_dock():
+		message = "Enter an island harbour and approach its inner berth to visit the market."
 		return
 	if absf(speed)>1 or (drive.engine_running and drive.gear!=0):
 		message = "Select neutral and slow down before entering the market."
 		return
 	leave_fishing()
 	speed = 0
+	active_market_island=World.Harbours.berth_at(Vector2(boat.position.x,boat.position.z))
+	market.set_island(active_market_island)
 	market_mode = true
+	update_scene_activity()
 	message = "Welcome to the island market. Serve your fresh catch to the queue."
 
 func serve_customer() -> void:
@@ -597,7 +652,7 @@ func serve_customer() -> void:
 		message = "Your icebox is empty. Head out for another fishing trip."
 
 func buy_upgrade() -> void:
-	if boat.position.distance_to(DOCK) > 18:
+	if not at_home_dock():
 		message = "Boat upgrades are available at the home dock."
 	elif upgrade >= 2:
 		message = "Your boat engine is fully upgraded."
@@ -611,9 +666,9 @@ func buy_upgrade() -> void:
 
 func line_target() -> Vector3:
 	if landing_to_boat and fish_actor:
-		return fish_actor.position
+		return fish_actor.to_global(fish_actor.get_meta("mouth_local",Vector3(0,0,-1.2)))
 	if fishing and bite_announced and fish_actor:
-		return fight.position+Vector3.UP*0.5*fight.landing_lift
+		return fish_actor.to_global(fish_actor.get_meta("mouth_local",Vector3(0,0,-1.2)))
 	return Vector3(boat.position.x, -0.52, boat.position.z) - boat.basis.z * 18.0
 
 func leave_fishing() -> void:
@@ -623,16 +678,24 @@ func leave_fishing() -> void:
 	driving_controls.neutral()
 	driving_controls.release_pointers()
 	speed = 0
-	camera.position = boat.position + boat.basis.z * 12 + Vector3(0,7,0)
+	camera.position = boat.position + boat.basis.z * 7 + Vector3(0,4,0)
 	camera.look_at(boat.position)
 	market_mode = false
 	shop_mode = false
+	update_scene_activity()
 	if interface:
 		interface.hide_shop()
 	fishing = false
 	fishing_view = false
 	reeling = false
 	message = "Neutral selected. Slide the throttle to get underway."
+
+func plot_home_course() -> void:
+	if landing_to_boat:return
+	if catch_overlay.visible:close_catch()
+	if fishing_view or market_mode or shop_mode:leave_fishing()
+	if not set_waypoint(World.Harbour.HOME,"Kelaa inner berth"):
+		message="Move clear of the quay, then plot the route to Kelaa harbour."
 
 func return_home() -> void:
 	leave_fishing()
@@ -744,11 +807,12 @@ func apply_equipment() -> void:
 		feedback.equip(str(equipped.Reels),str(equipped.Rods),str(equipped.Line))
 
 func open_shop(category: String = "Reels") -> void:
-	if fishing or catch_overlay.visible or boat.position.distance_to(DOCK)>18 or absf(speed)>1 or (drive.engine_running and drive.gear!=0):
-		message = "Dock at home in neutral to visit the island shops."
+	if fishing or catch_overlay.visible or not at_home_dock() or absf(speed)>1 or (drive.engine_running and drive.gear!=0):
+		message = "Approach an island harbour berth in neutral to visit its shops."
 		return
 	leave_fishing()
 	shop_mode = true
+	update_scene_activity()
 	interface.show_shop(category)
 	message = "Welcome to the boat workshop." if category=="Boat" else "Welcome to the tackle house. Browse gear for your next trip."
 
@@ -839,11 +903,14 @@ func apply_boat() -> void:
 	cockpit_displays=preload("res://scripts/cockpit_displays.gd").new()
 	boat_visual.add_child(cockpit_displays)
 	cockpit_displays.configure(self,equipped_boat)
+	# Own-vessel geometry uses a separate view layer so fishing has an unobstructed view.
+	for part in boat_visual.find_children("*","GeometryInstance3D",true,false):part.layers=2
 	if helm_hands:helm_hands.configure(boat_visual)
 	if driving_controls:
 		driving_controls.set_skin(equipped_boat)
 		driving_controls.configure_models(boat_visual)
 	update_boat_parts()
+	boat.position.y=surface.height(Vector2(boat.position.x,boat.position.z))-surface.BASE
 
 func update_outboards(delta: float) -> void:
 	for node_name in ["OutboardPivot","OutboardPivot2"]:
@@ -852,9 +919,9 @@ func update_outboards(delta: float) -> void:
 			motor.rotation.y=lerpf(motor.rotation.y,drive.steering*0.52,1-exp(-delta*7))
 			motor.get_node("Propeller").rotation.z+=delta*drive.rpm*35*drive.gear*(1 if drive.engine_running else 0)
 	var lever=boat_visual.get_node("ThrottleLever") as Node3D
-	lever.basis=lever.get_meta("rest_basis",Basis.IDENTITY)*Basis(Vector3.RIGHT,driving_controls.lever_value*0.8*lever.get_meta("travel_direction",1.0))
+	preload("res://scripts/throttle_pose.gd").apply(lever,driving_controls.lever_value)
 	if boat_visual.has_node("ThrottleLever2"):
-		boat_visual.get_node("ThrottleLever2").rotation.x=driving_controls.lever_value*0.8
+		preload("res://scripts/throttle_pose.gd").apply(boat_visual.get_node("ThrottleLever2"),driving_controls.lever_value)
 
 func set_waypoint(at: Vector2,title: String) -> bool:
 	if navigation.set_destination(Vector2(boat.position.x,boat.position.z),at,title):
@@ -872,12 +939,17 @@ func update_hooked_fish(delta: float) -> void:
 	if not fish_actor:
 		return
 	fish_actor.visible=true
-	fish_actor.position=fight.position
+	if fight.landing_lift<=.55:fish_actor.position=fight.position
 	var direction=fight.velocity
 	if fight.landing_lift>0.55:
-		fish_actor.rotation=Vector3(PI/2,boat.rotation.y,sin(fight.age*5)*0.12)
+		var hanging=Basis.from_euler(Vector3(PI/2,boat.rotation.y,sin(fight.age*5)*0.08)).get_rotation_quaternion()
+		fish_actor.basis=Basis(hanging).scaled(Vector3.ONE*.45*World.BOAT_SCALE*float(active_catch.get("size",1)))
 	elif direction.length()>0.01:
-		fish_actor.look_at(fight.position+direction.normalized(),Vector3.UP)
+		var facing=direction.normalized()
+		if absf(facing.dot(Vector3.UP))<.95:
+			var desired=Basis.looking_at(facing,Vector3.UP).get_rotation_quaternion()
+			var rotation_now=fish_actor.basis.orthonormalized().get_rotation_quaternion()
+			fish_actor.basis=Basis(rotation_now.slerp(desired,1-exp(-delta*7))).scaled(Vector3.ONE*.45*World.BOAT_SCALE*float(active_catch.get("size",1)))
 	fish_actor.swim_intensity=2.5 if fight.running else 1.4
 	fish_splash_timer-=delta
 	if fight.splash_event or (fight.running and fish_splash_timer<=0):
@@ -887,14 +959,21 @@ func update_hooked_fish(delta: float) -> void:
 func toggle_driving_camera() -> void:
 	if fishing_view or market_mode or shop_mode:
 		return
-	first_person_driving=not first_person_driving
+	camera_mode=((1 if first_person_driving else camera_mode)+1)%4
+	first_person_driving=camera_mode==1
 	driving_controls.release_pointers()
-	message="Helm view: drag the wheel and throttle in front of you." if first_person_driving else "External boat camera."
+	message="Camera: "+CAMERA_NAMES[camera_mode]
+
+func camera_label() -> String:
+	return CAMERA_NAMES[1 if first_person_driving else (0 if camera_mode==1 else camera_mode)]
 
 func apply_graphics() -> void:
 	# UI remains native resolution; only the 3D scene is scaled.
 	get_viewport().scaling_3d_scale=[0.60,0.80,1.0][graphics_quality]
 	Engine.max_fps=30 if graphics_quality==0 else 60
+	Engine.physics_ticks_per_second=30 if graphics_quality==0 else 60
+	if feedback:feedback.apply_quality(graphics_quality)
+	if interface:interface.apply_glass_quality(graphics_quality)
 	if ocean_mesh:
 		ocean_mesh.subdivide_width=[32,64,100][graphics_quality]
 		ocean_mesh.subdivide_depth=[32,64,100][graphics_quality]
@@ -904,3 +983,59 @@ func apply_graphics() -> void:
 		day_cycle.sun.directional_shadow_max_distance=[30.0,60.0,110.0][graphics_quality]
 		day_cycle.water.set_shader_parameter("detail_quality",float(graphics_quality))
 		day_cycle.apply_lighting()
+
+func update_port_water() -> void:
+	var at=Vector2(boat.position.x,boat.position.z)
+	var best: Dictionary=World.Harbours.get_port("HA. Kelaa");var distance=INF
+	for port in World.Harbours.all_ports():
+		if at.distance_squared_to(port.origin)<distance:best=port;distance=at.distance_squared_to(port.origin)
+	if water_port==best.name:return
+	water_port=best.name
+	surface.port=best
+	day_cycle.water.set_shader_parameter("harbour_origin",best.origin)
+	day_cycle.water.set_shader_parameter("harbour_inward",best.inward)
+	day_cycle.water.set_shader_parameter("harbour_size",Vector3(best.depth,best.land,best.half))
+
+func location_name() -> String:
+	var at=Vector2(boat.position.x,boat.position.z)
+	for island in World.ISLANDS:
+		if at.distance_to(island.at)<island.radius+70:return island.name.to_upper()
+	return "HAA ALIF WATERS"
+
+func hooked_fish_bottom() -> float:
+	if not fish_actor:return -INF
+	var bounds: AABB=fish_actor.get_meta("fish_bounds")
+	return (fish_actor.global_transform*bounds).position.y
+
+func hanging_clearance() -> float:
+	if not fish_actor:return .3
+	var bounds: AABB=fish_actor.get_meta("fish_bounds")
+	return bounds.size.z*fish_actor.scale.x+.20
+
+func pose_hanging_fish(tip: Vector3) -> void:
+	if not fish_actor or fight.landing_lift<=.55 or landing_to_boat:return
+	var mouth=tip+Vector3.DOWN*.16
+	var local_mouth: Vector3=fish_actor.get_meta("mouth_local")
+	fish_actor.position=mouth-fish_actor.basis*local_mouth
+	fight.position=fish_actor.position
+	fish_actor.swim_intensity=.25
+
+func update_catch_presentation() -> void:
+	# Raise the showcase camera above the sea instead of displaying half the fish through water.
+	var bounds: AABB=catch_model.get_meta("fish_bounds")
+	if not catch_fill:
+		catch_fill=OmniLight3D.new();camera.add_child(catch_fill);catch_fill.position=Vector3(-1,1,-1);catch_fill.omni_range=5;catch_fill.light_energy=.8;catch_fill.shadow_enabled=false
+	catch_fill.visible=true
+	camera.position=boat.position+Vector3.UP*(surface.ceiling()-boat.position.y+bounds.size.z*catch_model.scale.x*.55+.35)
+	camera.look_at(camera.position-boat.basis.z*12)
+	camera.fov=65
+	catch_model.position=Vector3(-.8,sin(catch_show_age*2)*.025,-3)
+	catch_model.rotation.z=-PI/2+sin(catch_show_age*2.7)*.025
+	if not catch_leader:
+		catch_leader=MeshInstance3D.new();camera.add_child(catch_leader)
+		var material=StandardMaterial3D.new();material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;material.albedo_color=Color("d5e4d5")
+		catch_leader.material_override=material;catch_leader.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var mouth=catch_model.transform*catch_model.get_meta("mouth_local")
+	var line=ImmediateMesh.new();line.surface_begin(Mesh.PRIMITIVE_LINES)
+	line.surface_add_vertex(mouth);line.surface_add_vertex(mouth+Vector3.UP*3);line.surface_end()
+	catch_leader.mesh=line;catch_leader.visible=true

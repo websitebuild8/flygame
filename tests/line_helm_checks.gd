@@ -20,8 +20,9 @@ func checks():
 		assert(before.distance_to(helm.lever_contact)>.025,"Hand travels with forward/neutral/reverse lever motion")
 	game.first_person_driving=false;game._physics_process(.016)
 	assert(not game.helm_hands.visible,"Driving hands hide outside POV")
-	game.boat.position=game.SPOT;game.driving_controls.neutral();game.drive.reset();game.cast();game.fish_timer=3;game.reeling=true;game._physics_process(.016)
+	game.boat.position=game.SPOT;game.driving_controls.neutral();game.drive.reset();game.speed=0;game.cast();game.fish_timer=3;game.reeling=true;game._physics_process(.016)
 	assert(not game.helm_hands.visible,"Driving hands hide during fishing")
+	assert(game.fishing and game.bite_announced,"Routing checks must enter a real fish fight after stopping the boat")
 	var feedback=game.feedback;var curve=preload("res://scripts/rod_curve.gd")
 	for bend in [0.0,.45,.95]:
 		feedback.bend_amount=bend;feedback.cast_age=2
@@ -43,4 +44,4 @@ func checks():
 		var expected=feedback.equipment.to_global(curve.point(curve.guides(true)[i],.6))
 		assert(feedback.routed_line_points[i+2].distance_to(expected)<.0001,"Overhead line follows the upper-side guide holes")
 	print("PASS: all four POV helm grips, lever motion, camera visibility, spool/roller routing, all four bent guides and final fish endpoint")
-	game.free();quit()
+	game.queue_free();await create_timer(.15).timeout;quit()

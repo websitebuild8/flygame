@@ -18,6 +18,8 @@ func _ready() -> void:
 	hands.set_grip_style(true)
 
 func configure(boat_visual: Node3D) -> void:
+	scale=Vector3.ONE*preload("res://scripts/world_data.gd").BOAT_SCALE
+	hands.body_scale=preload("res://scripts/world_data.gd").BOAT_SCALE
 	visual=boat_visual;wheel=visual.get_node("HelmWheel");lever=visual.get_node("ThrottleLever")
 	var wheel_points=geometry_points(wheel)
 	if not wheel_points.is_empty():
@@ -33,8 +35,9 @@ func configure(boat_visual: Node3D) -> void:
 		for point in points:
 			if point.length()>farthest*.90:total+=point;count+=1
 		lever_grip=total/maxi(1,count)
-		# Grip around the knob's centre, not its highest visible surface.
-		lever_grip-=lever_grip.normalized()*.025/maxf(lever.global_basis.get_scale().length()/sqrt(3.0),.01)
+		# Vertices are already in lever-local coordinates; world-scale compensation
+		# used to pull the hand below the knob after resizing the boat.
+		lever_grip-=lever_grip.normalized()*.010
 	ready_pose=false;hand_angle=0
 
 func geometry_points(part: Node3D) -> PackedVector3Array:
@@ -63,6 +66,7 @@ func update_pose(delta: float,active: bool,steering: float) -> void:
 	var normal=wheel.global_basis.z.normalized()
 	var left_frame=Basis(inward,-normal,inward.cross(-normal)).orthonormalized()
 	var rest=lever.get_meta("rest_basis",Basis.IDENTITY) as Basis
-	var right_frame=(visual.global_basis*lever.basis*rest.inverse()).orthonormalized()
+	var command=float(lever.get_meta("command",0.0))
+	var right_frame=(visual.global_basis.orthonormalized()*Basis.from_euler(Vector3(-.10-command*.30,0,-.10))).orthonormalized()
 	hands.pose_helm(wheel_contact,lever_contact,left_frame,right_frame)
 	ready_pose=true

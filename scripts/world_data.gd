@@ -1,10 +1,20 @@
 extends RefCounted
+const Kelaa=preload("res://scripts/kelaa_map_data.gd")
+const Neighbours=preload("res://scripts/neighbour_map_data.gd")
+const Harbours=preload("res://scripts/island_harbours.gd")
+const Harbour=preload("res://scripts/harbour_layout.gd")
+const BOAT_SCALE=.22
+const BOAT_CLEARANCE=1.3
+const NAV_CLEARANCE=2.2
+const SEA_RADIUS=650.0
+const EAST_UNLOCK=160.0
+const CHART_HALF=700.0
 const ISLANDS = [
- {"name":"HA. Kelaa","at":Vector2(-25,30),"radius":19.0},
- {"name":"HA. Filladhoo","at":Vector2(85,-80),"radius":24.0},
- {"name":"HA. Vashafaru","at":Vector2(-22,-125),"radius":22.0},
- {"name":"HA. Dhidhdhoo","at":Vector2(-130,110),"radius":18.0},
- {"name":"HA. Baarah","at":Vector2(115,65),"radius":18.0}
+ {"name":"HA. Kelaa","at":Vector2(36.3,59.2),"radius":62.0},
+ {"name":"HA. Filladhoo","at":Vector2(260,-230),"radius":50.0},
+ {"name":"HA. Vashafaru","at":Vector2(-90,-350),"radius":47.0},
+ {"name":"HA. Dhidhdhoo","at":Vector2(-350,210),"radius":45.0},
+ {"name":"HA. Baarah","at":Vector2(300,210),"radius":60.0}
 ]
 # Only species with imported textured models are currently catchable.
 const FISH = [
@@ -17,11 +27,11 @@ const FISH = [
 const SPOTS = [
  {"id":"lagoon","name":"Kelaa Lagoon","at":Vector2(0,-45),"unlock":0,"fish":[0,1,2]},
  {"id":"reef","name":"Kelaa Outer Reef","at":Vector2(-80,-60),"unlock":0,"fish":[0,1,2,4]},
- {"id":"channel","name":"Vashafaru Channel","at":Vector2(25,-100),"unlock":0,"fish":[0,1,2,4]},
- {"id":"east","name":"Filladhoo Dropoff","at":Vector2(125,-45),"unlock":3,"fish":[0,1,2,3,4]},
- {"id":"bluewater","name":"Haa Alif Bluewater","at":Vector2(150,-150),"unlock":6,"fish":[0,2,3,4]},
- {"id":"night","name":"Baarah Drift","at":Vector2(15,120),"unlock":0,"fish":[0,1,2,4]},
- {"id":"sunset","name":"Dhidhdhoo Reef","at":Vector2(-165,65),"unlock":4,"fish":[0,1,2,4]}
+ {"id":"channel","name":"Vashafaru Channel","at":Vector2(-90,-260),"unlock":0,"fish":[0,1,2,4]},
+ {"id":"east","name":"Filladhoo Dropoff","at":Vector2(330,-190),"unlock":3,"fish":[0,1,2,3,4]},
+ {"id":"bluewater","name":"Haa Alif Bluewater","at":Vector2(430,-420),"unlock":6,"fish":[0,2,3,4]},
+ {"id":"night","name":"Baarah Drift","at":Vector2(225,245),"unlock":3,"fish":[0,1,2,4]},
+ {"id":"sunset","name":"Dhidhdhoo Reef","at":Vector2(-420,160),"unlock":4,"fish":[0,1,2,4]}
 ]
 const BOATS = [
  {"id":"skiff","name":"Scout 17 Centre Console","price":0,"unlock":0,"speed":18.0,"handling":1.15,"accel":1.15,"storage":14,"detail":"Real Scout hull · centre console · single outboard"},
@@ -43,12 +53,15 @@ static func nearest(point: Vector3) -> Dictionary:
 			distance=d
 			best=entry
 	return best
-static func water(point: Vector2, unlocked: bool, margin: float = 4.0) -> bool:
-	if point.length()>245 or (not unlocked and point.x>45):
+static func water(point: Vector2, unlocked: bool, margin: float = BOAT_CLEARANCE) -> bool:
+	if point.length()>SEA_RADIUS or (not unlocked and point.x>EAST_UNLOCK):
 		return false
+	if Harbours.blocks_walls(point,margin):return false
 	for island in ISLANDS:
-		if point.distance_to(island.at)<island.radius+margin:
-			return false
+		if island.name=="HA. Kelaa":
+			if Kelaa.blocks_water(point,margin):return false
+			continue
+		if Neighbours.blocks_water(point,island.name,margin):return false
 	return true
 
 static func has_fish_model(species: String) -> bool:
@@ -56,3 +69,6 @@ static func has_fish_model(species: String) -> bool:
 		if entry.name==species:
 			return true
 	return false
+
+static func outline(island: Dictionary) -> PackedVector2Array:
+	return Kelaa.coast if island.name=="HA. Kelaa" else Neighbours.outline(island.name)

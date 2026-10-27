@@ -43,7 +43,8 @@ func show_item(item: Dictionary) -> void:
 	angle = -0.4
 	if item.category=="Boats":
 		var hull=preload("res://scripts/boat_models.gd").build(preview_model,item.id)
-		hull.scale*=0.32
+		hull.scale*=0.32/preload("res://scripts/world_data.gd").BOAT_SCALE
+		hull.position.y=0
 	elif item.category=="Reels":
 		Tackle.reel(preview_model,item.kind,item.id).scale = Vector3.ONE*3.2
 	elif item.category=="Rods" and item.id=="island_rod":

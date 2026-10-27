@@ -1,4 +1,5 @@
 extends Node
+var lighting_tick=0.0
 var shadows_allowed = true
 var effects_quality = 2
 var hours = 8.0
@@ -30,7 +31,10 @@ func advance(delta: float) -> void:
 	roughness=lerpf(roughness,target.y,blend)
 	rain_amount=lerpf(rain_amount,target.z,blend)
 	hours = fposmod(hours+delta*24.0/DAY_SECONDS,24.0)
-	apply_lighting()
+	lighting_tick+=delta
+	if lighting_tick>=[.20,.10,.05][effects_quality]:
+		lighting_tick=0
+		apply_lighting()
 
 func apply_lighting() -> void:
 	var height = sin((float(hours)-6.0)/24.0*TAU)

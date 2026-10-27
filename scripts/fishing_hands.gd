@@ -8,6 +8,8 @@ var chains: Array[Dictionary]=[]
 var wrists: Array[Marker3D]=[]
 var model: Node3D
 var helm_mode=false
+var body_scale=1.0
+var arm_data: Array[Dictionary]=[]
 func _ready() -> void:
 	set_meta("imported_model",true)
 	model=SOURCE.instantiate();add_child(model)
@@ -26,6 +28,15 @@ func _ready() -> void:
 	for side in ["L","R"]:
 		var wrist=Marker3D.new();add_child(wrist);wrists.append(wrist)
 		chains.append({"upper":skeleton.find_bone("upperarm_L.L_30" if side=="L" else "upperarm_L.R_56"),"lower":skeleton.find_bone("lowerarm_L.L_29" if side=="L" else "lowerarm_L.R_55"),"hand":skeleton.find_bone("hand_L.L_25" if side=="L" else "hand_L.R_51")})
+	for chain in chains:
+		var lower=skeleton.get_bone_global_rest(chain.lower)
+		var hand=skeleton.get_bone_global_rest(chain.hand)
+		var twists: Array[Dictionary]=[]
+		for bone in range(skeleton.get_bone_count()):
+			if skeleton.get_bone_parent(bone)==chain.lower and skeleton.get_bone_name(bone).begins_with("twist_arm"):
+				var rest=skeleton.get_bone_global_rest(bone)
+				twists.append({"index":bone,"rest":rest,"fraction":clampf(lower.origin.distance_to(rest.origin)/lower.origin.distance_to(hand.origin),0,1)})
+		arm_data.append({"upper":skeleton.get_bone_global_rest(chain.upper),"lower":lower,"hand":hand,"twists":twists})
 	set_grip_style(false)
 
 func set_grip_style(driving: bool,counter: bool=false) -> void:
@@ -88,7 +99,7 @@ func pose(handle: Vector3,turning: bool,overhead: bool) -> void:
 		var grasp=grip.position if i==0 else winding.position
 		var orientation=left_basis if i==0 else right_basis
 		wrists[i].transform=Transform3D(orientation,grasp-orientation*Vector3(.065 if i==0 else -.065,.27,.025)*.28)
-		solve_arm(i,skeleton.to_local(view.to_global(Vector3(-.80 if i==0 else .65,-.50,-.28))))
+		solve_arm(i,skeleton.to_local(view.to_global(Vector3(-.80 if i==0 else .65,-.50,-.28)*body_scale)))
 
 func pose_helm(left_contact: Vector3,right_contact: Vector3,left_frame: Basis,right_frame: Basis) -> void:
 	helm_mode=true
@@ -97,25 +108,25 @@ func pose_helm(left_contact: Vector3,right_contact: Vector3,left_frame: Basis,ri
 	for i in range(2):
 		var frame=left_frame if i==0 else right_frame
 		var contact=left_contact if i==0 else right_contact
-		wrists[i].global_transform=Transform3D(frame,contact-frame*Vector3(.065 if i==0 else -.065,.27,.025)*.28)
-		solve_arm(i,skeleton.to_local(view.to_global(Vector3(-.60 if i==0 else .60,-.55,-.22))))
+		wrists[i].global_transform=Transform3D(frame,contact-frame*Vector3(.065 if i==0 else -.065,.27,.025)*.28*body_scale)
+		solve_arm(i,skeleton.to_local(view.to_global(Vector3(-.60 if i==0 else .60,-.55,-.22)*body_scale)))
 
 func solve_arm(index: int,pole: Vector3) -> void:
 	var chain=chains[index]
-	var upper=skeleton.get_bone_global_rest(chain.upper)
-	var lower=skeleton.get_bone_global_rest(chain.lower)
-	var hand=skeleton.get_bone_global_rest(chain.hand)
+	var upper: Transform3D=arm_data[index].upper
+	var lower: Transform3D=arm_data[index].lower
+	var hand: Transform3D=arm_data[index].hand
 	# Shoulders belong to the player's body, not the moving rod. This lets elbows
 	# articulate while the hands remain on the rod and freely rotating reel knob.
 	var view=get_parent().get_parent() as Node3D
-	var origin=skeleton.to_local(view.to_global(Vector3((-.24 if helm_mode else -.40) if index==0 else .26,-.32,-.08)))
+	var origin=skeleton.to_local(view.to_global(Vector3((-.24 if helm_mode else -.40) if index==0 else .26,-.32,-.08)*body_scale))
 	var target=skeleton.to_local(wrists[index].global_position)
 	var delta=target-origin
 	var scale=skeleton.global_basis.get_scale().x
 	# Human-sized segments with a small reach allowance for the view-model rig.
-	var reach=maxf(1.0,(delta.length()*scale+.025)/.64)
-	var l1=.33*reach/scale
-	var l2=.31*reach/scale
+	var reach=maxf(1.0,(delta.length()*scale+.025*body_scale)/(.64*body_scale))
+	var l1=.33*body_scale*reach/scale
+	var l2=.31*body_scale*reach/scale
 	var d=clampf(delta.length(),absf(l1-l2)+.001,l1+l2-.001)
 	var direction=delta.normalized()
 	var bend=pole-origin-direction*(pole-origin).dot(direction)
@@ -127,21 +138,19 @@ func solve_arm(index: int,pole: Vector3) -> void:
 	var wrist_basis=skeleton.global_basis.orthonormalized().inverse()*wrists[index].global_basis.orthonormalized()
 	var upper_basis=Basis(Quaternion(upper.basis.y.normalized(),(elbow-origin).normalized()))*upper.basis
 	skeleton.set_bone_global_pose(chain.upper,Transform3D(upper_basis,origin))
-	skeleton.force_update_all_bone_transforms()
 	var forearm_rest=wrist_basis*hand.basis.inverse()*lower.basis
 	var lower_basis=Basis(Quaternion(forearm_rest.y.normalized(),(endpoint-elbow).normalized()))*forearm_rest
 	skeleton.set_bone_global_pose(chain.lower,Transform3D(lower_basis,elbow))
-	skeleton.force_update_all_bone_transforms()
 	skeleton.set_bone_global_pose(chain.hand,Transform3D(wrist_basis,endpoint))
-	skeleton.force_update_all_bone_transforms()
 	# The authored sleeve also weights three forearm twist bones. Reposition them
 	# along the solved arm instead of leaving them in the original shortened pose.
-	for bone in range(skeleton.get_bone_count()):
-		if skeleton.get_bone_parent(bone)!=chain.lower or not skeleton.get_bone_name(bone).begins_with("twist_arm"):continue
-		var rest=skeleton.get_bone_global_rest(bone)
-		var fraction=clampf(lower.origin.distance_to(rest.origin)/lower.origin.distance_to(hand.origin),0,1)
+	for twist in arm_data[index].twists:
+		var bone: int=twist.index
+		var rest: Transform3D=twist.rest
+		var fraction: float=twist.fraction
 		var elbow_turn=(lower_basis*lower.basis.inverse()).orthonormalized().get_rotation_quaternion()
 		var wrist_turn=(wrist_basis*hand.basis.inverse()).orthonormalized().get_rotation_quaternion()
 		var basis=Basis(elbow_turn.slerp(wrist_turn,fraction*.85))*rest.basis
 		skeleton.set_bone_global_pose(bone,Transform3D(basis,elbow.lerp(endpoint,fraction)))
-		skeleton.force_update_all_bone_transforms()
+
+	skeleton.force_update_all_bone_transforms()

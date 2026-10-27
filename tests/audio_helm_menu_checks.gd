@@ -16,7 +16,9 @@ func checks():
 	sound.sound_enabled=false;sound.update_ambience(true);assert(not sound.ambience.playing)
 	sound.sound_enabled=true;sound.update_ambience(false);assert(not sound.ambience.playing)
 	sound.cast_feedback(Vector3.ZERO)
-	assert(sound.splash_players[0].playing,"Cast triggers supplied splash audio")
+	assert(not sound.splash_players[0].playing,"Cast waits for the lure to hit the water before splashing")
+	sound.splash(Vector3.ZERO)
+	assert(sound.splash_players[0].playing,"Water impact triggers supplied splash audio")
 	for id in ["skiff","launch","glacier","grady"]:
 		game.equipped_boat=id;game.apply_boat()
 		var controls=game.driving_controls

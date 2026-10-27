@@ -27,7 +27,7 @@ func update_wake(delta: float, at: Vector3, stern: Vector3, speed: float) -> voi
 		timer = 0.09
 		var node = pieces[cursor]
 		node.position = at+stern*2.7*signf(speed)
-		node.position.y = -0.36
+		node.position.y = get_parent().surface.height(Vector2(node.position.x,node.position.z))+.008
 		node.rotation.y = atan2(stern.x,stern.z)
 		ages[cursor] = 0
 		cursor = (cursor+1)%pieces.size()
@@ -36,5 +36,6 @@ func update_wake(delta: float, at: Vector3, stern: Vector3, speed: float) -> voi
 		var age = ages[i]
 		pieces[i].visible = age<1.9
 		if age<1.9:
+			pieces[i].position.y=get_parent().surface.height(Vector2(pieces[i].position.x,pieces[i].position.z))+.008
 			pieces[i].scale = Vector3(1+age*4.0,1+age*1.5,1)
 			(pieces[i].material_override as StandardMaterial3D).albedo_color.a = (1-age/1.9)*0.35

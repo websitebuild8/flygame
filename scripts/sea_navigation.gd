@@ -11,13 +11,13 @@ var arrived = false
 
 func configure(unlocked: bool) -> void:
 	region_open = unlocked
-	grid.region = Rect2i(-49,-49,99,99)
+	grid.region = Rect2i(-130,-130,261,261)
 	grid.cell_size = Vector2(5,5)
 	grid.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
 	grid.update()
-	for x in range(-49,50):
-		for y in range(-49,50):
-			grid.set_point_solid(Vector2i(x,y),not World.water(Vector2(x*5,y*5),unlocked,7.0))
+	for x in range(-130,131):
+		for y in range(-130,131):
+			grid.set_point_solid(Vector2i(x,y),not World.water(Vector2(x*5,y*5),unlocked,World.NAV_CLEARANCE))
 
 func cell(point: Vector2) -> Vector2i:
 	return Vector2i(roundi(point.x/5),roundi(point.y/5))
@@ -25,12 +25,12 @@ func cell(point: Vector2) -> Vector2i:
 func clear_line(a: Vector2,b: Vector2) -> bool:
 	var steps = maxi(1,ceili(a.distance_to(b)/1.5))
 	for i in range(steps+1):
-		if not World.water(a.lerp(b,float(i)/steps),region_open,6.5):
+		if not World.water(a.lerp(b,float(i)/steps),region_open,World.NAV_CLEARANCE):
 			return false
 	return true
 
 func set_destination(origin: Vector2, target: Vector2, title: String) -> bool:
-	if not World.water(target,region_open,7) or not grid.is_in_boundsv(cell(target)) or grid.is_point_solid(cell(target)):
+	if not World.water(target,region_open,World.NAV_CLEARANCE) or not grid.is_in_boundsv(cell(target)) or grid.is_point_solid(cell(target)):
 		return false
 	var old_target = destination
 	var old_name = destination_name

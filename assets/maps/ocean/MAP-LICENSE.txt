@@ -1,0 +1,7 @@
+Coastal depth appearance map derived from © OpenStreetMap contributors.
+https://www.openstreetmap.org/copyright
+ODbL 1.0 https://opendatacommons.org/licenses/odbl/1-0/
+Sources: the game's assets/maps/kelaa/ and assets/maps/neighbours/ extracts.
+Derived coast polygons: coasts.json. Artistic depth, shoreline wash, water and
+harbour masks: coastal_depth.png. Generated with tools/export_ocean_coasts.gd
+and tools/prepare_ocean.py. Depths are fictional, not hydrographic measurements.

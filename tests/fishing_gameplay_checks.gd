@@ -51,10 +51,10 @@ func checks():
 	var view=game.feedback.rig.get_parent()
 	var left_elbow=view.to_local(hands.skeleton.to_global(hands.skeleton.get_bone_global_pose(hands.chains[0].lower).origin))
 	var left_wrist=view.to_local(hands.wrists[0].global_position)
-	assert(left_elbow.x<left_wrist.x-.04,"Left elbow bends outward from the player's body")
+	assert(left_elbow.x<left_wrist.x-.04*game.World.BOAT_SCALE,"Left elbow bends outward from the player's body")
 	var right_elbow=view.to_local(hands.skeleton.to_global(hands.skeleton.get_bone_global_pose(hands.chains[1].lower).origin))
 	var right_wrist=view.to_local(hands.wrists[1].global_position)
-	assert(right_elbow.x>right_wrist.x+.10,"Right elbow bends outward to the right")
+	assert(right_elbow.x>right_wrist.x+.10*game.World.BOAT_SCALE,"Right elbow bends outward to the right")
 	var hand_space=game.feedback.rig.global_basis.inverse()*hands.skeleton.global_basis
 	var palm_frame=(hand_space*hands.skeleton.get_bone_global_pose(hands.chains[0].hand).basis).orthonormalized()
 	assert(palm_frame.x.dot(Vector3.UP)>.8,"Palm faces upward to support the rod")

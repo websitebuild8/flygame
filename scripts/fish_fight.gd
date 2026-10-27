@@ -1,4 +1,5 @@
 extends RefCounted
+var world_scale=1.0
 var origin = Vector3.ZERO
 var forward = Vector3.FORWARD
 var side = Vector3.RIGHT
@@ -38,7 +39,8 @@ func request_power() -> bool:
 	tension=maxf(.12,tension-.22)
 	return true
 
-func start(at: Vector3, direction: Vector3, strength: float) -> void:
+func start(at: Vector3, direction: Vector3, strength: float, scene_scale: float=1.0) -> void:
+	world_scale=scene_scale
 	origin=at
 	forward=Vector3(direction.x,0,direction.z).normalized()
 	side=Vector3(-forward.z,0,forward.x)
@@ -65,15 +67,15 @@ func step(delta: float, reeling: bool, retrieve: float, drag: float, rod: float,
 	landing_lift=smoothstep(0.78,0.98,progress)
 	if progress>=1.0: landing_age+=delta
 	run_distance=lerpf(run_distance,run*4.0*(1-progress),1-exp(-delta*2))
-	var distance=lerpf(18.0,4.5,progress)+run_distance
+	var distance=lerpf(18.0,4.5*world_scale,progress)+run_distance
 	var sweep=sin(age*1.25+individual_phase)*4.8+sin(age*2.1+individual_phase)*1.2
 	var target=origin+forward*distance+side*sweep*(1.0-progress)
 	var jump_phase=fposmod(age,7.0)
 	jumping=jump_phase>2.3 and jump_phase<3.6
 	var lift=sin((jump_phase-2.3)/1.3*PI)*1.65 if jumping else 0.0
-	target.y=lerpf(-1.05+lift,1.05,landing_lift)
+	target.y=lerpf(-.52+(-.53+lift)*world_scale,-.52+1.57*world_scale,landing_lift)
 	if landing_lift>0.1:
-		target+=side*sin(age*3)*0.15*landing_lift
+		target+=side*sin(age*3)*0.15*world_scale*landing_lift
 		running=false
 		jumping=false
 		tension=minf(tension,0.70)

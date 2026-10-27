@@ -57,6 +57,14 @@ static func fish(parent: Node3D, size: float = 1.0, species: String = "Yellowfin
 	parent.add_child(root)
 	root.setup(species)
 	root.scale = Vector3.ONE*size
+	# Canonical fish face -Z. Cache the real imported bounds and a nose/mouth attachment.
+	var bounds=AABB();var first=true
+	for part in root.find_children("*","MeshInstance3D",true,false):
+		var local=root.global_transform.affine_inverse()*part.global_transform
+		var box=local*part.get_aabb();bounds=box if first else bounds.merge(box);first=false
+	root.set_meta("fish_bounds",bounds)
+	var mouth=Vector3(bounds.get_center().x,0,bounds.position.z+bounds.size.z*(.14 if species=="Sailfish" else .015))
+	root.set_meta("mouth_local",mouth)
 	return root
 
 static func palm(parent: Node3D, base: Vector3, height: float, angle: float) -> void:
