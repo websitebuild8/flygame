@@ -10,6 +10,8 @@ var abandon_confirm=false
 var celebration=0
 var challenge_celebration: Dictionary={}
 var rank_label: Label
+var scroll_positions: Dictionary={}
+var detail_open=false
 func _ready():
  set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);anchor_left=.055;anchor_right=.945;anchor_top=.045;anchor_bottom=.955
  var column=VBoxContainer.new();column.add_theme_constant_override("separation",12);add_child(column)
@@ -19,9 +21,9 @@ func _ready():
  rank_label=label(top,"Lv 1",19,Clay.SEA)
  var close=action(top,"Back to fishing",close_screen);close.size_flags_horizontal=Control.SIZE_SHRINK_END;Art.button_icon(close,"arrowLeft",22)
  tabs=HBoxContainer.new();tabs.add_theme_constant_override("separation",10);column.add_child(tabs)
- for entry in [["Collection","book"],["Spots","pin"],["Contracts","contract"],["Weekly","calendar"]]:
-  var button=action(tabs,entry[0],func():show_tab(entry[0]));Art.button_icon(button,entry[1]);button.set_meta("tab",entry[0])
- scroll=ScrollContainer.new();scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL;column.add_child(scroll)
+ for entry in [["Collection","book"],["Spots","pin"],["Daily","sun"],["Contracts","contract"],["Weekly","calendar"],["My boat","home"]]:
+  var button=action(tabs,entry[0],func():show_tab(entry[0]));Art.button_icon(button,entry[1],20);button.add_theme_font_size_override("font_size",16);button.set_meta("tab",entry[0])
+ scroll=preload("res://scripts/club_scroll.gd").new();scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL;column.add_child(scroll)
  content=VBoxContainer.new();content.size_flags_horizontal=Control.SIZE_EXPAND_FILL;content.add_theme_constant_override("separation",14);scroll.add_child(content)
  add_theme_stylebox_override("panel",Clay.surface());visible=false
 func label(parent: Control,value: String,size: int=17,color: Color=Clay.INK) -> Label:
@@ -47,13 +49,15 @@ func grid(columns: int) -> GridContainer:
  var result=GridContainer.new();result.columns=columns;result.add_theme_constant_override("h_separation",14);result.add_theme_constant_override("v_separation",14);content.add_child(result);return result
 func open(selected: String=""):
  celebration=0;challenge_celebration={}
- if not selected.is_empty():tab=selected
  game.interface.menu_visible=true;game.interface.menu.visible=false;visible=true;move_to_front()
- game.driving_controls.neutral();game.driving_controls.release_pointers();game.reeling=false;show_tab(tab);game.interface.refresh()
+ game.driving_controls.neutral();game.driving_controls.release_pointers();game.reeling=false;show_tab(selected if not selected.is_empty() else tab);game.interface.refresh()
 func close_screen():
+ scroll.stop()
  visible=false;game.interface.menu_visible=false;game.interface.menu.visible=false;game.interface.refresh()
 func close():close_screen()
 func show_tab(value: String):
+ if not detail_open:scroll_positions[tab]=scroll.scroll_vertical
+ detail_open=false
  if value!=tab:celebration=0;challenge_celebration={}
  tab=value;abandon_confirm=false
  rank_label.text="Lv %d"%game.experience.status().level
@@ -64,7 +68,10 @@ func show_tab(value: String):
  if tab=="Collection":collection()
  elif tab=="Spots":spots()
  elif tab=="Contracts":contracts()
+ elif tab=="Daily":daily()
+ elif tab=="My boat":vessel()
  else:weekly()
+ scroll.reset_to(0 if celebration>0 or not challenge_celebration.is_empty() else float(scroll_positions.get(tab,0)))
 func collection():
  var progress=game.trip_progress
  summary(Art.medal(2),"%d / 5 species discovered"%progress.records.size(),"Catch · collect · earn your mastery medals",progress.records.size(),5)
@@ -74,9 +81,9 @@ func collection():
   body.get_parent().custom_minimum_size.x=230
   var head=row(body);var name=label(head,fish.name,18);name.size_flags_horizontal=Control.SIZE_EXPAND_FILL
   Art.picture(head,Art.medal(2 if count>=15 else (1 if count>=5 else 0)) if count>0 else Art.icon("locked"),Vector2(32,38),Color.WHITE if count>0 else Clay.MUTED)
-  var portrait=Art.picture(body,Art.fish(fish.name),Vector2(0,96),Color.WHITE if count>0 else Color(.24,.34,.35,.55));portrait.mouse_filter=Control.MOUSE_FILTER_STOP;portrait.mouse_default_cursor_shape=Control.CURSOR_POINTING_HAND
+  var portrait=Art.picture(body,Art.fish(fish.name),Vector2(0,96),Color.WHITE if count>0 else Color(.0,.07,.09,1));portrait.mouse_filter=Control.MOUSE_FILTER_STOP;portrait.mouse_default_cursor_shape=Control.CURSOR_POINTING_HAND
   portrait.gui_input.connect(func(event):
-   if (event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT) or (event is InputEventScreenTouch and event.pressed):details(fish.name)
+   if scroll.accepts_tap() and ((event is InputEventMouseButton and not event.pressed and event.button_index==MOUSE_BUTTON_LEFT) or (event is InputEventScreenTouch and not event.pressed)):details(fish.name)
   )
   var stats=row(body);label(stats,"%.1f kg"%record.best if count>0 else "— kg",25);var space=Control.new();space.size_flags_horizontal=Control.SIZE_EXPAND_FILL;stats.add_child(space);Art.picture(stats,Art.icon("fish"),Vector2(21,24),Clay.SEA);label(stats,str(count),20)
   var target=1 if count==0 else (5 if count<5 else 15)
@@ -84,6 +91,7 @@ func collection():
   label(body,"MASTER ANGLER" if count>=15 else ("%d / %d · %s"%[count,target,"Discovery" if count==0 else ("Silver medal" if count<5 else "Gold medal")]),13,Clay.MUTED)
   var info=action(body,"Details",func():details(fish.name));Art.button_icon(info,"information",20)
 func details(species: String):
+ scroll_positions["Collection"]=scroll.scroll_vertical;detail_open=true;scroll.reset_to()
  for child in content.get_children():content.remove_child(child);child.queue_free()
  var fish_index=-1
  for i in range(game.World.FISH.size()):
@@ -97,6 +105,11 @@ func details(species: String):
  for spot in game.World.SPOTS:
   if fish_index in spot.fish:spots.append(spot.name+(" · %d catches"%spot.unlock if game.catches<int(spot.unlock) else ""))
  label(body,"WHERE TO FISH",13,Clay.SEA);label(body,"  /  ".join(spots),16)
+ var habits=preload("res://scripts/fishing_conditions.gd").HABITS[species]
+ stat(body,"pin",habits.habitat,16)
+ label(body,"TRY THIS SETUP",13,Clay.SEA)
+ label(body,"%s · %s\n%s · %s"%[game.fishing_conditions.LURES[habits.lure],game.fishing_conditions.DEPTHS[habits.depth],habits.hours,habits.weather],17)
+ label(body,"In-game preferences improve your chances; they never guarantee a species.",14,Clay.MUTED)
  label(body,preload("res://scripts/fish_fight.gd").BEHAVIOURS[species].tip,16,Clay.MUTED)
  action(body,"Back to collection",func():show_tab("Collection"))
 func reward(parent: Control,amount: int):
@@ -208,6 +221,8 @@ func spots():
   if not timed.is_empty():
    var event_button=action(body,"Timed event · Lv %d"%timed.level,func():event_details(timed.id));Art.button_icon(event_button,"calendar",21)
 func event_details(id: String):
+ if not detail_open:scroll_positions["Spots"]=scroll.scroll_vertical
+ detail_open=true;scroll.reset_to()
  var system=game.spot_challenges;var entry=system.definition(id);var point=system.spot(entry.spot)
  for child in content.get_children():content.remove_child(child);child.queue_free()
  var body=card(content);var head=row(body);Art.picture(head,Art.medal(2),Vector2(44,64));label(head,entry.name,26);stars(head,int(system.best.get(id,0)))
@@ -232,3 +247,42 @@ func event_details(id: String):
 func start_event(id: String):
  if game.start_spot_challenge(id):close_screen()
  else:event_details(id)
+
+func daily():
+ var system=game.daily_requests;var jobs=system.offers()
+ summary(Art.icon("sun"),"Today’s fishing requests","Optional catches · claim anywhere · resets at 00:00 UTC · no streaks")
+ var cards=grid(3 if get_viewport_rect().size.x>=1100 else 2)
+ for i in range(jobs.size()):
+  var job=jobs[i];var body=card(cards);body.get_parent().custom_minimum_size.x=220
+  Art.picture(body,Art.fish(job.species) if not job.species.is_empty() else Art.icon("fish"),Vector2(0,85),Color.WHITE if not job.species.is_empty() else Clay.SEA)
+  label(body,job.name,21)
+  label(body,"Land one fish weighing 6 kg or more" if job.kind=="large" else ("Land %d %s"%[job.goal,job.species] if not job.species.is_empty() else "Land any three fish"),16)
+  meter(body,system.counts[i],job.goal);stat(body,"fish","%d / %d"%[system.counts[i],job.goal],21)
+  reward(body,job.mvr);stat(body,"star","+%d XP"%job.xp)
+  var claim=action(body,"Collected" if system.claimed[i] else ("Claim reward" if system.ready(i) else "Go fishing"),func():
+   if system.ready(i):
+    var prize=game.claim_daily_request(i);celebration=int(prize.get("mvr",0));show_tab("Daily")
+   else:close_screen()
+  ,true);claim.disabled=system.claimed[i]
+ label(content,"Fish count when landed, stay in your icebox and can still be sold. Your local device clock sets the daily calendar.",14,Clay.MUTED)
+
+func vessel():
+ var id=game.equipped_boat;var identity=game.boat_identity
+ var chosen=identity.badge(id,game.catches)
+ summary(Art.icon("home") if chosen.id=="none" else Art.medal(0 if chosen.id=="captain" else (1 if chosen.id=="reef" else 2)),identity.title(id),game.World.vessel(id).name+" · "+chosen.name)
+ var body=card(content);label(body,"NAME YOUR VESSEL",13,Clay.SEA)
+ var naming=row(body);var input=LineEdit.new();input.max_length=22;input.text=str(identity.names.get(id,""));input.placeholder_text="Boat name · up to 22 characters";input.custom_minimum_size.y=52;input.size_flags_horizontal=Control.SIZE_EXPAND_FILL;input.add_theme_stylebox_override("normal",Clay.surface(Clay.CARD,14,true));input.add_theme_stylebox_override("focus",Clay.surface(Clay.FOAM,14,true));input.add_theme_color_override("font_color",Clay.INK);input.add_theme_color_override("font_placeholder_color",Clay.MUTED);naming.add_child(input)
+ action(naming,"Save name",func():game.name_boat(input.text);show_tab("My boat"),true)
+ label(body,"Choose your captain’s badge",19)
+ var badges=row(body)
+ for index in range(1,identity.BADGES.size()):
+  var entry=identity.BADGES[index];var shell=VBoxContainer.new();shell.size_flags_horizontal=Control.SIZE_EXPAND_FILL;badges.add_child(shell)
+  Art.picture(shell,Art.medal(index-1),Vector2(50,64),Color.WHITE if game.catches>=entry.need else Color(.4,.45,.45,.5))
+  var select=action(shell,entry.name if game.catches>=entry.need else "%d catches"%entry.need,func():game.choose_boat_badge(entry.id);show_tab("My boat"));select.add_theme_font_size_override("font_size",15);select.disabled=game.catches<entry.need or chosen.id==entry.id
+ action(body,"Remove badge",func():game.choose_boat_badge("none");show_tab("My boat"))
+ label(body,"Earned liveries",19)
+ for entry in [[10,"Captain’s teal"],[30,"Ocean racer"]]:
+  stat(body,"star",entry[1]+(" · unlocked" if game.catches>=entry[0] else " · %d / %d catches"%[game.catches,entry[0]]));meter(body,game.catches,entry[0])
+ label(body,"Apply earned liveries in the harbour showroom: Boats → Customise. Boat names and badges appear in the driving HUD.",15,Clay.MUTED)
+ label(body,"Fleet ownership · %d / %d vessels"%[game.owned_boats.size(),game.World.BOATS.size()],18,Clay.SEA)
+ for boat in game.World.BOATS:stat(body,"checkmark" if boat.id in game.owned_boats else "locked",boat.name,16,Clay.SEA if boat.id in game.owned_boats else Clay.MUTED)

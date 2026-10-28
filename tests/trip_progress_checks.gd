@@ -48,7 +48,7 @@ func checks():
  assert(game.trip_progress.ready());var reward=game.trip_progress.active.reward;var coins=game.coins
  assert(game.claim_contract()==reward and game.claim_contract()==0 and game.coins==coins+reward,"Real market deliveries unlock exactly one bonus")
  game.leave_fishing();game.active_species=game.World.FISH[2];game.active_catch={"species":"Skipjack tuna","weight":6.0,"value":200,"size":1.0,"grade":"LARGE"};game.fishing=true;game.land_fish()
- assert("NEW PERSONAL BEST" in game.catch_text.text and game.trip_progress.records["Skipjack tuna"].best==6,"Landing shows the new personal-best celebration")
+ assert("NEW PERSONAL BEST" in game.interface.catch_caption.text and game.trip_progress.records["Skipjack tuna"].best==6,"Landing shows the new personal-best celebration")
  var count=game.trip_progress.records["Skipjack tuna"].count;game.land_fish();assert(game.trip_progress.records["Skipjack tuna"].count==count,"A repeated landing call cannot double-count the catch")
  game.close_catch();game.leave_fishing();game.interface.toggle_menu();game.interface.logbook.open()
  for tab in ["Collection","Contracts","Weekly"]:game.interface.logbook.show_tab(tab);await process_frame

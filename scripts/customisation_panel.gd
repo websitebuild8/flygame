@@ -43,10 +43,11 @@ func select_item(id: String):
 func refresh_choices():
  for child in choices.get_children():choices.remove_child(child);child.queue_free()
  for finish in game.cosmetics.STYLES:
+  if finish.get("boat_only",false) and category!="Boats":continue
   var row=HBoxContainer.new();row.add_theme_constant_override("separation",10);choices.add_child(row)
   var swatch=PanelContainer.new();swatch.custom_minimum_size=Vector2(42,42);swatch.size_flags_vertical=Control.SIZE_SHRINK_CENTER;row.add_child(swatch)
   var material=Clay.surface(finish.color,12);material.content_margin_left=0;material.content_margin_right=0;material.content_margin_top=0;material.content_margin_bottom=0;swatch.add_theme_stylebox_override("panel",material)
-  var button=game.interface.action(row,finish.name+(" · Level %d reward"%finish.unlock_level if finish.has("unlock_level") else (" · Premium preview" if finish.premium else " · Free")),func():
+  var button=game.interface.action(row,finish.name+(" · %d catches"%finish.catch_unlock if finish.has("catch_unlock") else "")+(" · Level %d reward"%finish.unlock_level if finish.has("unlock_level") else (" · Premium preview" if finish.premium else " · Free")),func():
    style_id=finish.id;refresh_choices();preview()
   )
   Clay.button(button,false,finish.id==style_id)
@@ -57,6 +58,11 @@ func preview():
 func update_status():
  var finish=game.cosmetics.style(style_id)
  var earned=finish.has("unlock_level")
+ if finish.has("catch_unlock"):
+  var locked=not game.cosmetics.can_use(style_id);var active=game.cosmetics.selected(item_id)==style_id
+  status.text="Land %d fish to unlock this boat livery."%finish.catch_unlock if locked else "Earned boat livery · cosmetic only"
+  use_button.disabled=locked or active;use_button.text="%d catches needed"%finish.catch_unlock if locked else ("In use" if active else "Use earned livery")
+  return
  var locked=not game.cosmetics.can_use(style_id)
  var active=game.cosmetics.selected(item_id)==style_id
  status.text=("Reach angler level %d to earn this finish."%finish.unlock_level) if locked and earned else "Premium Finish Collection · one permanent pack. Purchases are coming soon." if locked else ("This finish is equipped on this item." if active else "Free finish. Your equipment stats stay the same.")

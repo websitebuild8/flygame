@@ -280,3 +280,13 @@ The home harbour is now enclosed, with a marked entrance used by both driving an
 Sailing now includes four camera modes, corrected physical throttle/hand motion, six lightweight traffic boats, swept boat/shore collisions and harbours with distinct markets on all five islands. Harbour locations follow the available OSM harbour, pier and marina references, adapted for gameplay. See `docs/sailing-expansion.md` for behaviour and verification.
 
 The ocean now uses coastline-based shallow/deep colour ramps, free CC0 sand detail and quality-scaled shallow fish silhouettes. Boats share the rendered water height; landing fish hang by the mouth with dry tails. See [ocean and waterlines](docs/ocean-and-waterlines.md) for research, source licences and mobile limits.
+
+## Trip polish and fishing choices
+
+Choose **Setup** before casting to select a free lure finish and feeding depth.
+The Collection journal explains in-game species preferences. **Goals → Daily**
+contains optional MVR/XP requests; **Goals → My boat** adds vessel naming, earned
+captain medals and livery milestones. Catch reveals now animate weight/value and
+celebrate records. Settings include first-trip tips, reduced motion, saved sound
+and vibration preferences, automatic 3D resolution and an optional FPS display.
+See [trip polish](docs/trip-polish.md) for behavior and phone-testing limits.

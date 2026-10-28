@@ -37,3 +37,11 @@ func _ready() -> void:
 	tool.generate_normals();knot.mesh=tool.commit()
 	var leader=StandardMaterial3D.new();leader.albedo_color=Color("d5e4d5");leader.roughness=.55
 	knot.material_override=leader;knot.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+func apply_finish(index: int):
+	var tint=[Color("d9eef2"),Color("f3b86b"),Color("70c7e3")][clampi(index,0,2)]
+	for mesh in get_node("LureBody").find_children("*","MeshInstance3D",true,false):
+		for i in range(mesh.mesh.get_surface_count()):
+			var source=mesh.get_active_material(i)
+			if source is StandardMaterial3D:
+				var mat=source.duplicate();mat.albedo_color=tint;mesh.set_surface_override_material(i,mat)

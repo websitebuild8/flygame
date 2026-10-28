@@ -76,3 +76,9 @@ transparent glass and unchanged game balance. Existing gear, tackle, line/helm,
 boat, menu, gesture/haptic and trip checks exercise integration. Rendering previews
 checks the UI and materials. Store billing and real-device frame rate are not tested
 because checkout has not been integrated and the phone is not connected here.
+
+### Boat ownership milestones
+
+Captain’s teal (10 lifetime catches) and Ocean racer (30) are free, boat-only
+liveries in Customise. They require no purchase and provide no gameplay boost.
+They accompany the named-vessel and captain-badge screen in Goals → My boat.
