@@ -1,0 +1,65 @@
+{
+  "kenney_medals": {
+    "url": "https://kenney.nl/assets/medals",
+    "license": "CC0-1.0"
+  },
+  "kenney_icons": {
+    "url": "https://kenney.nl/assets/game-icons",
+    "license": "CC0-1.0",
+    "adaptation": "transparent PNG margins trimmed"
+  },
+  "fish_portraits": {
+    "source": "existing game fish models; original authors/licences retained in Credits",
+    "renderer": "tools/render_fish_portraits.gd",
+    "size": [
+      384,
+      216
+    ]
+  },
+  "sha256": {
+    "fish/sailfish.png": "1d1f2959f760fde25eb974f539bba3b0bb2f803b3cab0df245066167cc848345",
+    "fish/mahi-mahi.png": "a18cd72851227c9b37b1f7ddb6b0a88361370aeac60d114a9c22364ee03acaa1",
+    "fish/skipjack_tuna.png": "f247d0d52b6f346bc3f3aca628bc4cbfb55e71017800bcc4dee5bc87950cbb40",
+    "fish/yellowfin_tuna.png": "b57c3093a37a5efa048ef2d40aced6d3a55be7e2c338ce9a82df94e92fbc2286",
+    "fish/giant_trevally.png": "eac00a213dae3d01c70f926f346f4d29381efddaed3c11554ae9cae6cc485442",
+    "icons/cloud.svg": "c738cffdac6f398ea9a3328e177fe014befd1d40a1b75217e9a648610d4888b2",
+    "icons/menuGrid.png": "2fa934b4a1e5a59bd05948abd11fdf450b3e629efdc5d362c77953b15695cb8c",
+    "icons/rain.svg": "539ad868c36b8cda3554df822b816d317ec3f113f98bab7f00c99824edc7d31e",
+    "icons/medal2.png": "c4c2fa87b0df5efd1e20d6ec09e0ec915512131f7c9e80b6f45579b8edda16a9",
+    "icons/home.png": "188712dde3af385205f8e9bddd29693af170096af279ab349afbae6897480d5f",
+    "icons/pause.png": "14c4f5581bdda6c1189e5f4d0dbcac68a04529a949ea5c6b3623a74a9a3ed406",
+    "icons/contract.svg": "137b326a0243b3d65723090e1b6a3ee545c3e94527f159bf81004a3d529a4c48",
+    "icons/book.svg": "43b2f6a05f6225cd26f99a42cc94411d897a594735f759c789de4df033a8edbe",
+    "icons/moon.svg": "967bcf36870a24539b0aa4cecafe91eaccfb3575e5c84a1331f3185dab789d06",
+    "icons/trophy.png": "e5d08570372142f72a7c180acee06be75abb11d4533d4e8db08964954ba866d0",
+    "icons/share1.png": "19ad7f84aeb511f984dcf901ca55e2669870430ef02c28e6966d7c53721ba805",
+    "icons/arrowRight.png": "a07b9ff68fa420646b547b7d273cf82fb88f243e2739d95a4654d8669fd3e70a",
+    "icons/wrench.png": "b8dccbd6d0cf74bda54c818c99ded2d2a1f12db4fb9fda8d8f6983fe8a8b36c2",
+    "icons/zoomOut.png": "3d1e2394229e6199838b869be0e04ebaa9a2fcd1fc192ef52c1d0bc77e5e8383",
+    "icons/star.png": "57662fc847dc7e52d9aa4bf7c457834186e2ed063823fff9948f7add58cf886e",
+    "icons/camera.svg": "2442e944df964709fb3ec9d9e92d1e62bf5cf0bfe5d0d0b03e9a374d15af3232",
+    "icons/pin.svg": "a745b256c1c7b8c7122c4cf4c9dcadec2f38bfcb280a1ddcb2662e801c3c9da3",
+    "icons/arrowLeft.png": "737a675f0bafe396a9bb2d4cc50e25ec540630b7f497bd527a61a92924b62183",
+    "icons/calendar.svg": "5923a98c968e9e573fe5ca1de489bbe674214dbf489a1d08bde628d773bc455b",
+    "icons/weight.svg": "f1b5e572397c6fb260a3bd38570d9f635cb80ba72dbd5022fb1595fdb5e5f6dc",
+    "icons/coin.svg": "b7c2d3c6dfc712445de72fc358de1b4bb4e96bf54d965848133803c4a0346755",
+    "icons/locked.png": "0caf8570e046ab101f5dbf82067174c269f21002d377626c603945f2a38bbb74",
+    "icons/medal1.png": "ba4ccdc8a0aef825285b4e0ba5f4a5e0aa1358e21f8155e53231ed4f717cb445",
+    "icons/information.png": "8c072c3ebf2695c9c11c0480f15664d9ea11881d4293a3c5adf9cb99ffcd77b7",
+    "icons/zoom.png": "4eb7b3817d909157f33e6cfd62c37ed635bde48c82d3403fc47786fe2073ee28",
+    "icons/plus.png": "93f0cf04a89ed9c4663a9e341b679245c661fd01939810229d298d8d4280687f",
+    "icons/target.png": "26ed58282f2d05d0c062aa7709f9be2120b04bc4fe31eb599ff5056b5b4fe855",
+    "icons/gear.png": "34007569dc9fe56036505192588ddba782c60b18b9ab042423337fc5bc6412a8",
+    "icons/fish.svg": "a8f278fe60e3b14c4121d563a7a4dd8ea7ccce5d33a1196a8f102462cc75279b",
+    "icons/checkmark.png": "eb36f9ba09e9ddd06d8358df0edd1af0c30279c05c3f78ca2b0553c3744bd59c",
+    "icons/sun.svg": "d7b6b5cb77aebad75dd04102399cd3e8e37b25af763f86432cfe49b849c96a42",
+    "icons/chart.svg": "2334155270dfdca9eac247fde1871ddd8431280d7d9660d7da2bcc689472f63c",
+    "icons/cross.png": "69afb6a70aebc0fca0d2119b222de931f099feecaf5b3edf498532a7ec98ae48",
+    "icons/video.png": "c4cc1a5e69f06f77cc0752b4309eddd6690fd3c5e161de0738f82eaeba1248c4",
+    "icons/zoomIn.png": "a8bf1ea5feebb67d93b36d2ae0c6afbfcd428a8e65350a85dba77c434af43215",
+    "icons/shoppingCart.png": "475e2a465d8395b1b441a1d960c93b6d57e6bdcdd4f0d12f95f1d9fd9131e575",
+    "medals/gold.png": "7db50886f5844c1cae2a3ab97d6547b81bc4288b53cfaf3de06b68de9158cb6e",
+    "medals/bronze.png": "43a70bd2b8e3a5982b7e35aef37002593458ff8851aba7160337b42bb006c4cb",
+    "medals/silver.png": "f5df4ff4c67a3ff83984ec1cc4b15f5a53616a8fe162b6cb93e020c4a2b78e43"
+  }
+}

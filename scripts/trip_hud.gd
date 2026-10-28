@@ -20,6 +20,7 @@ var shop_list: VBoxContainer
 var shop_tabs: HBoxContainer
 var shop_category = "Reels"
 var shop_title: Label
+var customisation: PanelContainer
 var selected_item = "island_reel"
 var map_visible=false
 var map_panel: PanelContainer
@@ -33,15 +34,35 @@ var route_label: Label
 var clock_label: Label
 var market_panel: PanelContainer
 var customer_label: Label
-var preview_label: Label
 var action_stack: VBoxContainer
-var preview_card: PanelContainer
+var preview_controls: Control
 var travel_box: PanelContainer
 var gauge_panel: PanelContainer
 var fight_gauge: Control
 var reel_ring: Control
 var reel_swipe=0.0
 var swipe_pointer=-1
+const Clay=preload("res://scripts/clay_theme.gd")
+var modal_scrim: ColorRect
+var header_panel: PanelContainer
+var credits_text: RichTextLabel
+var logbook: PanelContainer
+const UIArt=preload("res://scripts/ui_art.gd")
+var collection_button: Button
+var quests_button: Button
+var quest_badge: Label
+var catch_medal: TextureRect
+var catch_xp: Label
+var xp_label: Label
+var xp_meter: ProgressBar
+var challenge_button: Button
+var xp_last_total=-1
+var xp_last_level=1
+var xp_tween: Tween
+var hold_count: Label
+var weather_icon: TextureRect
+var last_message=""
+var message_until=0
 const INK = Color("102633")
 const WHITE = Color("edf5f2")
 const MUTED = Color("a6c0c7")
@@ -49,13 +70,13 @@ const MINT = Color("8bdecb")
 
 func panel_style(color: Color, radius: int = 22) -> StyleBoxFlat:
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(color,color.a*0.76)
+	style.bg_color = Color(color,color.a*0.92)
 	style.set_corner_radius_all(radius)
 	style.set_border_width_all(1)
 	style.border_color = Color(0.86,0.96,1.0,0.38)
 	style.shadow_color=Color(0.01,0.03,0.04,0.22)
-	style.shadow_size=8
-	style.shadow_offset=Vector2(0,4)
+	style.shadow_size=4
+	style.shadow_offset=Vector2(0,2)
 	style.content_margin_left = 18
 	style.content_margin_right = 18
 	style.content_margin_top = 14
@@ -72,7 +93,8 @@ func label(text: String, font_size: int = 18, color: Color = WHITE) -> Label:
 func action(parent: Control, title: String, callback: Callable, primary: bool = false) -> Button:
 	var item = Button.new()
 	item.text = title
-	item.custom_minimum_size.y = 54
+	item.set_meta("primary_action",primary)
+	item.custom_minimum_size.y = 56
 	item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	item.focus_mode = Control.FOCUS_ALL
 	item.add_theme_font_size_override("font_size",18)
@@ -108,6 +130,12 @@ func build(owner_game: Node3D) -> void:
 	body.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	add_child(body)
 	game.hud=body
+	modal_scrim=ColorRect.new();modal_scrim.color=Color(.025,.07,.09,.52);modal_scrim.mouse_filter=Control.MOUSE_FILTER_STOP;add_child(modal_scrim);modal_scrim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);modal_scrim.visible=false
+	modal_scrim.gui_input.connect(func(event):
+		if (event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and event.pressed) or (event is InputEventScreenTouch and event.pressed):
+			if menu_visible:toggle_menu()
+			elif map_visible:toggle_map()
+	)
 	margin=MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.mouse_filter=Control.MOUSE_FILTER_IGNORE
@@ -118,35 +146,28 @@ func build(owner_game: Node3D) -> void:
 	stage.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	margin.add_child(stage)
 	var header=PanelContainer.new()
-	header.size=Vector2(390,126)
-	header.add_theme_stylebox_override("panel",panel_style(Color(0.14,0.24,0.29,0.58)))
-	stage.add_child(header)
-	var head_column=VBoxContainer.new()
-	head_column.add_theme_constant_override("separation",6)
-	header.add_child(head_column)
-	var row=HBoxContainer.new()
-	head_column.add_child(row)
-	var title_column=VBoxContainer.new()
-	title_column.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	row.add_child(title_column)
-	title_column.add_child(label("ISHAQ'S FISHING TRIP",12,MUTED))
-	zone=label("HA. KELAA",21)
-	title_column.add_child(zone)
-	settings_button=action(row,"☰",toggle_menu)
-	settings_button.custom_minimum_size=Vector2(48,48)
-	settings_button.size_flags_horizontal=0
-	game.info=label("",16,MINT)
-	head_column.add_child(game.info)
-	objective=label("",12,MUTED)
-	objective.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	head_column.add_child(objective)
-	game.status=label("",15)
-	game.status.position=Vector2(0,140)
-	game.status.size=Vector2(390,60)
-	game.status.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	game.status.add_theme_color_override("font_shadow_color",Color("173543"))
-	game.status.add_theme_constant_override("shadow_offset_y",1)
-	stage.add_child(game.status)
+	header_panel=header
+	header.size=Vector2(285,100)
+	var shell=panel_style(Color(.035,.10,.13,.94),20);shell.content_margin_left=12;shell.content_margin_right=12;shell.content_margin_top=9;shell.content_margin_bottom=9
+	header.add_theme_stylebox_override("panel",shell);stage.add_child(header)
+	var head_column=VBoxContainer.new();head_column.add_theme_constant_override("separation",4);header.add_child(head_column)
+	var location=HBoxContainer.new();location.add_theme_constant_override("separation",8);head_column.add_child(location)
+	UIArt.picture(location,UIArt.icon("pin"),Vector2(22,24),MINT)
+	zone=label("HA. KELAA",18);zone.size_flags_horizontal=Control.SIZE_EXPAND_FILL;location.add_child(zone)
+	settings_button=action(location,"",toggle_menu);settings_button.custom_minimum_size=Vector2(52,52);settings_button.size_flags_horizontal=0
+	UIArt.button_icon(settings_button,"gear",23);settings_button.tooltip_text="Settings"
+	var wallet=HBoxContainer.new();wallet.add_theme_constant_override("separation",8);head_column.add_child(wallet)
+	UIArt.picture(wallet,UIArt.icon("coin"),Vector2(23,23),Color("f3c779"))
+	game.info=label("",17,WHITE);game.info.size_flags_horizontal=Control.SIZE_EXPAND_FILL;wallet.add_child(game.info)
+	UIArt.picture(wallet,UIArt.icon("fish"),Vector2(24,23),MINT);hold_count=label("0",17,MINT);wallet.add_child(hold_count)
+	var xp_row=HBoxContainer.new();xp_row.add_theme_constant_override("separation",8);head_column.add_child(xp_row)
+	UIArt.picture(xp_row,UIArt.icon("star"),Vector2(17,17),Color("f3c779"));xp_label=label("Lv 1",12,MINT);xp_row.add_child(xp_label)
+	xp_meter=ProgressBar.new();xp_meter.show_percentage=false;xp_meter.custom_minimum_size=Vector2(120,7);xp_meter.size_flags_horizontal=Control.SIZE_EXPAND_FILL;xp_meter.size_flags_vertical=Control.SIZE_SHRINK_CENTER;xp_row.add_child(xp_meter)
+	for key in ["background","fill"]:
+		var fill=StyleBoxFlat.new();fill.set_corner_radius_all(4);fill.bg_color=Color("385257") if key=="background" else Color("edba51");xp_meter.add_theme_stylebox_override(key,fill)
+	objective=label("",12,MUTED);objective.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;head_column.add_child(objective)
+	game.status=label("",15);game.status.position=Vector2(0,116);game.status.size=Vector2(300,54);game.status.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	game.status.add_theme_color_override("font_shadow_color",Color("173543"));game.status.add_theme_constant_override("shadow_offset_y",2);stage.add_child(game.status)
 	gauge_panel=PanelContainer.new()
 	gauge_panel.position=Vector2(0,204)
 	gauge_panel.size=Vector2(345,110)
@@ -191,6 +212,7 @@ func build(owner_game: Node3D) -> void:
 	actions.offset_right=210
 	actions.offset_top=-250
 	actions.offset_bottom=0
+	challenge_button=action(actions,"Buoy challenges",func():logbook.open("Spots"));UIArt.button_icon(challenge_button,"trophy",24)
 	game.fish_button=action(actions,"Start fishing",func(): pass,true)
 	reel_ring=preload("res://scripts/reel_control_ring.gd").new()
 	reel_ring.game=game
@@ -228,14 +250,14 @@ func build(owner_game: Node3D) -> void:
 	travel_box=travel_panel
 	stage.add_child(travel_panel)
 	travel_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	travel_panel.offset_left=-165
-	travel_panel.offset_right=165
+	travel_panel.offset_left=-118
+	travel_panel.offset_right=118
 	travel_panel.add_theme_stylebox_override("panel",panel_style(Color(0.025,0.085,0.12,0.92),18))
 	var travel=VBoxContainer.new()
 	travel_panel.add_child(travel)
-	clock_label=label("",18,MINT)
-	clock_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	travel.add_child(clock_label)
+	var weather_row=HBoxContainer.new();weather_row.alignment=BoxContainer.ALIGNMENT_CENTER;weather_row.add_theme_constant_override("separation",10);travel.add_child(weather_row)
+	weather_icon=UIArt.picture(weather_row,UIArt.icon("sun"),Vector2(26,28),Color("f3c779"))
+	clock_label=label("",19,WHITE);weather_row.add_child(clock_label)
 	route_label=label("Open the chart to plan your trip",14)
 	route_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	route_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
@@ -244,10 +266,15 @@ func build(owner_game: Node3D) -> void:
 	top_actions.add_theme_constant_override("separation",10)
 	stage.add_child(top_actions)
 	top_actions.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	top_actions.offset_left=-285
-	top_actions.offset_bottom=54
-	map_button=action(top_actions,"Chart · M",toggle_map)
-	camera_button=action(top_actions,"POV",game.toggle_driving_camera)
+	top_actions.offset_left=-258
+	top_actions.offset_bottom=56
+	map_button=action(top_actions,"",toggle_map);map_button.tooltip_text="Ocean chart";UIArt.button_icon(map_button,"chart",25)
+	camera_button=action(top_actions,"",game.toggle_driving_camera);UIArt.button_icon(camera_button,"camera",25)
+	collection_button=action(top_actions,"",func():logbook.open("Collection"));collection_button.tooltip_text="Fish collection & medals";UIArt.button_icon(collection_button,"book",25)
+	quests_button=action(top_actions,"",func():logbook.open("Spots"));quests_button.tooltip_text="Delivery contracts & weekly challenges";UIArt.button_icon(quests_button,"trophy",26);UIArt.colours(quests_button,Color("f3c779"))
+	for button in [map_button,camera_button,collection_button,quests_button]:button.custom_minimum_size=Vector2(56,56);button.size_flags_horizontal=0
+	quest_badge=label("",12,Color.WHITE);quests_button.add_child(quest_badge);quest_badge.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT);quest_badge.offset_left=-19;quest_badge.offset_right=3;quest_badge.offset_top=-4;quest_badge.offset_bottom=18;quest_badge.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	var badge=StyleBoxFlat.new();badge.bg_color=Color("c16c3d");badge.set_corner_radius_all(10);quest_badge.add_theme_stylebox_override("normal",badge);quest_badge.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	mini_map=preload("res://scripts/mini_map.gd").new()
 	mini_map.game=game
 	stage.add_child(mini_map)
@@ -267,12 +294,15 @@ func build(owner_game: Node3D) -> void:
 	engine_button.offset_bottom=-239
 	build_market()
 	build_menu()
+	logbook=preload("res://scripts/logbook_panel.gd").new();logbook.game=game;add_child(logbook)
 	build_catch()
 	build_shop()
-	build_preview_card()
+	customisation=preload("res://scripts/customisation_panel.gd").new();customisation.game=game;add_child(customisation)
+	build_preview_controls()
 	build_map()
 	build_intro()
 	game.driving_controls.configure_models(game.boat_visual)
+	for panel in [menu,game.intro,shop_panel,map_panel]:Clay.apply(panel)
 	apply_glass(body)
 	refresh()
 
@@ -299,8 +329,8 @@ func build_market() -> void:
 func build_menu() -> void:
 	menu = PanelContainer.new()
 	menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	menu.anchor_left=.18;menu.anchor_right=.82
-	menu.anchor_top=.04;menu.anchor_bottom=.96
+	menu.anchor_left=.23;menu.anchor_right=.77
+	menu.anchor_top=.06;menu.anchor_bottom=.94
 	menu.clip_contents=true
 	var style = panel_style(Color(0.025,0.075,0.105,0.98),24)
 	style.content_margin_left = 20
@@ -313,17 +343,14 @@ func build_menu() -> void:
 	var scroll=ScrollContainer.new()
 	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL
-	menu.add_child(scroll)
+	var outer=VBoxContainer.new();outer.add_theme_constant_override("separation",16);menu.add_child(outer)
+	var heading=HBoxContainer.new();outer.add_child(heading)
+	var settings_title=label("Trip settings",27);settings_title.size_flags_horizontal=Control.SIZE_EXPAND_FILL;heading.add_child(settings_title)
+	var close=action(heading,"Close",toggle_menu);close.size_flags_horizontal=Control.SIZE_SHRINK_END;close.custom_minimum_size.x=92
+	outer.add_child(scroll)
 	scroll.add_child(column)
 	column.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	column.add_child(label("TAKE A BREATHER",13,MINT))
-	var heading=HBoxContainer.new();column.add_child(heading)
-	var menu_title=label("Your trip",26);menu_title.size_flags_horizontal=Control.SIZE_EXPAND_FILL;heading.add_child(menu_title)
-	var close_menu=action(heading,"Close",toggle_menu)
-	close_menu.size_flags_horizontal=Control.SIZE_SHRINK_END
-	close_menu.custom_minimum_size=Vector2(90,42)
-	column.add_child(label("Drag the wheel to steer.\nLever up: forward. Centre: neutral.\nLever down: reverse. The throttle stays set.",18,MUTED))
-	column.add_child(label("Keyboard: A/D steer · W/S adjust throttle\nN selects neutral · Space casts/reels",15,MUTED))
+	column.add_child(label("Make yourself comfortable, then get back on the water.",16,MUTED))
 	column.add_child(label("Graphics",22))
 	var quality=OptionButton.new()
 	for title in ["Low · smoother on older phones","Medium · balanced","High · full detail"]:
@@ -349,6 +376,7 @@ func build_menu() -> void:
 	)
 	column.add_child(shadows)
 	column.add_child(label("Low: 30 FPS target, lighter water and rain. Shadows can be switched separately.",15,MUTED))
+	column.add_child(label("Audio & feedback",22))
 	for text in ["Sound","Vibration"]:
 		var toggle = CheckButton.new()
 		toggle.text = text
@@ -362,6 +390,7 @@ func build_menu() -> void:
 				game.feedback.vibration_enabled = on
 		)
 		column.add_child(toggle)
+	column.add_child(label("Your boat & trip",22))
 	game.upgrade_button = action(column,"Upgrade engine · MVR 100",game.buy_upgrade)
 	game.home_button = action(column,"Plot route to Kelaa harbour",func():
 		game.plot_home_course()
@@ -378,7 +407,14 @@ func build_menu() -> void:
 	pause_tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(pause_tip)
 	action(column,"Back to your trip",toggle_menu,true)
+	var controls_help=label("Steer: left wheel · Forward/reverse: right throttle\nSelect neutral or cut the engine before fishing.\nKeyboard: A/D steer · W/S throttle · N neutral · Space reel",15,MUTED)
+	controls_help.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;controls_help.visible=false
+	action(column,"Controls and help",func(): controls_help.visible=not controls_help.visible)
+	column.add_child(controls_help)
 	var credits=RichTextLabel.new()
+	credits_text=credits
+	credits.visible=false
+	action(column,"Credits and licences",func(): credits.visible=not credits.visible)
 	credits.bbcode_enabled=true
 	credits.fit_content=true
 	credits.text="Tuna Fish by [url=https://www.fab.com/listings/6b90bbe2-3031-4b36-93ad-90f1cb2d01f5]GoldenZtuff[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: resized textures, game scale and orientation.\n\nGiant Trevally by [url=https://sketchfab.com/3d-models/cc0-giant-trevally-caranx-ignobilis-e6446df50ba746ed8ce8a3dd66b3b8e8]ffish.asia / floraZia.com[/url] · [url=https://creativecommons.org/publicdomain/zero/1.0/]CC0[/url]\nAdapted: geometry reduction, alignment and body/tail movement.\n\nFishing Rod, Rigged and Animated by [url=https://sketchfab.com/3d-models/fishing-rod-rigged-and-animated-78991bf44cf54acb8660bef317d72c7a]Ergin ERYILDIR[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: reel parts, animation pivots and preview framing.\n\nBoat Motor by [url=https://sketchfab.com/3d-models/boat-motor-a496b95b40074b91aeeb1e9a2aae913b]Bora Özakaltun[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: mounting, scale and rotating propeller."
@@ -392,6 +428,7 @@ func build_menu() -> void:
 	credits.text+="\n\nAdditional tackle: Fishing Rod (spinning reel) by [url=https://sketchfab.com/3d-models/fishing-rod-2445514b50494ae8a751e24b976b294d]Sobrom[/url] · CC BY 4.0. Adapted: right-hand retrieve, mesh separation and live reel pivots.\nLevel wind mechanism by [url=https://sketchfab.com/3d-models/level-wind-mechanism-baitcasting-fishing-reel-0d4a3f6123eb409a9ce6391ddcd72048]C. Yamahata[/url] · CC BY 4.0. Adapted: opaque housing, materials, wound line and moving spool/guide; combined with Ergin ERYILDIR’s imported crank. These are generic adapted reels."
 	credits.text+="\n\nMarine fishing-point buoy: [url=https://1designtool.com/3d/models/fishing-harbour-buoys]1DesignTool / StoicSoft[/url] · Free 3D library licence. Adapted: shared mesh batching, scale and wave motion."
 	credits.text+="\n\nSeabed texture: [url=https://polyhaven.com/a/aerial_beach_01]Aerial Beach 01 by Rob Tuytel / Poly Haven[/url] · CC0. Downscaled for mobile. Coastal appearance maps derive from the credited OSM coastlines; depths are fictional."
+	credits.text+="\n\nAchievement medals and game icons: [url=https://kenney.nl/assets/medals]Kenney Medals[/url] and [url=https://kenney.nl/assets/game-icons]Game Icons[/url] · CC0. Fish portraits rendered from the models credited above. Extra map, fish and calendar interface symbols are original SVG artwork."
 	credits.text+="\n\nHarbour armour stone: [url=https://polyhaven.com/a/boulder_01]Boulder 01 by Rico Cilliers / Poly Haven[/url] · CC0. Adapted mesh, textures and wet shading.\nWhite harbour beacons: [url=https://codels.download/models/lighthouse]Lighthouse by Codels[/url] · CC0. Adapted white tower, proportions and red/green lanterns."
 	credits.meta_clicked.connect(func(url): OS.shell_open(str(url)))
 	column.add_child(credits)
@@ -402,7 +439,7 @@ func build_catch() -> void:
 	game.catch_overlay.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	game.catch_overlay.offset_left = -440
 	game.catch_overlay.offset_right = -30
-	game.catch_overlay.offset_top = -310
+	game.catch_overlay.offset_top = -450
 	game.catch_overlay.offset_bottom = -28
 	game.catch_overlay.add_theme_stylebox_override("panel",panel_style(Color(0.025,0.085,0.12,0.97),24))
 	add_child(game.catch_overlay)
@@ -412,6 +449,8 @@ func build_catch() -> void:
 	var caption = label("FRESH FROM THE OCEAN",13,MINT)
 	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(caption)
+	catch_xp=label("",15,MINT);catch_xp.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;column.add_child(catch_xp)
+	catch_medal=UIArt.picture(column,UIArt.medal(2),Vector2(0,60));catch_medal.visible=false
 	game.catch_text = label("",23)
 	game.catch_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(game.catch_text)
@@ -421,8 +460,8 @@ func build_catch() -> void:
 func build_intro() -> void:
 	game.intro = PanelContainer.new()
 	game.intro.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	game.intro.anchor_left=.23;game.intro.anchor_right=.77
-	game.intro.anchor_top=.16;game.intro.anchor_bottom=.84
+	game.intro.anchor_left=.29;game.intro.anchor_right=.71
+	game.intro.anchor_top=.12;game.intro.anchor_bottom=.88
 	var style = panel_style(Color(0.025,0.075,0.105,0.5),24)
 	style.content_margin_left = 30
 	style.content_margin_right = 30
@@ -437,7 +476,7 @@ func build_intro() -> void:
 	var space = Control.new()
 	space.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(space)
-	for text in ["THE MALDIVES AWAIT", "Ishaq's", "Fishing Trip", "A small boat. An ocean of possibilities."]:
+	for text in ["THE MALDIVES AWAIT", "Ishaq's", "Fishing Trip", "Explore Haa Alif. Bring home your catch."]:
 		var item = label(text,36 if text in ["Ishaq's","Fishing Trip"] else 15,MINT if text=="THE MALDIVES AWAIT" else WHITE)
 		item.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		column.add_child(item)
@@ -455,6 +494,7 @@ func start_trip() -> void:
 func toggle_menu() -> void:
 	menu_visible = not menu_visible
 	menu.visible = menu_visible
+	if not menu_visible and logbook:logbook.visible=false
 	if menu_visible:
 		menu.move_to_front()
 	game.reeling = false
@@ -478,14 +518,22 @@ func apply_safe_area() -> void:
 		margin.add_theme_constant_override("margin_"+side,sides[side])
 
 func refresh() -> void:
+	modal_scrim.visible=game.intro_visible or menu_visible or map_visible
 	var driving = not game.fishing_view and not game.market_mode and not game.shop_mode
 	var at_dock = game.at_home_dock() and absf(game.speed)<1
 	var nearest=game.World.nearest(game.boat.position)
 	var spot_distance=Vector2(game.boat.position.x,game.boat.position.z).distance_to(nearest.at)
 	var at_spot=spot_distance<14 and game.catches>=int(nearest.unlock)
+	challenge_button.visible=driving and at_spot and not menu_visible and not map_visible
+	var rank=game.experience.status();xp_label.text="Lv %d"%rank.level;xp_meter.max_value=rank.next;xp_meter.tooltip_text="Max level" if rank.level==20 else "%d / %d XP"%[rank.current,rank.next]
+	if xp_last_total!=game.experience.total:
+		if xp_tween:xp_tween.kill()
+		if rank.level!=xp_last_level or xp_last_total<0:xp_meter.value=0
+		xp_tween=create_tween();xp_tween.tween_property(xp_meter,"value",float(rank.current),.4).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		xp_last_total=game.experience.total;xp_last_level=rank.level
 	mini_map.visible = driving and not menu_visible and not map_visible and not (game.first_person_driving and game.cockpit_displays and game.cockpit_displays.has_map)
 	game.driving_controls.visible = driving and not menu_visible and not map_visible
-	game.fish_button.visible = not game.market_mode and not game.shop_mode and not game.can_put_fish_on_boat() and not game.landing_to_boat
+	game.fish_button.visible = not game.market_mode and not game.shop_mode and not game.can_put_fish_on_boat() and not game.landing_to_boat and (game.fishing_view or at_spot)
 	game.fish_button.disabled = driving and (not at_spot or absf(game.speed)>1 or (game.drive.engine_running and game.drive.gear!=0))
 	var stopped_safe=absf(game.speed)<1 and (not game.drive.engine_running or game.drive.gear==0)
 	engine_button.visible=driving and not menu_visible and not map_visible
@@ -502,7 +550,7 @@ func refresh() -> void:
 	game.drive_button.text = "Leave market" if game.market_mode else "Back to helm"
 	game.market_action.visible = game.market_mode and not game.shop_mode
 	market_panel.visible=game.market_mode
-	preview_card.visible=game.shop_mode
+	preview_controls.visible=game.shop_mode and game.app_active and not menu_visible and not map_visible
 	if game.fishing_view and not game.market_mode:
 		action_stack.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 		action_stack.offset_left=-255
@@ -521,8 +569,12 @@ func refresh() -> void:
 	travel_box.visible=not game.shop_mode and not game.market_mode and not game.fishing_view
 	map_button.visible=not game.shop_mode and not game.market_mode
 	camera_button.visible=driving
-	camera_button.text=game.camera_label()
-	camera_button.tooltip_text="Tap to cycle: External, POV, Bird’s-eye, Close external"
+	camera_button.text=""
+	camera_button.tooltip_text="Camera: "+game.camera_label()+" · tap to change"
+	collection_button.visible=driving and not menu_visible and not map_visible
+	quests_button.visible=collection_button.visible
+	var rewards=int(game.trip_progress.ready())+int(game.trip_progress.weekly_ready())+int(not game.spot_challenges.result.is_empty() and game.spot_challenges.result.success)
+	quest_badge.text=str(rewards);quest_badge.visible=rewards>0
 	game.upgrade_button.text = "Engine fully upgraded" if game.upgrade>=2 else "Upgrade engine · MVR %d" % game.item_price("engine")
 	game.upgrade_button.disabled = not at_dock or game.coins<game.item_price("engine") or game.upgrade>=2
 	pause_tip.text = "Approach an island harbour berth to upgrade your engine." if not at_dock else "Engine level %d / 3 · MVR %d" % [game.upgrade+1,game.coins]
@@ -568,20 +620,39 @@ func refresh() -> void:
 		game.fish_button.text = ("HOOK" if not game.fight.hooked else ("REEL IN\n↑ POWER" if game.fight.power_charge>=1 else "REEL IN")) if game.fish_timer>=2.5 else "WAIT…"
 	else:
 		game.fish_button.text = ("DROP JIG" if game.feedback.overhead else "CAST") if game.fishing_view else ("Start fishing" if at_spot else "%s · %d m" % [nearest.name,spot_distance])
-	game.info.text = "MVR %d  /  %d fish  /  %s" % [game.coins,game.inventory.size(),game.World.vessel(game.equipped_boat).name]
+	game.info.text = "MVR %d"%game.coins
+	hold_count.text=str(game.inventory.size())
+	hold_count.tooltip_text="Fish in icebox"
 	zone.text = ("BOAT SHOWROOM" if shop_category=="Boats" else ("BOAT WORKSHOP" if shop_category=="Boat" else "TACKLE HOUSE")) if game.shop_mode else (game.active_market_island.to_upper()+" FISH MARKET" if game.market_mode else ("ON THE LINE" if game.fishing_view else game.location_name()))
-	objective.visible = not game.market_mode and not game.shop_mode
+	objective.visible = not game.market_mode and not game.shop_mode and (not game.trip_progress.active.is_empty() or game.fishing_view)
 	objective.text = "Eastern waters unlocked" if game.unlocked else "Discover eastern waters · %d / 3 catches" % mini(game.catches,3)
+	if not game.trip_progress.active.is_empty():
+		var contract=game.trip_progress.active
+		objective.text="Contract ready · collect at its harbour" if game.trip_progress.ready() else "Delivery: %d/%d fish · %.1f/%.1f kg"%[mini(contract.count,contract.goal),contract.goal,contract.weight,contract.kg]
 	if game.fishing_view:
 		objective.text = "%s · %s" % [game.Catalog.item(str(game.equipped.Reels)).name,"JIGGING" if game.feedback.overhead else "SPINNING"]
-	game.hint_label.visible = not game.shop_mode
+	game.hint_label.visible = game.fishing_view and not game.shop_mode
+	if not game.spot_challenges.active.is_empty():
+		var event=game.spot_challenges.active;var definition=game.spot_challenges.definition(event.id)
+		objective.visible=not game.shop_mode and not game.market_mode
+		objective.text=definition.name+" · "+("%02d:%02d · "%[int(event.remaining)/60,int(event.remaining)%60] if definition.has("seconds") else "")+"%d/%d fish"%[event.count,int(definition.get("count",1))]
+		objective.add_theme_color_override("font_color",Color("e88a68") if definition.has("seconds") and event.remaining<30 else Color("f3c779"))
+	elif not game.spot_challenges.result.is_empty() and not game.shop_mode and not game.market_mode:
+		objective.visible=true;objective.text="Challenge clear · claim in Goals" if game.spot_challenges.result.success else game.spot_challenges.result.reason+" · retry free at buoy"
+	game.status.position.y=header_panel.size.y+10
 	game.status.text = game.message
+	if game.message!=last_message:last_message=game.message;message_until=Time.get_ticks_msec()+4500
+	game.status.visible=Time.get_ticks_msec()<message_until and not menu_visible and not map_visible
 	game.hint_label.text = "Hold to reel. Release to ease tension." if game.fishing_view else "Drag the wheel · slide the throttle"
 	if game.fishing and game.bite_announced and not game.fight.hooked:game.hint_label.text="Tap HOOK in the green zone"
 	if game.fishing and game.fight.power_charge>=1:game.hint_label.text="Swipe up on reel · R on keyboard"
 	if game.market_mode:
 		game.hint_label.text="Fresh catch. Fair trade."
-	clock_label.text="%s  ·  %s" % [game.day_cycle.clock_text(),game.day_cycle.weather_name()]
+	clock_label.text=game.day_cycle.clock_text()
+	var weather=game.day_cycle.weather_name().to_lower()
+	weather_icon.texture=UIArt.icon("rain" if "rain" in weather or "storm" in weather else ("cloud" if "cloud" in weather else ("moon" if game.day_cycle.hours<6 or game.day_cycle.hours>=18 else "sun")))
+	weather_icon.tooltip_text=game.day_cycle.weather_name()
+	route_label.visible=game.navigation.has_destination
 	if game.navigation.has_destination:
 		var nav=game.navigation
 		var course="Arrived · select neutral" if nav.arrived else "On course"
@@ -618,8 +689,10 @@ func build_shop() -> void:
 	var column = VBoxContainer.new()
 	column.add_theme_constant_override("separation",10)
 	shop_panel.add_child(column)
-	shop_title = label("Island tackle",22)
-	column.add_child(shop_title)
+	var heading=HBoxContainer.new();column.add_child(heading)
+	shop_title = label("Island tackle",22);shop_title.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	heading.add_child(shop_title)
+	var styles=action(heading,"Customise",func(): customisation.open());styles.size_flags_horizontal=Control.SIZE_SHRINK_END
 	shop_tabs = HBoxContainer.new()
 	shop_tabs.add_theme_constant_override("separation",8)
 	column.add_child(shop_tabs)
@@ -638,7 +711,9 @@ func build_shop() -> void:
 	shop_panel.visible = false
 
 func show_shop(category: String) -> void:
+	if customisation:customisation.visible=false
 	shop_category = category
+	for tab in shop_tabs.get_children():Clay.button(tab,false,tab.text==category)
 	shop_panel.visible = true
 	shop_title.text = "Boat showroom" if category=="Boats" else ("Boat workshop" if category=="Boat" else "Island tackle house")
 	for child in shop_list.get_children():
@@ -650,9 +725,10 @@ func show_shop(category: String) -> void:
 			continue
 		if first_id.is_empty():
 			first_id = item.id
+		var card=PanelContainer.new();shop_list.add_child(card);card.add_theme_stylebox_override("panel",Clay.surface(Clay.CARD,18))
 		var row = HBoxContainer.new()
 		row.add_theme_constant_override("separation",10)
-		shop_list.add_child(row)
+		card.add_child(row)
 		var text_column = VBoxContainer.new()
 		text_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(text_column)
@@ -664,7 +740,6 @@ func show_shop(category: String) -> void:
 			if (event is InputEventMouseButton and event.pressed) or (event is InputEventScreenTouch and event.pressed):
 				selected_item = item.id
 				game.shop.show_item(item)
-				preview_label.text=item.name+"\nDrag to rotate · use + / − to zoom"
 		)
 		text_column.add_child(name_label)
 		var detail = label(item.detail,13,MUTED)
@@ -673,24 +748,26 @@ func show_shop(category: String) -> void:
 		var owned = game.item_owned(item.id)
 		var active = game.equipped_boat==item.id if category=="Boats" else game.equipped.get(category)==item.id
 		var locked=game.catches<int(item.get("unlock",0))
-		var text = "Equipped" if active else ("Owned" if owned and category=="Boat" else ("Equip" if owned else "MVR %d" % game.item_price(item.id)))
+		var text = "Equipped" if active else ("Owned" if owned and category=="Boat" else ("Equip" if owned else "Buy · MVR %d" % game.item_price(item.id)))
 		var buy = action(row,"%d catches" % item.unlock if locked else text,func():
 			game.purchase_item(item.id)
 			selected_item = item.id
 			show_shop(shop_category)
 		)
-		buy.custom_minimum_size.x = 105
+		buy.custom_minimum_size.x = 138
+		buy.size_flags_vertical=Control.SIZE_SHRINK_CENTER
 		buy.size_flags_horizontal = 0
 		buy.add_theme_font_size_override("font_size",16)
 		buy.disabled = locked or active or (owned and category=="Boat") or (not owned and game.coins<game.item_price(item.id))
+		Clay.apply(row)
 		row.custom_minimum_size.y = 94
 	if game.Catalog.item(selected_item).get("category")!=category:
 		selected_item = first_id
 	game.shop.show_item(game.Catalog.item(selected_item))
-	preview_label.text=str(game.Catalog.item(selected_item).name)+"\nDrag to rotate · use + / − to zoom"
 	refresh()
 
 func hide_shop() -> void:
+	if customisation:customisation.visible=false
 	if shop_panel:
 		shop_panel.visible = false
 
@@ -742,25 +819,16 @@ func toggle_map() -> void:
 		game.reeling=false
 	refresh()
 
-func build_preview_card() -> void:
-	preview_card=PanelContainer.new()
-	add_child(preview_card)
-	preview_card.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
-	preview_card.offset_left=24
-	preview_card.offset_right=620
-	preview_card.offset_top=-135
-	preview_card.offset_bottom=-24
-	preview_card.add_theme_stylebox_override("panel",panel_style(Color(0.025,0.085,0.12,0.95),20))
-	var column=VBoxContainer.new()
-	preview_card.add_child(column)
-	preview_label=label("",19)
-	column.add_child(preview_label)
-	var row=HBoxContainer.new()
-	row.add_child(label("INSPECT",12,MINT))
-	column.add_child(row)
-	action(row,"−",func(): game.shop.zoom=clampf(game.shop.zoom-0.15,0.7,1.5))
-	action(row,"+",func(): game.shop.zoom=clampf(game.shop.zoom+0.15,0.7,1.5))
-	preview_card.visible=false
+func build_preview_controls() -> void:
+	preview_controls=preload("res://scripts/shop_preview_controls.gd").new()
+	preview_controls.game=game
+	add_child(preview_controls)
+	preview_controls.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	preview_controls.offset_left=20
+	preview_controls.offset_right=-570
+	preview_controls.offset_top=180
+	preview_controls.offset_bottom=-24
+	preview_controls.visible=false
 
 var glass_panels: Array[PanelContainer]=[]
 var glass_full: ShaderMaterial
@@ -773,7 +841,7 @@ func apply_glass_quality(quality: int) -> void:
 	for panel in glass_panels:panel.material=glass_light if quality==0 else glass_full
 
 func apply_glass(root: Node) -> void:
-	if root is PanelContainer:
+	if root is PanelContainer and not root.get_meta("clay_surface",false):
 		glass_panels.append(root)
 		apply_glass_quality(game.graphics_quality)
 	for child in root.get_children(): apply_glass(child)

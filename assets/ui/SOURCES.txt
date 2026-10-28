@@ -1,0 +1,15 @@
+Medals and Game Icons by Kenney, CC0 1.0.
+https://kenney.nl/assets/medals
+https://kenney.nl/assets/game-icons
+Selected PNG medals/icons retained; icon transparent margins trimmed for touch UI.
+Original licence texts: medals/LICENSE.txt and icons/LICENSE.txt.
+
+Additional fish/book/contract/calendar/coin/weight/pin/chart/camera/weather SVGs
+are original project artwork. These are code-native vector interface symbols.
+
+Fish portraits: rendered from this game's already licensed fish models with
+res://tools/render_fish_portraits.gd (384 x 216 transparent PNGs).
+Original model authors/licences still apply: GoldenZtuff (yellowfin), ffish.asia /
+floraZia.com (giant trevally), and creators listed in assets/models/fish/*-source.json
+and the in-game Credits for skipjack, sailfish and mahi-mahi. Portraits are adapted
+renders, not additional CC0 fish assets. Existing model credits remain in the game.

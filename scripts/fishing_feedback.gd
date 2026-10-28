@@ -16,8 +16,14 @@ var splash_age = 2.0
 var splash_position = Vector3.ZERO
 var enabled = false
 var sound_enabled = true
-var vibration_enabled = true
-var pulse_time = 0.0
+var vibration_enabled = true:
+	set(value):
+		vibration_enabled=value
+		if not value:stop_fight_haptics()
+signal haptic_requested(duration: int,amplitude: float)
+var fight_pulse_active=false
+var fight_pulse_timer=0.0
+var fight_pulse_second=false
 var cast_age = 2.0
 var line: MeshInstance3D
 var line_mesh = ImmediateMesh.new()
@@ -139,7 +145,9 @@ func attach_camera(camera: Camera3D) -> void:
 	lure=preload("res://scripts/fishing_lure.gd").new();add_child(lure);lure.scale=Vector3.ONE*PLAYER_SCALE;lure.visible=false
 
 func haptic(duration: int, amplitude: float) -> void:
-	if vibration_enabled and OS.get_name() in ["Android", "iOS"]:
+	if not vibration_enabled:return
+	haptic_requested.emit(duration,amplitude)
+	if OS.get_name() in ["Android", "iOS"]:
 		Input.vibrate_handheld(duration, amplitude)
 
 func play_effect(key: String) -> void:
@@ -175,6 +183,7 @@ func bite_feedback() -> void:
 	haptic(160, 0.8)
 
 func finish(success: bool, at: Vector3) -> void:
+	stop_fight_haptics()
 	reel_audio.stop()
 	line.visible=false
 	line_mesh.clear_surfaces()
@@ -194,7 +203,6 @@ func update_feedback(delta: float, active: bool, pulling: bool, tension: float, 
 	lure.visible=active and (not get_parent().fishing or not get_parent().bite_announced)
 	strike_kick=maxf(0,strike_kick-delta*2.8)
 	hook_rating_time=maxf(0,hook_rating_time-delta)
-	pulse_time -= delta
 	if active:
 		var landing=get_parent().fight.landing_lift if get_parent().fishing else 0.0
 		var raise_rod=cast_motion.rod_pitch()+landing*.30+strike_kick*.72
@@ -255,9 +263,6 @@ func update_feedback(delta: float, active: bool, pulling: bool, tension: float, 
 				reel_audio.play()
 		else:
 			reel_audio.stop()
-		if pulling and tension > 0.75 and pulse_time <= 0:
-			haptic(45, 0.5)
-			pulse_time = 0.35
 		line_mesh.clear_surfaces()
 		line_mesh.surface_begin(Mesh.PRIMITIVE_LINES)
 		routed_line_points.clear()
@@ -337,3 +342,23 @@ func apply_quality(quality: int) -> void:
 	effects_quality=quality
 	for particles in spray:
 		particles.amount=[10,16,24][quality]
+
+func stop_fight_haptics() -> void:
+	if fight_pulse_active and OS.get_name() in ["Android","iOS"]:Input.vibrate_handheld(0)
+	fight_pulse_active=false;fight_pulse_timer=0;fight_pulse_second=false
+
+func update_fight_haptics(delta: float,on_hook: bool,load: float,running: bool,landing: bool) -> void:
+	if not on_hook or not vibration_enabled:
+		stop_fight_haptics();return
+	fight_pulse_active=true
+	fight_pulse_timer-=delta
+	if fight_pulse_timer>0:return
+	var strength=clampf(.30+load*.32+(.14 if running else 0),.3,.8)
+	if landing:strength*=.75
+	if fight_pulse_second:
+		haptic(30,strength*.65)
+		fight_pulse_timer=.60 if landing else (.28 if running else .48)
+	else:
+		haptic(65,strength)
+		fight_pulse_timer=.13
+	fight_pulse_second=not fight_pulse_second

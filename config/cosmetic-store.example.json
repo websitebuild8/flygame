@@ -1,0 +1,19 @@
+{
+  "enabled": false,
+  "display_name": "Premium Finish Collection",
+  "type": "non_consumable",
+  "includes": [
+    "coral",
+    "pearl",
+    "midnight"
+  ],
+  "apple_product_id": "",
+  "google_product_id": "",
+  "display_price_source": "localized_store_product",
+  "verification_endpoint": "",
+  "notes": "One permanent collection for rods, reels and boats. Example configuration only; no live billing adapter or entitlement verification is installed. Checkout must remain disabled until native billing, store products, validation, restore and refunds are implemented and tested. Never place store secrets or service-account credentials in this file.",
+  "target_price": {
+    "currency": "MVR",
+    "amount": 150
+  }
+}

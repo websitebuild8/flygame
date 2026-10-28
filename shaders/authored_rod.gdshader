@@ -4,6 +4,11 @@ uniform sampler2D albedo_map : source_color, filter_linear_mipmap_anisotropic;
 uniform float bend=0.0;
 uniform bool overhead=false;
 uniform vec4 tint : source_color=vec4(1.0);
+uniform bool custom_paint=false;
+uniform bool custom_special=false;
+uniform vec4 custom_color : source_color=vec4(1.);
+uniform vec4 custom_accent : source_color=vec4(1.);
+varying float rod_distance;
 void vertex(){
  vec3 base=vec3(0.,-.04,.38);
  vec3 axis=normalize(vec3(0.,.47,-.882666));
@@ -14,6 +19,7 @@ void vertex(){
   NORMAL=axis*dot(NORMAL,axis)-radial*dot(NORMAL,radial)-vec3(NORMAL.x,0.,0.);
  }
  float along=clamp(dot(VERTEX-base,axis),0.,2.7);
+ rod_distance=along;
  float flex=max(along-.675,0.);
  float curvature=bend*.95/2.025;
  float angle=curvature*flex;
@@ -30,7 +36,13 @@ void fragment(){
  vec3 paint=texture(albedo_map,UV).rgb;
  float white_paint=step(.62,min(paint.r,min(paint.g,paint.b)));
  paint=mix(paint,paint*vec3(.19,.28,.36),white_paint);
- ALBEDO=paint*tint.rgb;
+ vec3 base_paint=paint*tint.rgb;
+ if(custom_paint){
+  vec3 finish=custom_color.rgb;
+  if(custom_special){finish=mix(finish,custom_accent.rgb,step(.84,fract(rod_distance*5.)));}
+  base_paint=mix(base_paint,finish*(.65+dot(paint,vec3(.2126,.7152,.0722))*.35),smoothstep(.72,.9,rod_distance)*(1.-white_paint*.75));
+ }
+ ALBEDO=base_paint;
  ROUGHNESS=.34;
  METALLIC=.28;
 }

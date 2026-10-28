@@ -1,0 +1,43 @@
+extends SceneTree
+const Challenges=preload("res://scripts/spot_challenges.gd")
+const XP=preload("res://scripts/angler_xp.gd")
+func _initialize():call_deferred("checks")
+func item(species: String="Yellowfin tuna",weight: float=8) -> Dictionary:return {"species":species,"weight":weight,"value":120}
+func checks():
+ var system=Challenges.new();assert(system.DEFINITIONS.size()==10,"Seven permanent and three timed events exist")
+ assert(not system.start("lagoon_timed","lagoon",1,8,0),"Timed event respects its level gate")
+ assert(system.start("lagoon_timed","lagoon",2,8,0));system.advance(10,"lagoon");assert(system.active.remaining==170,"Timer advances only by gameplay time")
+ system.record(item(),"reef",8);assert(system.active.count==0,"Catches at another point do not count")
+ system.record(item(),"lagoon",8);system.record(item(),"lagoon",8);assert(system.result.success and system.result.stars==3 and system.active.is_empty(),"Fast completion earns three stars")
+ var prize=system.claim();assert(prize.mvr==100 and prize.xp==130 and system.claim().is_empty(),"First clear rewards pay exactly once")
+ assert(system.start("lagoon_timed","lagoon",2,8,0));system.advance(150,"lagoon");system.record(item(),"lagoon",8);system.record(item(),"lagoon",8)
+ prize=system.claim();assert(prize.mvr==0 and prize.xp==10 and system.best.lagoon_timed==3,"Replay has reduced XP, no repeated cash and retains best stars")
+ assert(system.start("reef","reef",3,8,0));system.record(item("Giant trevally",4),"reef",8);assert(system.active.count==0,"Minimum specimen weight is required")
+ system.record(item("Giant trevally",12),"reef",8);assert(system.result.stars==3);system.claim()
+ assert(system.start("channel","channel",3,8,0));system.record(item(),"channel",8);system.record(item(),"channel",8);assert(not system.active.is_empty(),"Variety requires different species")
+ system.record(item("Skipjack tuna",4),"channel",8);assert(system.result.success);system.claim()
+ assert(not system.start("night","night",4,12,3) and system.start("night","night",4,20,3),"Night challenge only starts after dusk")
+ system.advance(1,"reef");assert(not system.result.success and system.result.stars==0,"Leaving a point ends the attempt without rewards")
+ assert(system.start("reef_timed","reef",3,8,0));system.advance(301,"reef");assert(not system.result.success and system.result.reason=="Time’s up" and system.claim().is_empty(),"Timeout produces no clear reward")
+ var xp=XP.new();xp.add(700);assert(xp.status().level==5,"Level curve reaches level five after 700 XP")
+ var game=load("res://scenes/main.tscn").instantiate();game.save_path="user://spot-challenge-check.json";root.add_child(game);game.set_physics_process(false);game.interface.start_trip();game.drive.engine_running=false;game.gain_xp(700)
+ assert(game.cosmetics.can_use("reef_bronze") and not game.cosmetics.can_use("atoll_silver") and not game.cosmetics.can_use("midnight"),"Earned level gifts do not grant paid finishes")
+ assert(not game.start_spot_challenge("lagoon_timed"),"An event cannot start from the harbour")
+ game.boat.position=Vector3(0,0,-45);game.speed=0;game.drive.reset();assert(game.start_spot_challenge("lagoon_timed"),"Event starts explicitly at a stopped eligible buoy")
+ var remaining=game.spot_challenges.active.remaining
+ game.interface.logbook.open("Spots");game._physics_process(10);assert(game.spot_challenges.active.remaining==remaining,"Opening the challenge board pauses its timer")
+ game.interface.logbook.close_screen();game._physics_process(1);assert(game.spot_challenges.active.remaining<remaining,"Timer resumes with gameplay")
+ remaining=game.spot_challenges.active.remaining;game.app_active=false;game._physics_process(10);assert(game.spot_challenges.active.remaining==remaining,"App focus loss pauses the timer")
+ game.app_active=true;game.save_trip();var saved_position=Vector2(game.boat.position.x,game.boat.position.z);game.queue_free();await create_timer(.2).timeout
+ var restored=load("res://scenes/main.tscn").instantiate();restored.save_path="user://spot-challenge-check.json";root.add_child(restored);restored.set_physics_process(false);restored.interface.start_trip()
+ assert(not restored.spot_challenges.active.is_empty() and is_equal_approx(restored.spot_challenges.active.remaining,remaining),"Reload preserves remaining gameplay time")
+ assert(Vector2(restored.boat.position.x,restored.boat.position.z).distance_to(saved_position)<.01,"Reload resumes the challenge boat safely at its buoy")
+ restored.active_species=restored.World.FISH[0];restored.active_spot=restored.World.SPOTS[0];restored.active_catch={"species":"Yellowfin tuna","weight":8.0,"value":120,"size":1.0,"grade":"LARGE"}
+ for i in range(2):restored.fishing=true;restored.land_fish();restored.close_catch()
+ assert(restored.spot_challenges.result.success and restored.inventory.size()==2,"Ordinary landed catches complete the active challenge and remain in the icebox")
+ var money=restored.coins;var old_xp=restored.experience.total;prize=restored.claim_spot_reward()
+ assert(restored.coins==money+prize.mvr and restored.experience.total==old_xp+prize.xp and restored.claim_spot_reward().is_empty(),"Integrated claim saves cash/XP exactly once")
+ restored.save_trip();restored.load_trip();assert(restored.spot_challenges.best.lagoon_timed==3 and restored.cosmetics.can_use("reef_bronze"),"Medals, XP and earned gifts survive reload")
+ restored.queue_free();await create_timer(.2).timeout
+ print("PASS: all spot challenges, timed gates/pause/timeout, species/weight/night filters, stars/replays, saved sessions, catch integration, XP levels, free gifts and one-time rewards")
+ quit()

@@ -91,3 +91,14 @@ func motion_blocked(from: Vector2,to: Vector2,radius: float) -> bool:
  for actor in actors:
   if Collision.sweeps_circle(from,to,actor.position,radius+actor.radius):return true
  return false
+func hull_motion_blocked(from: Vector2,to: Vector2,old_yaw: float,yaw: float,id: String) -> bool:
+ var steps=maxi(1,ceili(from.distance_to(to)/.08+absf(angle_difference(old_yaw,yaw))/.08))
+ for actor in actors:
+  var other_id=actor.node.imported_id
+  var was_overlapping=Collision.hulls_overlap(from,old_yaw,id,actor.position,actor.heading,other_id)
+  for i in range(1,steps+1):
+   var p=from.lerp(to,float(i)/steps);var angle=lerp_angle(old_yaw,yaw,float(i)/steps)
+   if Collision.hulls_overlap(p,angle,id,actor.position,actor.heading,other_id):
+    if was_overlapping and p.distance_squared_to(actor.position)>from.distance_squared_to(actor.position)+.00001:continue
+    return true
+ return false

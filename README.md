@@ -23,6 +23,27 @@ landscape, with a smaller desktop preview window and mobile safe-area margins.
 - The pause/settings sheet includes sound, vibration, engine upgrades, a prototype
   Return to home dock shortcut, and Next time of day for previewing lighting.
 
+## Logbook, contracts and weekly goals
+
+Tap the **book** or **gold trophy** HUD icon to open Angler’s Club for the five-species collection, personal
+records, mastery badges, harbour delivery bonuses and an optional weekly challenge.
+Contracts reward earned MVR; ordinary fish sales keep their normal payment.
+Species have distinct movement profiles. See [progression notes](docs/progression.md).
+
+## Buoy challenges and angler levels
+
+Open **Goals → Spots** or **Buoy challenges** at a fishing point. Seven permanent
+goals and three optional timed events award XP, earned MVR and best-result stars.
+Levels 5, 10 and 15 unlock free cosmetic finishes. Timers pause with gameplay and
+active sessions survive reload. See [challenge rules](docs/spot-challenges.md).
+
+## Cosmetic finishes
+
+At a harbour shop, tap **Customise** to preview and apply free finishes to owned
+rods, reels and boats. Choices are saved per item. Premium finishes currently have
+preview access only; the planned permanent collection targets 150 MVR and real
+checkout is not enabled. See [cosmetic setup/status](docs/cosmetic-purchases.md).
+
 ## Chart and navigation
 
 Open Chart or press M. Tap a fishing marker or open water to set a waypoint.

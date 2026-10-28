@@ -47,13 +47,12 @@ func show_item(item: Dictionary) -> void:
 		hull.position.y=0
 	elif item.category=="Reels":
 		Tackle.reel(preview_model,item.kind,item.id).scale = Vector3.ONE*3.2
-	elif item.category=="Rods" and item.id=="island_rod":
-		preload("res://scripts/imported_tackle.gd").rod_preview(preview_model)
 	elif item.category=="Rods":
 		var rod = Tackle.rod(preview_model,item.kind,"ocea" if item.kind=="overhead" else "island_reel",item.id,false)
-		rod.rotation.z = 0.5
-		rod.rotation.x = -PI/2
-		rod.scale = Vector3.ONE*0.6
+		rod.rotation.z = -0.35
+		rod.rotation.x = .55
+		rod.scale = Vector3.ONE*.78
+		rod.position.y = -.45
 	elif item.category=="Line":
 		Tackle.cylinder(preview_model,Vector3.ZERO,0.22,0.16,Vector3.FORWARD,Color("75b6a1"),false)
 		for z in [-0.1,0.1]:
@@ -73,18 +72,11 @@ func show_item(item: Dictionary) -> void:
 		Art.block(preview_model,Vector3(0,0.12,0),Vector3(0.45,0.55,0.5),Color("344d5c"))
 		Art.pole(preview_model,Vector3(0,-0.15,0),Vector3(0,-0.6,0),0.09,Color("728b92"))
 
+	if item.category in ["Rods","Reels","Boats"]:
+		preload("res://scripts/cosmetic_art.gd").apply(preview_model,item.category,get_parent().cosmetics.style(get_parent().cosmetics.selected(item.id)))
+
 func _process(delta: float) -> void:
 	manual_spin=maxf(0,manual_spin-delta)
 	if manual_spin<=0: angle += delta*0.3
 	if preview_model:
 		preview_model.rotation.y = angle
-
-func _input(event: InputEvent) -> void:
-	if not get_parent().shop_mode or get_parent().interface.menu_visible:
-		return
-	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and event.position.x<700 and event.position.y>140:
-		angle+=event.relative.x*0.009
-		manual_spin=2.5
-	elif event is InputEventScreenDrag and event.position.x<700 and event.position.y>140:
-		angle+=event.relative.x*0.009
-		manual_spin=2.5

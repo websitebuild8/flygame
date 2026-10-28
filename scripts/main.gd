@@ -85,7 +85,6 @@ var collision_cooldown=0.0
 var water_port=""
 var shallow_life: RefCounted
 var surface=preload("res://scripts/water_surface.gd").new()
-var catch_leader: MeshInstance3D
 var catch_fill: OmniLight3D
 var active_spot: Dictionary={}
 var active_species: Dictionary={}
@@ -94,6 +93,11 @@ var hook_clock=0.0
 var fishing_camera_offset=Vector3.ZERO
 var fishing_camera_look=Vector3.ZERO
 var catch_show_age=0.0
+var cosmetics=preload("res://scripts/cosmetics.gd").new()
+var trip_progress=preload("res://scripts/trip_progress.gd").new()
+var experience=preload("res://scripts/angler_xp.gd").new()
+var spot_challenges=preload("res://scripts/spot_challenges.gd").new()
+var saved_challenge_pose: Array=[]
 
 func hook_timing() -> float:
 	return .5+.5*sin(hook_clock*3.8)
@@ -136,6 +140,7 @@ func _ready() -> void:
 	apply_graphics()
 	update_scene_activity()
 	traffic=preload("res://scripts/sea_traffic.gd").new();add_child(traffic);traffic.configure(self)
+	restore_challenge_position()
 
 func update_scene_activity() -> void:
 	# Keep every asset; suspend the off-screen shops and their skeletal animations.
@@ -308,6 +313,7 @@ func _physics_process(delta: float) -> void:
 	feedback.update_ambience(not intro_visible and not market_mode and not shop_mode and app_active and not interface.menu_visible and not interface.map_visible)
 	if interface.menu_visible or interface.map_visible or not app_active:
 		feedback.reel_audio.stop()
+		feedback.stop_fight_haptics()
 		engine_audio.update_audio(delta,0,0,false,feedback.sound_enabled)
 		interface.refresh()
 		return
@@ -316,6 +322,7 @@ func _physics_process(delta: float) -> void:
 		camera.position = DOCK + Vector3(10,6,13)
 		camera.look_at(Vector3(20,1,24))
 		return
+	feedback.update_fight_haptics(delta,fishing and bite_announced and fight.hooked,tension,fight.running,landing_to_boat or fight.landing_lift>.65)
 	update_port_water()
 	day_cycle.advance(delta)
 	surface.phase=elapsed;surface.roughness=day_cycle.roughness;surface.subdivisions=ocean_mesh.subdivide_width
@@ -335,6 +342,7 @@ func _physics_process(delta: float) -> void:
 		update_catch_presentation()
 		feedback.update_feedback(delta,false,false,0,line_target())
 		return
+	spot_challenges.advance(delta,current_challenge_spot())
 	for buoy in fishing_buoys:buoy.advance(delta,day_cycle.roughness)
 	var space_down = Input.is_physical_key_pressed(KEY_SPACE)
 	if space_down and not space_was_down and not fishing and not market_mode and not shop_mode:
@@ -395,11 +403,12 @@ func _physics_process(delta: float) -> void:
 		var wheel=boat_visual.get_node("HelmWheel") as Node3D
 		wheel.basis=wheel.get_meta("rest_basis",Basis.IDENTITY)*Basis(Vector3.BACK,-drive.steering*2.3)
 		update_outboards(delta)
+		var old_yaw=boat.rotation.y
 		boat.rotation.y += drive.yaw_rate()*delta
 		var next = boat.position - boat.basis.z * speed * delta
 		var from=Vector2(boat.position.x,boat.position.z);var to=Vector2(next.x,next.z)
-		var blocked=not preload("res://scripts/marine_collision.gd").clear_water(from,to,unlocked,World.BOAT_CLEARANCE)
-		var boat_hit=traffic!=null and traffic.motion_blocked(from,to,World.BOAT_CLEARANCE)
+		var blocked=not preload("res://scripts/marine_collision.gd").sweep_hull(from,to,old_yaw,boat.rotation.y,equipped_boat,unlocked)
+		var boat_hit=traffic!=null and traffic.hull_motion_blocked(from,to,old_yaw,boat.rotation.y,equipped_boat)
 		blocked=blocked or boat_hit
 		if blocked and collision_cooldown<=0:
 			message="Boat ahead. Reverse or steer clear." if boat_hit else "Quay or shallow water. Reverse and steer clear."
@@ -409,6 +418,7 @@ func _physics_process(delta: float) -> void:
 		if not blocked and Vector2(next.x, next.z).length() < World.SEA_RADIUS:
 			boat.position = next
 		else:
+			boat.rotation.y=old_yaw
 			speed = 0
 			drive.speed = 0
 	boat.position.y = surface.height(Vector2(boat.position.x,boat.position.z))-surface.BASE
@@ -521,6 +531,7 @@ func cast(preview_only: bool=false) -> void:
 	active_catch=preload("res://scripts/catch_profile.gd").roll(active_species,rng)
 	hook_clock=0
 	fight=preload("res://scripts/fish_fight.gd").new()
+	fight.set_species(str(active_species.name))
 	fight.start(boat.position,-boat.basis.z,float(active_catch.strength),World.BOAT_SCALE)
 	fight.individual_phase=rng.randf_range(-PI,PI)
 	fight.hooked=false
@@ -583,7 +594,16 @@ func land_fish() -> void:
 	hold_value += value
 	var weight = float(active_catch.weight)
 	inventory.append({"species":species,"value":value,"weight":weight})
+	var discovery=trip_progress.record_catch({"species":species,"value":value,"weight":weight},str(active_spot.get("name","Open water")))
+	var xp_gain=gain_xp(20+mini(int(weight),15)+(40 if discovery.new_species else 0)+(20 if discovery.record else 0))
+	interface.catch_xp.text="+%d XP"%xp_gain.xp+(" · LEVEL %d!"%xp_gain.level if xp_gain.level_up else "")+("\nGift: "+", ".join(xp_gain.gifts) if not xp_gain.gifts.is_empty() else "")
+	spot_challenges.record({"species":species,"weight":weight,"value":value},str(active_spot.get("id","")),day_cycle.hours)
+	if not spot_challenges.result.is_empty() and spot_challenges.result.success:interface.catch_xp.text+="\nChallenge complete!"
 	catch_text.text = "%s\n%s\n%.1f kg   ·   MVR %d\nMarket offer · MVR %.2f / kg" % [active_catch.grade,species,weight,value,float(value)/weight]
+	interface.catch_medal.visible=discovery.new_species or discovery.record or active_catch.grade=="TROPHY" or (not spot_challenges.result.is_empty() and spot_challenges.result.success)
+	interface.catch_medal.texture=preload("res://scripts/ui_art.gd").medal(0 if discovery.new_species else 2)
+	if discovery.new_species:catch_text.text="NEW SPECIES DISCOVERED\n"+catch_text.text
+	elif discovery.record:catch_text.text="NEW PERSONAL BEST\n"+catch_text.text
 	catch_model.queue_free()
 	catch_model = Art.fish(camera,0.8*float(active_catch.size),species)
 	catch_model.position = Vector3(-0.8,0,-3)
@@ -605,7 +625,6 @@ func close_catch() -> void:
 	hud.visible = true
 	catch_overlay.visible = false
 	catch_model.visible = false
-	if catch_leader:catch_leader.visible=false
 	if catch_fill:catch_fill.visible=false
 	message = "Catch stored on ice. Cast again or return to the island market."
 
@@ -644,6 +663,7 @@ func serve_customer() -> void:
 		message = "Received MVR %d. Thank you, Ishaq!" % amount
 	elif not inventory.is_empty():
 		var item: Dictionary = inventory.pop_front()
+		trip_progress.deliver(item,active_market_island)
 		pending_payment = int(item.value)
 		hold_value = maxi(0,hold_value-pending_payment)
 		save_trip()
@@ -710,13 +730,19 @@ func return_home() -> void:
 func save_trip() -> void:
 	var file = FileAccess.open(save_path, FileAccess.WRITE)
 	if file:
-		file.store_string(JSON.stringify({"graphics_quality": graphics_quality, "graphics_shadows": graphics_shadows, "coins": coins, "catches": catches, "hold_value": hold_value, "upgrade": upgrade, "inventory": inventory, "pending_payment": pending_payment,"owned_items":owned_items,"equipped":equipped,"boat_parts":boat_parts,"owned_boats":owned_boats,"equipped_boat":equipped_boat,"hours":day_cycle.hours if day_cycle else saved_hours,"waypoint":[navigation.destination.x,navigation.destination.y] if navigation.has_destination else []}))
+		file.store_string(JSON.stringify({"experience_xp":experience.total,"spot_challenges":spot_challenges.snapshot(),"challenge_pose":[boat.position.x,boat.position.z,boat.rotation.y] if boat and not spot_challenges.active.is_empty() else [],"progression":trip_progress.snapshot(),"cosmetic_styles":cosmetics.snapshot(),"graphics_quality": graphics_quality, "graphics_shadows": graphics_shadows, "coins": coins, "catches": catches, "hold_value": hold_value, "upgrade": upgrade, "inventory": inventory, "pending_payment": pending_payment,"owned_items":owned_items,"equipped":equipped,"boat_parts":boat_parts,"owned_boats":owned_boats,"equipped_boat":equipped_boat,"hours":day_cycle.hours if day_cycle else saved_hours,"waypoint":[navigation.destination.x,navigation.destination.y] if navigation.has_destination else []}))
 
 func load_trip() -> void:
 	if not FileAccess.file_exists(save_path):
 		return
 	var parsed = JSON.parse_string(FileAccess.get_file_as_string(save_path))
 	if parsed is Dictionary:
+		experience.restore(parsed.get("experience_xp",20*maxi(0,int(parsed.get("catches",0)))))
+		spot_challenges.restore(parsed.get("spot_challenges",{}))
+		saved_challenge_pose=parsed.get("challenge_pose",[]) if parsed.get("challenge_pose",[]) is Array else []
+		cosmetics.angler_level=experience.status().level
+		trip_progress.restore(parsed.get("progression",{}))
+		cosmetics.restore(parsed.get("cosmetic_styles",{}))
 		graphics_quality=clampi(int(parsed.get("graphics_quality",graphics_quality)),0,2)
 		graphics_shadows=bool(parsed.get("graphics_shadows",graphics_shadows))
 		coins = maxi(0, int(parsed.get("coins", 0)))
@@ -739,6 +765,8 @@ func load_trip() -> void:
 		hold_value = 0
 		for item in inventory:
 			hold_value += int(item.value)
+		if not parsed.has("progression"):
+			for item in inventory:trip_progress.record_catch(item,"Earlier catch",false)
 		owned_items = ["island_reel","island_rod","mono"]
 		for id in parsed.get("owned_items",[]):
 			if id is String and not Catalog.item(id).is_empty() and id not in owned_items:
@@ -794,6 +822,8 @@ func _notification(what: int) -> void:
 		app_active = true
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		app_active = false
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and feedback:
+		feedback.stop_fight_haptics()
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and driving_controls:
 		driving_controls.release_pointers()
 		driving_controls.neutral()
@@ -806,6 +836,7 @@ func icebox_capacity() -> int:
 func apply_equipment() -> void:
 	if feedback:
 		feedback.equip(str(equipped.Reels),str(equipped.Rods),str(equipped.Line))
+		apply_gear_styles()
 
 func open_shop(category: String = "Reels") -> void:
 	if fishing or catch_overlay.visible or not at_home_dock() or absf(speed)>1 or (drive.engine_running and drive.gear!=0):
@@ -911,6 +942,7 @@ func apply_boat() -> void:
 		driving_controls.set_skin(equipped_boat)
 		driving_controls.configure_models(boat_visual)
 	update_boat_parts()
+	preload("res://scripts/cosmetic_art.gd").apply(boat_visual,"Boats",cosmetics.style(cosmetics.selected(equipped_boat)))
 	boat.position.y=surface.height(Vector2(boat.position.x,boat.position.z))-surface.BASE
 	preload("res://scripts/outboard_waterline.gd").update(boat_visual,surface)
 
@@ -1034,11 +1066,65 @@ func update_catch_presentation() -> void:
 	camera.fov=65
 	catch_model.position=Vector3(-.8,sin(catch_show_age*2)*.025,-3)
 	catch_model.rotation.z=-PI/2+sin(catch_show_age*2.7)*.025
-	if not catch_leader:
-		catch_leader=MeshInstance3D.new();camera.add_child(catch_leader)
-		var material=StandardMaterial3D.new();material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;material.albedo_color=Color("d5e4d5")
-		catch_leader.material_override=material;catch_leader.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var mouth=catch_model.transform*catch_model.get_meta("mouth_local")
-	var line=ImmediateMesh.new();line.surface_begin(Mesh.PRIMITIVE_LINES)
-	line.surface_add_vertex(mouth);line.surface_add_vertex(mouth+Vector3.UP*3);line.surface_end()
-	catch_leader.mesh=line;catch_leader.visible=true
+
+func apply_gear_styles():
+	var painter=preload("res://scripts/cosmetic_art.gd")
+	painter.apply(feedback.equipment,"Rods",cosmetics.style(cosmetics.selected(str(equipped.Rods))))
+	painter.apply(feedback.equipment.get_meta("reel"),"Reels",cosmetics.style(cosmetics.selected(str(equipped.Reels))))
+func equip_style(item: String,style: String) -> bool:
+	if not item_owned(item) or not cosmetics.choose(item,style):return false
+	if item==equipped_boat:preload("res://scripts/cosmetic_art.gd").apply(boat_visual,"Boats",cosmetics.style(style))
+	if feedback:apply_gear_styles()
+	save_trip();return true
+
+func harbour_for_rewards() -> String:
+	if fishing or catch_overlay.visible or absf(speed)>1 or (drive.engine_running and drive.gear!=0):return ""
+	return World.Harbours.berth_at(Vector2(boat.position.x,boat.position.z))
+func accept_contract(id: String) -> bool:
+	if not trip_progress.accept(id,harbour_for_rewards()):return false
+	message="Deliver %s to %s for your contract bonus."%[trip_progress.active.species,trip_progress.active.island]
+	save_trip();return true
+func claim_contract() -> int:
+	var reward=trip_progress.claim(harbour_for_rewards())
+	if reward>0:coins+=reward;gain_xp(60);save_trip();message="Contract complete · MVR %d bonus!"%reward
+	return reward
+func claim_weekly_reward() -> int:
+	if harbour_for_rewards().is_empty():return 0
+	var reward=trip_progress.claim_weekly()
+	if reward>0:coins+=reward;gain_xp(120);save_trip();message="Weekly challenge complete · MVR %d!"%reward
+	return reward
+
+func gain_xp(amount: int) -> Dictionary:
+	var result=experience.add(amount)
+	cosmetics.angler_level=result.level
+	result["gifts"]=[]
+	for gift in [[5,"Reef bronze"],[10,"Atoll silver"],[15,"Ocean gold"]]:
+		if result.before<gift[0] and result.level>=gift[0]:result.gifts.append(gift[1])
+	return result
+func current_challenge_spot() -> String:
+	var nearest=World.nearest(boat.position)
+	return str(nearest.id) if Vector2(boat.position.x,boat.position.z).distance_to(nearest.at)<=18 else ""
+func can_start_spot_challenge(id: String) -> bool:
+	var definition=spot_challenges.definition(id)
+	if definition.is_empty() or intro_visible or market_mode or shop_mode or fishing or catch_overlay.visible or absf(speed)>1 or (drive.engine_running and drive.gear!=0):return false
+	var nearest=World.nearest(boat.position)
+	if nearest.id!=definition.spot or Vector2(boat.position.x,boat.position.z).distance_to(nearest.at)>14:return false
+	if catches<int(nearest.unlock) or experience.status().level<int(definition.get("level",1)):return false
+	if definition.get("night",false) and day_cycle.hours>=6 and day_cycle.hours<18:return false
+	return spot_challenges.active.is_empty() and (spot_challenges.result.is_empty() or not spot_challenges.result.success)
+func start_spot_challenge(id: String) -> bool:
+	if not can_start_spot_challenge(id):return false
+	var ok=spot_challenges.start(id,current_challenge_spot(),experience.status().level,day_cycle.hours,catches)
+	if ok:message="Challenge started · "+spot_challenges.definition(id).name;save_trip()
+	return ok
+func claim_spot_reward() -> Dictionary:
+	var prize=spot_challenges.claim()
+	if prize.is_empty():return {}
+	coins+=int(prize.mvr);var gain=gain_xp(int(prize.xp));prize["level_up"]=gain.level_up;prize["level"]=gain.level;prize["gifts"]=gain.gifts
+	message="%d stars · +%d XP · MVR %d"%[prize.stars,prize.xp,prize.mvr];save_trip();return prize
+func restore_challenge_position():
+	if spot_challenges.active.is_empty():return
+	if saved_challenge_pose.size()!=3:spot_challenges.finish(false,"Session position unavailable");return
+	var point=Vector2(float(saved_challenge_pose[0]),float(saved_challenge_pose[1]));var yaw=float(saved_challenge_pose[2]);var definition=spot_challenges.definition(spot_challenges.active.id)
+	if not point.is_finite() or not is_finite(yaw) or point.distance_to(spot_challenges.spot(definition.spot).at)>18 or not World.water(point,unlocked,.35):spot_challenges.finish(false,"Return to the buoy to retry");return
+	boat.position=Vector3(point.x,surface.height(point)-surface.BASE,point.y);boat.rotation=Vector3(0,yaw,0);drive.engine_running=false;drive.reset();driving_controls.neutral()
