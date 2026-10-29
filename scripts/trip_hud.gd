@@ -322,7 +322,7 @@ func build(owner_game: Node3D) -> void:
 	build_tutorial(stage)
 	build_intro()
 	game.driving_controls.configure_models(game.boat_visual)
-	for panel in [menu,game.intro,shop_panel,map_panel]:Clay.apply(panel)
+	for panel in [menu,shop_panel,map_panel]:Clay.apply(panel)
 	apply_glass(body)
 	refresh()
 
@@ -497,32 +497,9 @@ func build_catch() -> void:
 	game.catch_overlay.visible = false
 
 func build_intro() -> void:
-	game.intro = PanelContainer.new()
-	game.intro.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	game.intro.anchor_left=.29;game.intro.anchor_right=.71
-	game.intro.anchor_top=.12;game.intro.anchor_bottom=.88
-	var style = panel_style(Color(0.025,0.075,0.105,0.5),24)
-	style.content_margin_left = 30
-	style.content_margin_right = 30
-	game.intro.add_theme_stylebox_override("panel",style)
+	game.intro=preload("res://scripts/voyage_home.gd").new()
+	game.intro.game=game
 	add_child(game.intro)
-	var center=CenterContainer.new()
-	game.intro.add_child(center)
-	var column=VBoxContainer.new()
-	column.custom_minimum_size.x=360
-	column.add_theme_constant_override("separation",14)
-	center.add_child(column)
-	var space = Control.new()
-	space.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	column.add_child(space)
-	for text in ["THE MALDIVES AWAIT", "Ishaq's", "Fishing Trip", "Explore Haa Alif. Bring home your catch."]:
-		var item = label(text,36 if text in ["Ishaq's","Fishing Trip"] else 15,MINT if text=="THE MALDIVES AWAIT" else WHITE)
-		item.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		column.add_child(item)
-	action(column,"Set sail",start_trip,true)
-	var bottom_space = Control.new()
-	bottom_space.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	column.add_child(bottom_space)
 
 func start_trip() -> void:
 	game.intro_visible = false

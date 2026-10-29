@@ -1,0 +1,132 @@
+{
+  "texture_limit": 512,
+  "source_bundle": "/home/ahusan/ft/split_UnityDataAssetPack/assets/fishingaquariumscene_assets_aquarium02_78f31517a3597e306b219d62e2bf3e76.bundle",
+  "source_sha256": "1293e38219279c88ce0e2dee7d534d5af5b63347d50a5ee81d47f1859516b872",
+  "output": "speargun.glb",
+  "output_sha256": "1e35ae11970e5ebaed90645c9326a86e45eff9a8e1fbdbc89fdeaf02039f1806",
+  "glb_bytes": 1990592,
+  "stats": [
+    {
+      "texture": "prop_crossbow_default",
+      "role": "base",
+      "original": [
+        1024,
+        1024
+      ],
+      "converted": [
+        512,
+        512
+      ],
+      "png_bytes": 414409
+    },
+    {
+      "texture": "prop_crossbow_default_n",
+      "role": "normal",
+      "original": [
+        1024,
+        1024
+      ],
+      "converted": [
+        512,
+        512
+      ],
+      "png_bytes": 347823
+    },
+    {
+      "texture": "prop_crossbow_default_m",
+      "role": "metallic",
+      "original": [
+        1024,
+        1024
+      ],
+      "converted": [
+        512,
+        512
+      ],
+      "png_bytes": 238783
+    },
+    {
+      "mesh": "crossbow02",
+      "vertices": 2710,
+      "triangles": 3194,
+      "bones": 16
+    },
+    {
+      "texture": "prop_crossbow_default2",
+      "role": "base",
+      "original": [
+        512,
+        512
+      ],
+      "converted": [
+        512,
+        512
+      ],
+      "png_bytes": 130743
+    },
+    {
+      "texture": "prop_crossbow_default2_n",
+      "role": "normal",
+      "original": [
+        512,
+        512
+      ],
+      "converted": [
+        512,
+        512
+      ],
+      "png_bytes": 126386
+    },
+    {
+      "texture": "prop_crossbow_default2_m",
+      "role": "metallic",
+      "original": [
+        512,
+        512
+      ],
+      "converted": [
+        512,
+        512
+      ],
+      "png_bytes": 128644
+    },
+    {
+      "mesh": "crossbow02_scope",
+      "vertices": 6064,
+      "triangles": 8148,
+      "bones": 1
+    },
+    {
+      "animation": "Aim01",
+      "duration": 1.0,
+      "tracks": 6,
+      "excluded_unneeded_bindings": 219
+    },
+    {
+      "animation": "Appear01",
+      "duration": 1.100000023841858,
+      "tracks": 3,
+      "excluded_unneeded_bindings": 219
+    },
+    {
+      "animation": "Shoot01",
+      "duration": 0.6666666865348816,
+      "tracks": 42,
+      "excluded_unneeded_bindings": 219
+    },
+    {
+      "animation": "Idle01",
+      "duration": 2.0,
+      "tracks": 3,
+      "excluded_unneeded_bindings": 219
+    },
+    {
+      "animation": "Back01",
+      "duration": 0.8333333134651184,
+      "tracks": 3,
+      "excluded_unneeded_bindings": 219
+    }
+  ],
+  "authorization": "User states app owner approved reuse; recorded in conversation. Not a public asset license.",
+  "conversion": "Selected skin, materials and animation. Coordinate reflection Z; UV V flip; PNG textures <=1024; streamed/dense/constant curves sampled at30Hz; quaternion continuity; no Unity shaders or code copied."
+}

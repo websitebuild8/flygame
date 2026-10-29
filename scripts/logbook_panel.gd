@@ -12,6 +12,8 @@ var challenge_celebration: Dictionary={}
 var rank_label: Label
 var scroll_positions: Dictionary={}
 var detail_open=false
+var receipt: Control
+var Board=preload("res://scripts/reward_board.gd")
 func _ready():
  set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);anchor_left=.055;anchor_right=.945;anchor_top=.045;anchor_bottom=.955
  var column=VBoxContainer.new();column.add_theme_constant_override("separation",12);add_child(column)
@@ -21,10 +23,11 @@ func _ready():
  rank_label=label(top,"Lv 1",19,Clay.SEA)
  var close=action(top,"Back to fishing",close_screen);close.size_flags_horizontal=Control.SIZE_SHRINK_END;Art.button_icon(close,"arrowLeft",22)
  tabs=HBoxContainer.new();tabs.add_theme_constant_override("separation",10);column.add_child(tabs)
- for entry in [["Collection","book"],["Spots","pin"],["Daily","sun"],["Contracts","contract"],["Weekly","calendar"],["My boat","home"]]:
+ for entry in [["Collection","book"],["Spots","pin"],["Rewards","trophy"],["Contracts","contract"],["My boat","home"]]:
   var button=action(tabs,entry[0],func():show_tab(entry[0]));Art.button_icon(button,entry[1],20);button.add_theme_font_size_override("font_size",16);button.set_meta("tab",entry[0])
  scroll=preload("res://scripts/club_scroll.gd").new();scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL;column.add_child(scroll)
  content=VBoxContainer.new();content.size_flags_horizontal=Control.SIZE_EXPAND_FILL;content.add_theme_constant_override("separation",14);scroll.add_child(content)
+ receipt=preload("res://scripts/reward_receipt.gd").new();receipt.game=game;add_child(receipt)
  add_theme_stylebox_override("panel",Clay.surface());visible=false
 func label(parent: Control,value: String,size: int=17,color: Color=Clay.INK) -> Label:
  var result=game.interface.label(value,size,color);result.autowrap_mode=TextServer.AUTOWRAP_OFF if parent is HBoxContainer else TextServer.AUTOWRAP_WORD_SMART;parent.add_child(result);return result
@@ -53,6 +56,7 @@ func open(selected: String=""):
  game.driving_controls.neutral();game.driving_controls.release_pointers();game.reeling=false;show_tab(selected if not selected.is_empty() else tab);game.interface.refresh()
 func close_screen():
  scroll.stop()
+ if receipt:receipt.close()
  visible=false;game.interface.menu_visible=false;game.interface.menu.visible=false;game.interface.refresh()
 func close():close_screen()
 func show_tab(value: String):
@@ -63,11 +67,12 @@ func show_tab(value: String):
  rank_label.text="Lv %d"%game.experience.status().level
  rank_label.tooltip_text="%d XP · %s"%[game.experience.total,game.experience.status().title]
  for child in content.get_children():content.remove_child(child);child.queue_free()
- for item in tabs.get_children():Clay.button(item,false,item.get_meta("tab")==tab);Art.colours(item,Clay.FOAM if item.get_meta("tab")==tab else Clay.INK)
+ for item in tabs.get_children():Clay.button(item,false,selected_tab(item.get_meta("tab")));Art.colours(item,Clay.FOAM if selected_tab(item.get_meta("tab")) else Clay.INK)
  if celebration>0:summary(Art.medal(2),"MVR %d earned!"%celebration,"Reward collected · ready for your next trip")
  if tab=="Collection":collection()
  elif tab=="Spots":spots()
  elif tab=="Contracts":contracts()
+ elif tab=="Rewards":rewards()
  elif tab=="Daily":daily()
  elif tab=="My boat":vessel()
  else:weekly()
@@ -166,16 +171,18 @@ func claim_contract():
  var amount=game.claim_contract()
  if amount>0:celebration=amount
  show_tab(tab)
+ if amount>0:receipt.open({"mvr":amount,"xp":60})
 func claim_weekly():
  var amount=game.claim_weekly_reward()
  if amount>0:celebration=amount
  show_tab(tab)
+ if amount>0:receipt.open({"mvr":amount,"xp":120})
 
 func stars(parent: Control,count: int):
  var widget=preload("res://scripts/star_row.gd").new();widget.stars=count;parent.add_child(widget)
 func spots():
  var system=game.spot_challenges;var rank=game.experience.status()
- summary(Art.icon("star"),"Level %d · %s"%[rank.level,rank.title],"%d / 10 badges collected · free finish gifts at levels 5, 10 and 15"%system.best.size(),rank.current,rank.next)
+ summary(Art.icon("star"),"Level %d · %s"%[rank.level,rank.title],"%d / %d badges collected · free finish gifts at levels 5, 10 and 15"%[system.best.size(),system.DEFINITIONS.size()],rank.current,rank.next)
  if not system.result.is_empty():
   var outcome=system.result;var entry=system.definition(outcome.id);var result_card=card(content,Color("eee1bd") if outcome.success else Clay.CARD)
   label(result_card,"CHALLENGE COMPLETE!" if outcome.success else outcome.reason,24)
@@ -183,9 +190,7 @@ func spots():
   if outcome.success:
    var prize=system.preview_reward();var line=row(result_card);stat(line,"star","+%d XP"%prize.xp,22);reward(line,prize.mvr)
    action(result_card,"Claim rewards",func():
-    var reward=game.claim_spot_reward()
-    if not reward.is_empty():celebration=reward.mvr;challenge_celebration=reward
-    show_tab("Spots")
+    collect_spot()
    ,true)
   else:
    label(result_card,"Your fish and catch XP are safe. Retry free at the buoy.",15,Clay.MUTED)
@@ -265,7 +270,7 @@ func daily():
   reward(body,job.mvr);stat(body,"star","+%d XP"%job.xp)
   var claim=action(body,"Collected" if system.claimed[i] else ("Claim reward" if system.ready(i) else "Go fishing"),func():
    if system.ready(i):
-    var prize=game.claim_daily_request(i);celebration=int(prize.get("mvr",0));show_tab("Daily")
+    collect_daily(i)
    else:close_screen()
   ,true);claim.disabled=system.claimed[i]
  label(content,"Fish count when landed, stay in your icebox and can still be sold. Your local device clock sets the daily calendar.",14,Clay.MUTED)
@@ -290,3 +295,40 @@ func vessel():
  label(body,"Apply earned liveries in the harbour showroom: Boats → Customise. Boat names and badges appear in the driving HUD.",15,Clay.MUTED)
  label(body,"Fleet ownership · %d / %d vessels"%[game.owned_boats.size(),game.World.BOATS.size()],18,Clay.SEA)
  for boat in game.World.BOATS:stat(body,"checkmark" if boat.id in game.owned_boats else "locked",boat.name,16,Clay.SEA if boat.id in game.owned_boats else Clay.MUTED)
+
+func selected_tab(value: String) -> bool:
+ return value==tab or (value=="Rewards" and tab in ["Daily","Weekly"])
+func rewards():
+ var overview=Board.overview(game)
+ summary(Art.medal(2),"%d reward%s ready"%[overview.count,"" if overview.count==1 else "s"],"MVR %d + %d XP ready to collect"%[overview.mvr,overview.xp] if overview.count>0 else "Your catches earn progress. Rewards wait until you collect them.")
+ var links=row(content);var today=action(links,"Daily requests",func():show_tab("Daily"));Art.button_icon(today,"sun",21);var week=action(links,"Weekly goals",func():show_tab("Weekly"));Art.button_icon(week,"calendar",21)
+ var milestones=grid(3)
+ var level=int(game.experience.status().level)
+ for gift in [[5,"Reef bronze",0],[10,"Atoll silver",1],[15,"Ocean gold",2]]:
+  var gift_card=card(milestones);var head=row(gift_card);Art.picture(head,Art.medal(gift[2]),Vector2(30,38));label(head,"Lv %d"%gift[0],20)
+  label(gift_card,gift[1],17);label(gift_card,"UNLOCKED · FREE FINISH" if level>=gift[0] else "EARNED FINISH · FREE",11,Clay.SEA if level>=gift[0] else Clay.MUTED);meter(gift_card,level,gift[0])
+ var rows=Board.entries(game)
+ rows.sort_custom(func(a,b):return int(a.ready)>int(b.ready))
+ var cards=grid(2)
+ for entry in rows:
+  var body=card(cards,Color("eee1bd") if entry.ready else Clay.CARD)
+  var head=row(body);Art.picture(head,Art.icon(entry.icon),Vector2(32,32),Clay.SEA);var title=label(head,entry.title,19);title.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+  label(body,"COLLECTED" if entry.claimed else ("READY TO COLLECT" if entry.ready else "IN PROGRESS"),13,Clay.SEA if entry.ready else Clay.MUTED)
+  var payout=row(body);stat(payout,"coin","MVR %d"%entry.mvr,22);stat(payout,"star","+%d XP"%entry.xp,21)
+  meter(body,entry.current,entry.goal);label(body,entry.where,14,Clay.MUTED)
+  var claim=action(body,"Collect reward" if entry.ready else ("Collected" if entry.claimed else "View progress"),func():
+   if not entry.ready:show_tab(entry.destination)
+   elif entry.kind=="daily":collect_daily(entry.index)
+   elif entry.kind=="spot":collect_spot()
+   elif entry.kind=="contract":claim_contract()
+   else:claim_weekly()
+  ,entry.ready);claim.disabled=entry.claimed;Art.button_icon(claim,"checkmark" if entry.ready else "arrowRight",20)
+ label(content,"These are earned in-game rewards. Fish sales are paid separately. No streak penalties or paid entry.",14,Clay.MUTED)
+func collect_daily(index: int):
+ var prize=game.claim_daily_request(index)
+ if prize.is_empty():return
+ celebration=int(prize.get("mvr",0));show_tab(tab);receipt.open(prize)
+func collect_spot():
+ var prize=game.claim_spot_reward()
+ if prize.is_empty():return
+ celebration=int(prize.get("mvr",0));challenge_celebration=prize;show_tab(tab);receipt.open(prize)

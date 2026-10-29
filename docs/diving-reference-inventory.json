@@ -1,0 +1,1885 @@
+{
+  "source_root": "/home/ahusan/ft/split_UnityDataAssetPack/assets",
+  "scope": "Six selected resource bundles; static parsed resources and serialized configuration, not original app execution",
+  "bundles": [
+    {
+      "file": "fishfp_assets_packpreload_37005a1bb3ac7e61dd7b80832269c03e.bundle",
+      "bytes": 2586415,
+      "sha256": "91601914eb7b955d90c93939d1a63e6f4d4769ea9bbe7333d121b0b5d2759c68",
+      "types": {
+        "AnimationClip": 4,
+        "GameObject": 86,
+        "Transform": 86,
+        "SkinnedMeshRenderer": 9,
+        "Animator": 3,
+        "Mesh": 5,
+        "Texture2D": 9,
+        "BoxCollider": 3,
+        "MonoBehaviour": 3,
+        "Material": 4,
+        "AnimatorController": 1,
+        "Shader": 1,
+        "AssetBundle": 1,
+        "AnimatorOverrideController": 2,
+        "MonoScript": 1
+      },
+      "meshes": [
+        {
+          "name": "F_bottle_02",
+          "path_id": -8142763206200411236,
+          "vertices": 1598,
+          "triangles": 1486
+        },
+        {
+          "name": "F_crossbow_default",
+          "path_id": -3217733233732200112,
+          "vertices": 3250,
+          "triangles": 3700
+        },
+        {
+          "name": "F_bottle",
+          "path_id": -2460719884142920804,
+          "vertices": 450,
+          "triangles": 792
+        },
+        {
+          "name": "F_bottle_letter",
+          "path_id": 5300722592469138332,
+          "vertices": 460,
+          "triangles": 674
+        },
+        {
+          "name": "F_bottle_01",
+          "path_id": 6792326313724853148,
+          "vertices": 152,
+          "triangles": 216
+        }
+      ],
+      "animations": [
+        {
+          "name": "Pulling01",
+          "path_id": -9163336529756867436
+        },
+        {
+          "name": "Swim01",
+          "path_id": -5824581324713861189
+        },
+        {
+          "name": "Swim01",
+          "path_id": 4014028184200993719
+        },
+        {
+          "name": "Pulling01",
+          "path_id": 8805074976558472206
+        }
+      ],
+      "textures": [
+        {
+          "name": "prop_crossbow_default_n",
+          "path_id": -7572559432487311946,
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "name": "prop_driftbottle02",
+          "path_id": -6912786518806454392,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "prop_driftbottle01_n",
+          "path_id": -6658237871488666843,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "prop_crossbow_default_m",
+          "path_id": -6619366233034198253,
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "name": "prop_driftbottle02_m",
+          "path_id": -4101952358142434025,
+          "width": 256,
+          "height": 256
+        },
+        {
+          "name": "prop_driftbottle02_n",
+          "path_id": -4080963811795071472,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "prop_driftbottle01_m",
+          "path_id": -479038963537623420,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "prop_driftbottle01",
+          "path_id": 3330002709846531274,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "prop_crossbow_default",
+          "path_id": 5560026568591896707,
+          "width": 1024,
+          "height": 1024
+        }
+      ],
+      "scripts": []
+    },
+    {
+      "file": "fishingaquarium_assets_all_4f22751533adc704f90fd6f08241ffc4.bundle",
+      "bytes": 3508751,
+      "sha256": "1d2636d0ab796518b3c83c6935899bc2012ef56a156eb13c5ef58b23daa55a12",
+      "types": {
+        "GameObject": 548,
+        "Transform": 548,
+        "Animator": 6,
+        "MeshFilter": 37,
+        "MonoBehaviour": 21,
+        "Material": 19,
+        "Shader": 3,
+        "MeshRenderer": 37,
+        "MonoScript": 11,
+        "Texture2D": 14,
+        "SpriteRenderer": 8,
+        "AnimationClip": 12,
+        "MeshCollider": 15,
+        "Mesh": 9,
+        "SkinnedMeshRenderer": 6,
+        "Rigidbody": 1,
+        "AnimatorController": 2,
+        "Sprite": 1,
+        "AssetBundle": 1,
+        "LineRenderer": 3,
+        "RenderTexture": 1,
+        "AnimatorOverrideController": 2,
+        "Camera": 1
+      },
+      "meshes": [
+        {
+          "name": "crossbow02_scope",
+          "path_id": -7029025618091442300,
+          "vertices": 6064,
+          "triangles": 8148
+        },
+        {
+          "name": "aquarium_fishegg04",
+          "path_id": -5308065455116579379,
+          "vertices": 1938,
+          "triangles": 3168
+        },
+        {
+          "name": "aquarium_fishegg02",
+          "path_id": -4877160970085593651,
+          "vertices": 646,
+          "triangles": 1056
+        },
+        {
+          "name": "crossbowarrows",
+          "path_id": -2660695693938589820,
+          "vertices": 1056,
+          "triangles": 1700
+        },
+        {
+          "name": "aquarium_fishegg01",
+          "path_id": 3127250410626420173,
+          "vertices": 323,
+          "triangles": 528
+        },
+        {
+          "name": "T_CrossbowArrow_Default",
+          "path_id": 3798184756795392282,
+          "vertices": 1056,
+          "triangles": 1700
+        },
+        {
+          "name": "crosshair",
+          "path_id": 4765008659690480933,
+          "vertices": 18,
+          "triangles": 16
+        },
+        {
+          "name": "aquarium_fishegg03",
+          "path_id": 7049129316029173197,
+          "vertices": 1292,
+          "triangles": 2112
+        },
+        {
+          "name": "crossbow02",
+          "path_id": 7368250147292643204,
+          "vertices": 2710,
+          "triangles": 3194
+        }
+      ],
+      "animations": [
+        {
+          "name": "Shoot01",
+          "path_id": -7979347122901578188
+        },
+        {
+          "name": "Idle01",
+          "path_id": -7709164950087765789
+        },
+        {
+          "name": "Escape01",
+          "path_id": -4775236950537451839
+        },
+        {
+          "name": "Appear01",
+          "path_id": -4488400868351704829
+        },
+        {
+          "name": "Shoot01",
+          "path_id": -2306080346137216893
+        },
+        {
+          "name": "Capture02",
+          "path_id": -1435007926158582541
+        },
+        {
+          "name": "Back01",
+          "path_id": -208253940487901103
+        },
+        {
+          "name": "Capture01",
+          "path_id": 335548563004053813
+        },
+        {
+          "name": "Capture01",
+          "path_id": 2798241880142541228
+        },
+        {
+          "name": "Idle01",
+          "path_id": 4857889182090145620
+        },
+        {
+          "name": "Escape01",
+          "path_id": 5790126670738942358
+        },
+        {
+          "name": "Aim01",
+          "path_id": 6495865447920357920
+        }
+      ],
+      "textures": [
+        {
+          "name": "prop_crossbow_default2_m",
+          "path_id": -8310028614470829953,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "prop_crossbow_default_n",
+          "path_id": -7572559432487311946,
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "name": "prop_crossbow_default_m",
+          "path_id": -6619366233034198253,
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "name": "fisheggfish",
+          "path_id": -5885861067726515176,
+          "width": 64,
+          "height": 64
+        },
+        {
+          "name": "duckshadow",
+          "path_id": -5853884676032517878,
+          "width": 256,
+          "height": 256
+        },
+        {
+          "name": "aquarium_fishegg_color",
+          "path_id": -3806654645267928643,
+          "width": 256,
+          "height": 128
+        },
+        {
+          "name": "prop_crossbowarrow",
+          "path_id": -3707886192975548965,
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "name": "prop_crossbow_default2",
+          "path_id": -1291553879880188967,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "prop_crossbowarrow_m",
+          "path_id": 470510377047685399,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "sp_aquarium_aim",
+          "path_id": 1285313110492307086,
+          "width": 635,
+          "height": 635
+        },
+        {
+          "name": "prop_crossbow_default2_n",
+          "path_id": 3002145344561571177,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "prop_crossbowarrow_n",
+          "path_id": 5439294876519470102,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "prop_crossbow_default",
+          "path_id": 5560026568591896707,
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "name": "rope",
+          "path_id": 5729729733362267795,
+          "width": 256,
+          "height": 256
+        }
+      ],
+      "scripts": [
+        {
+          "name": "FishingAquariumAct",
+          "path_id": -9051823117831273891,
+          "game_object": "FishingAquariumAct",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name"
+          ],
+          "scalar_configuration": {},
+          "numeric_array_configuration": {},
+          "reference_fields": {}
+        },
+        {
+          "name": "ShooterFishAct",
+          "path_id": -7591861309889102067,
+          "game_object": "ShooterFishAct",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "FxScale",
+            "AimCameraMoveDelay",
+            "AimCameraMoveTime",
+            "AimCameraMovePos",
+            "AimCameraMoveCurve",
+            "BackShowDelay",
+            "BackCameraMoveTime",
+            "AimBlockTime",
+            "ShootTime",
+            "ShootDelay",
+            "timeStartScale",
+            "timeEndScale",
+            "timeScaleCurve",
+            "reasonableLocation",
+            "reasonableCenter",
+            "reasonableMinDistance",
+            "reasonableMaxDistance",
+            "shootSwimSpeed",
+            "EscapeShockCurve",
+            "EscapeShockTime",
+            "EscapeShockDistance",
+            "EscapeDelay",
+            "EscapeDistance",
+            "EscapeDuration",
+            "EscapeAnimSpeed",
+            "EscapeAnimRecoverTime",
+            "escapeRewardUIDelay",
+            "ArrowEscapeTime",
+            "CaptureShockCurve",
+            "CaptureShockTime",
+            "CaptureShockDistance",
+            "CaptureDelay",
+            "lineDrawSpeed",
+            "lineDrawMinTime",
+            "fishAnimMinSpeed",
+            "fishAnimMaxSpeed",
+            "addRotation",
+            "addRotationPeriod",
+            "fishToCameraDistance",
+            "fishDisappearDelay"
+          ],
+          "scalar_configuration": {
+            "AimCameraMoveDelay": 0.05000000074505806,
+            "AimCameraMoveTime": 0.4000000059604645,
+            "BackShowDelay": 0.11999999731779099,
+            "BackCameraMoveTime": 0.25,
+            "AimBlockTime": 0.25,
+            "ShootTime": 0.30000001192092896,
+            "ShootDelay": 0.10000000149011612,
+            "timeStartScale": 0.0,
+            "timeEndScale": 0.30000001192092896,
+            "reasonableMinDistance": 5.0,
+            "reasonableMaxDistance": 10.0,
+            "EscapeDelay": 0.6000000238418579,
+            "EscapeDistance": 30.0,
+            "EscapeDuration": 2.0,
+            "EscapeAnimSpeed": 3.0,
+            "EscapeAnimRecoverTime": 1.5,
+            "escapeRewardUIDelay": 1.25,
+            "ArrowEscapeTime": 2.0,
+            "CaptureDelay": 1.1660000085830688,
+            "lineDrawSpeed": 9.0,
+            "lineDrawMinTime": 1.0,
+            "fishAnimMinSpeed": 2.0,
+            "fishAnimMaxSpeed": 3.0,
+            "addRotation": 30.0,
+            "addRotationPeriod": 0.15000000596046448,
+            "fishToCameraDistance": 0.5,
+            "fishDisappearDelay": 0.43299999833106995
+          },
+          "numeric_array_configuration": {
+            "FxScale": [
+              1.0,
+              1.25,
+              1.75,
+              2.5,
+              3.0,
+              3.5,
+              3.5,
+              3.5
+            ],
+            "shootSwimSpeed": [
+              5.0,
+              7.0
+            ],
+            "EscapeShockTime": [
+              0.30000001192092896,
+              0.30000001192092896,
+              0.26600000262260437,
+              0.2329999953508377,
+              0.20000000298023224,
+              0.20000000298023224,
+              0.20000000298023224,
+              0.20000000298023224
+            ],
+            "EscapeShockDistance": [
+              1.0,
+              1.0,
+              0.8999999761581421,
+              0.800000011920929,
+              0.699999988079071,
+              0.699999988079071,
+              0.699999988079071,
+              0.699999988079071
+            ],
+            "CaptureShockTime": [
+              0.4000000059604645,
+              0.4000000059604645,
+              0.3659999966621399,
+              0.3330000042915344,
+              0.30000001192092896,
+              0.30000001192092896,
+              0.30000001192092896,
+              0.30000001192092896
+            ],
+            "CaptureShockDistance": [
+              2.0,
+              2.0,
+              1.7999999523162842,
+              1.600000023841858,
+              1.5,
+              1.5,
+              1.5,
+              1.5
+            ]
+          },
+          "reference_fields": {}
+        },
+        {
+          "name": "AquariumCameraManager",
+          "path_id": -6687558321967356061,
+          "game_object": "AquariumCameraRoot",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "cameraVirtual",
+            "followFishCameras",
+            "crossbowGo",
+            "followArrowCamera",
+            "crossbowCamera",
+            "handRoot",
+            "cameraOffset",
+            "startPosZ",
+            "moveTimeZ",
+            "cameraToFishDis",
+            "zoomFishExtraDistance",
+            "rt"
+          ],
+          "scalar_configuration": {
+            "startPosZ": -1.25,
+            "moveTimeZ": 0.5,
+            "cameraToFishDis": 2.0,
+            "zoomFishExtraDistance": 6.0
+          },
+          "numeric_array_configuration": {},
+          "reference_fields": {
+            "cameraVirtual": {
+              "m_FileID": 0,
+              "m_PathID": -7469328727920564381
+            },
+            "crossbowGo": {
+              "m_FileID": 0,
+              "m_PathID": -547032744046581917
+            },
+            "followArrowCamera": {
+              "m_FileID": 0,
+              "m_PathID": -4187693152028743837
+            },
+            "crossbowCamera": {
+              "m_FileID": 0,
+              "m_PathID": 6612760041559926627
+            },
+            "handRoot": {
+              "m_FileID": 0,
+              "m_PathID": -2506652188552550557
+            },
+            "rt": {
+              "m_FileID": 0,
+              "m_PathID": 6039538658734163732
+            }
+          }
+        },
+        {
+          "name": "CrossbowArrow",
+          "path_id": -3608053701874768029,
+          "game_object": "prop_crossbowarrow_default",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "crossbow",
+            "animator",
+            "TopLine",
+            "EndLine",
+            "LineList"
+          ],
+          "scalar_configuration": {},
+          "numeric_array_configuration": {},
+          "reference_fields": {
+            "crossbow": {
+              "m_FileID": 0,
+              "m_PathID": 9107525029183989603
+            },
+            "animator": {
+              "m_FileID": 0,
+              "m_PathID": 8770300246150195043
+            },
+            "TopLine": {
+              "m_FileID": 0,
+              "m_PathID": 2093555599189583715
+            },
+            "EndLine": {
+              "m_FileID": 0,
+              "m_PathID": -756544948482300061
+            }
+          }
+        },
+        {
+          "name": "Crossbow",
+          "path_id": -2050535329906645149,
+          "game_object": "prop_crossbow_default",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "root",
+            "crosshair_P",
+            "icon_nml",
+            "icon_notarget",
+            "animator",
+            "TopLine",
+            "EndLine",
+            "LineList",
+            "fishingLineRenderer",
+            "LeftHandTargets",
+            "RightHandTargets"
+          ],
+          "scalar_configuration": {},
+          "numeric_array_configuration": {},
+          "reference_fields": {
+            "root": {
+              "m_FileID": 0,
+              "m_PathID": 1831777318451586915
+            },
+            "crosshair_P": {
+              "m_FileID": 0,
+              "m_PathID": -1882924961257969821
+            },
+            "icon_nml": {
+              "m_FileID": 0,
+              "m_PathID": -1965704462703745181
+            },
+            "icon_notarget": {
+              "m_FileID": 0,
+              "m_PathID": -4526073453612718237
+            },
+            "animator": {
+              "m_FileID": 0,
+              "m_PathID": 1051989280546662243
+            },
+            "TopLine": {
+              "m_FileID": 0,
+              "m_PathID": 2483837169259620195
+            },
+            "EndLine": {
+              "m_FileID": 0,
+              "m_PathID": -5735396391306549405
+            },
+            "fishingLineRenderer": {
+              "m_FileID": 0,
+              "m_PathID": 6096919797086201699
+            },
+            "LeftHandTargets": {
+              "m_FileID": 0,
+              "m_PathID": 2276038686899218275
+            },
+            "RightHandTargets": {
+              "m_FileID": 0,
+              "m_PathID": -6690297465089317021
+            }
+          }
+        },
+        {
+          "name": "Crossbow",
+          "path_id": 1907882598828721773,
+          "game_object": "prop_crossbow_default",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "root",
+            "crosshair_P",
+            "icon_nml",
+            "icon_notarget",
+            "animator",
+            "TopLine",
+            "EndLine",
+            "LineList",
+            "fishingLineRenderer",
+            "LeftHandTargets",
+            "RightHandTargets"
+          ],
+          "scalar_configuration": {},
+          "numeric_array_configuration": {},
+          "reference_fields": {
+            "root": {
+              "m_FileID": 0,
+              "m_PathID": -8813197407980370323
+            },
+            "crosshair_P": {
+              "m_FileID": 0,
+              "m_PathID": -1742299096489474451
+            },
+            "icon_nml": {
+              "m_FileID": 0,
+              "m_PathID": -8060389924244961683
+            },
+            "icon_notarget": {
+              "m_FileID": 0,
+              "m_PathID": 5230294853497112173
+            },
+            "animator": {
+              "m_FileID": 0,
+              "m_PathID": -9093774663722744211
+            },
+            "TopLine": {
+              "m_FileID": 0,
+              "m_PathID": -4202035090257099155
+            },
+            "EndLine": {
+              "m_FileID": 0,
+              "m_PathID": -7962937426605717907
+            },
+            "fishingLineRenderer": {
+              "m_FileID": 0,
+              "m_PathID": 8916184844906514029
+            },
+            "LeftHandTargets": {
+              "m_FileID": 0,
+              "m_PathID": -662252845822851475
+            },
+            "RightHandTargets": {
+              "m_FileID": 0,
+              "m_PathID": -2528563645389683091
+            }
+          }
+        },
+        {
+          "name": "FishMovement",
+          "path_id": 4018997862310705880,
+          "game_object": "FishModel",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "rb",
+            "index",
+            "groupId",
+            "targetPos",
+            "fishPos",
+            "fish",
+            "isRob",
+            "itemCount",
+            "cardLv",
+            "isResult",
+            "mutantScale"
+          ],
+          "scalar_configuration": {
+            "index": 0,
+            "groupId": -1,
+            "isRob": 0,
+            "itemCount": 0,
+            "cardLv": "",
+            "isResult": 0,
+            "mutantScale": 0.0
+          },
+          "numeric_array_configuration": {},
+          "reference_fields": {
+            "rb": {
+              "m_FileID": 0,
+              "m_PathID": -4494347892643235112
+            },
+            "fishPos": {
+              "m_FileID": 0,
+              "m_PathID": 0
+            },
+            "fish": {
+              "m_FileID": 0,
+              "m_PathID": 0
+            }
+          }
+        },
+        {
+          "name": "CrossbowArrow",
+          "path_id": 5208619304126829032,
+          "game_object": "prop_crossbowarrow_default",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "crossbow",
+            "animator",
+            "TopLine",
+            "EndLine",
+            "LineList"
+          ],
+          "scalar_configuration": {},
+          "numeric_array_configuration": {},
+          "reference_fields": {
+            "crossbow": {
+              "m_FileID": 0,
+              "m_PathID": 2870624545084396008
+            },
+            "animator": {
+              "m_FileID": 0,
+              "m_PathID": 8204896069903438312
+            },
+            "TopLine": {
+              "m_FileID": 0,
+              "m_PathID": -7847077331269332504
+            },
+            "EndLine": {
+              "m_FileID": 0,
+              "m_PathID": 1359395063088468456
+            }
+          }
+        },
+        {
+          "name": "Crossbow",
+          "path_id": 5513544348667032902,
+          "game_object": "prop_crossbow_default",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "root",
+            "crosshair_P",
+            "icon_nml",
+            "icon_notarget",
+            "animator",
+            "TopLine",
+            "EndLine",
+            "LineList",
+            "fishingLineRenderer",
+            "LeftHandTargets",
+            "RightHandTargets"
+          ],
+          "scalar_configuration": {},
+          "numeric_array_configuration": {},
+          "reference_fields": {
+            "root": {
+              "m_FileID": 0,
+              "m_PathID": -7028273385928313530
+            },
+            "crosshair_P": {
+              "m_FileID": 0,
+              "m_PathID": -2490997959460440762
+            },
+            "icon_nml": {
+              "m_FileID": 0,
+              "m_PathID": -2395323745324944058
+            },
+            "icon_notarget": {
+              "m_FileID": 0,
+              "m_PathID": -1192374358344518330
+            },
+            "animator": {
+              "m_FileID": 0,
+              "m_PathID": -5687208748883757754
+            },
+            "TopLine": {
+              "m_FileID": 0,
+              "m_PathID": 3293903405994685766
+            },
+            "EndLine": {
+              "m_FileID": 0,
+              "m_PathID": -8733316957199387322
+            },
+            "fishingLineRenderer": {
+              "m_FileID": 0,
+              "m_PathID": 4589304434980762950
+            },
+            "LeftHandTargets": {
+              "m_FileID": 0,
+              "m_PathID": 980194791367521606
+            },
+            "RightHandTargets": {
+              "m_FileID": 0,
+              "m_PathID": -8965678291282676410
+            }
+          }
+        },
+        {
+          "name": "CrossbowArrow",
+          "path_id": 8974077790084216134,
+          "game_object": "prop_crossbowarrow_default",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "crossbow",
+            "animator",
+            "TopLine",
+            "EndLine",
+            "LineList"
+          ],
+          "scalar_configuration": {},
+          "numeric_array_configuration": {},
+          "reference_fields": {
+            "crossbow": {
+              "m_FileID": 0,
+              "m_PathID": -5926748077452413626
+            },
+            "animator": {
+              "m_FileID": 0,
+              "m_PathID": 6449182018393290054
+            },
+            "TopLine": {
+              "m_FileID": 0,
+              "m_PathID": -6195389908185828026
+            },
+            "EndLine": {
+              "m_FileID": 0,
+              "m_PathID": -2537590336406801082
+            }
+          }
+        }
+      ]
+    },
+    {
+      "file": "fishingaquariumscene_assets_aquarium02_78f31517a3597e306b219d62e2bf3e76.bundle",
+      "bytes": 8274199,
+      "sha256": "1293e38219279c88ce0e2dee7d534d5af5b63347d50a5ee81d47f1859516b872",
+      "types": {
+        "GameObject": 225,
+        "Transform": 225,
+        "BoxCollider": 2,
+        "Camera": 1,
+        "MeshFilter": 12,
+        "SkinnedMeshRenderer": 2,
+        "MonoBehaviour": 32,
+        "Shader": 4,
+        "MonoScript": 16,
+        "Texture2D": 31,
+        "Material": 16,
+        "MeshRenderer": 12,
+        "AnimationClip": 12,
+        "Mesh": 11,
+        "ParticleSystem": 4,
+        "Flare": 1,
+        "Animator": 2,
+        "LineRenderer": 1,
+        "ParticleSystemRenderer": 4,
+        "AnimatorController": 2,
+        "Light": 6,
+        "Sprite": 1,
+        "SpriteRenderer": 2,
+        "AssetBundle": 1,
+        "ReflectionProbe": 1,
+        "MeshCollider": 2,
+        "Cubemap": 1,
+        "Rigidbody": 1,
+        "AnimatorOverrideController": 2
+      },
+      "meshes": [
+        {
+          "name": "crossbow02_scope",
+          "path_id": -7029025618091442300,
+          "vertices": 6064,
+          "triangles": 8148
+        },
+        {
+          "name": "near0-mesh",
+          "path_id": -4861652032631296853,
+          "vertices": 66,
+          "triangles": 50
+        },
+        {
+          "name": "farrock0-mesh",
+          "path_id": -3012368189269823713,
+          "vertices": 70,
+          "triangles": 54
+        },
+        {
+          "name": "crossbowarrows",
+          "path_id": -2660695693938589820,
+          "vertices": 1056,
+          "triangles": 1700
+        },
+        {
+          "name": "coral0-mesh",
+          "path_id": -2380992917766045552,
+          "vertices": 95,
+          "triangles": 77
+        },
+        {
+          "name": "grass00-mesh",
+          "path_id": 456422724420073477,
+          "vertices": 232,
+          "triangles": 196
+        },
+        {
+          "name": "aquarium02new_terrain",
+          "path_id": 2129994824054655260,
+          "vertices": 234,
+          "triangles": 442
+        },
+        {
+          "name": "T_CrossbowArrow_Default",
+          "path_id": 3798184756795392282,
+          "vertices": 1056,
+          "triangles": 1700
+        },
+        {
+          "name": "allmesh0-mesh",
+          "path_id": 4672220890433054907,
+          "vertices": 17389,
+          "triangles": 27415
+        },
+        {
+          "name": "crosshair",
+          "path_id": 4765008659690480933,
+          "vertices": 18,
+          "triangles": 16
+        },
+        {
+          "name": "crossbow02",
+          "path_id": 7368250147292643204,
+          "vertices": 2710,
+          "triangles": 3194
+        }
+      ],
+      "animations": [
+        {
+          "name": "Shoot01",
+          "path_id": -7979347122901578188
+        },
+        {
+          "name": "Idle01",
+          "path_id": -7709164950087765789
+        },
+        {
+          "name": "Escape01",
+          "path_id": -4775236950537451839
+        },
+        {
+          "name": "Appear01",
+          "path_id": -4488400868351704829
+        },
+        {
+          "name": "Shoot01",
+          "path_id": -2306080346137216893
+        },
+        {
+          "name": "Capture02",
+          "path_id": -1435007926158582541
+        },
+        {
+          "name": "Back01",
+          "path_id": -208253940487901103
+        },
+        {
+          "name": "Capture01",
+          "path_id": 335548563004053813
+        },
+        {
+          "name": "Capture01",
+          "path_id": 2798241880142541228
+        },
+        {
+          "name": "Idle01",
+          "path_id": 4857889182090145620
+        },
+        {
+          "name": "Escape01",
+          "path_id": 5790126670738942358
+        },
+        {
+          "name": "Aim01",
+          "path_id": 6495865447920357920
+        }
+      ],
+      "textures": [
+        {
+          "name": "prop_crossbow_default2_m",
+          "path_id": -8310028614470829953,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "aquariumnew_far1",
+          "path_id": -7775100243060055314,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "aquariumnew_near01",
+          "path_id": -7619257375121783697,
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "name": "prop_crossbow_default_n",
+          "path_id": -7572559432487311946,
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "name": "aquarium02_new_mask",
+          "path_id": -6856273993113312122,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "prop_crossbow_default_m",
+          "path_id": -6619366233034198253,
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "name": "aquarium01_bubble",
+          "path_id": -5480534042056861495,
+          "width": 128,
+          "height": 128
+        },
+        {
+          "name": "aquarium02_terrain_S",
+          "path_id": -4514243428087700588,
+          "width": 256,
+          "height": 256
+        },
+        {
+          "name": "prop_crossbowarrow",
+          "path_id": -3707886192975548965,
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "name": "home18_beach03",
+          "path_id": -1830744001101522585,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "prop_crossbow_default2",
+          "path_id": -1291553879880188967,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "prop_crossbowarrow_m",
+          "path_id": 470510377047685399,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "allmesh-mat-_BaseMap-atlas-0",
+          "path_id": 748851859337030963,
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "name": "home18_beach02_n",
+          "path_id": 1056281464258388435,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "home18_beach02",
+          "path_id": 1087388100169991073,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "sp_aquarium_aim",
+          "path_id": 1285313110492307086,
+          "width": 635,
+          "height": 635
+        },
+        {
+          "name": "allmesh-mat-_BumpMap-atlas-3",
+          "path_id": 1877679478595020318,
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "name": "prop_crossbow_default2_n",
+          "path_id": 3002145344561571177,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "home18_beach03_n",
+          "path_id": 3112472809422132719,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "aquarium02_terrain_D2",
+          "path_id": 3418782939965245941,
+          "width": 256,
+          "height": 256
+        },
+        {
+          "name": "aquarium02_terrain_D1",
+          "path_id": 3720291661891769868,
+          "width": 256,
+          "height": 256
+        },
+        {
+          "name": "aquarium02_terrain_N2",
+          "path_id": 3795589693466074480,
+          "width": 256,
+          "height": 256
+        },
+        {
+          "name": "prop_crossbowarrow_n",
+          "path_id": 5439294876519470102,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "prop_crossbow_default",
+          "path_id": 5560026568591896707,
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "name": "rope",
+          "path_id": 5729729733362267795,
+          "width": 256,
+          "height": 256
+        },
+        {
+          "name": "aquariumnew_01",
+          "path_id": 6513882499602856102,
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "name": "home18_beach01_n",
+          "path_id": 6687568978453602857,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "fx_tex_aquarium_scene_wave_01",
+          "path_id": 7105219194799324680,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "B00_beachsand03 1",
+          "path_id": 7379990141297563788,
+          "width": 256,
+          "height": 256
+        },
+        {
+          "name": "home18_beach01",
+          "path_id": 7512399218625591120,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "aquarium02_terrain_N1",
+          "path_id": 7909382659682888694,
+          "width": 256,
+          "height": 256
+        }
+      ],
+      "scripts": [
+        {
+          "name": "FogController",
+          "path_id": -4788756732202499922,
+          "game_object": "fogcontroller",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "enableFog",
+            "fogColor",
+            "m_fogMode",
+            "fogDensity",
+            "startDistance",
+            "endDistance"
+          ],
+          "scalar_configuration": {
+            "enableFog": 1,
+            "fogDensity": 1.0,
+            "startDistance": 0.0,
+            "endDistance": 70.0
+          },
+          "numeric_array_configuration": {},
+          "reference_fields": {}
+        },
+        {
+          "name": "Crossbow",
+          "path_id": -2375327637093138258,
+          "game_object": "prop_crossbow_default",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "root",
+            "crosshair_P",
+            "icon_nml",
+            "icon_notarget",
+            "animator",
+            "TopLine",
+            "EndLine",
+            "LineList",
+            "fishingLineRenderer",
+            "LeftHandTargets",
+            "RightHandTargets"
+          ],
+          "scalar_configuration": {},
+          "numeric_array_configuration": {},
+          "reference_fields": {
+            "root": {
+              "m_FileID": 0,
+              "m_PathID": 1156140255452086446
+            },
+            "crosshair_P": {
+              "m_FileID": 0,
+              "m_PathID": 1631096320539246766
+            },
+            "icon_nml": {
+              "m_FileID": 0,
+              "m_PathID": 8359937340230942894
+            },
+            "icon_notarget": {
+              "m_FileID": 0,
+              "m_PathID": 2556564889751535790
+            },
+            "animator": {
+              "m_FileID": 0,
+              "m_PathID": -6280726658806431570
+            },
+            "TopLine": {
+              "m_FileID": 0,
+              "m_PathID": 3758236908048040110
+            },
+            "EndLine": {
+              "m_FileID": 0,
+              "m_PathID": -6737268425143336786
+            },
+            "fishingLineRenderer": {
+              "m_FileID": 0,
+              "m_PathID": -4610339202710814546
+            },
+            "LeftHandTargets": {
+              "m_FileID": 0,
+              "m_PathID": 8679100313883852974
+            },
+            "RightHandTargets": {
+              "m_FileID": 0,
+              "m_PathID": -6164041603198205778
+            }
+          }
+        },
+        {
+          "name": "FishMovement",
+          "path_id": -2239020704195329874,
+          "game_object": "FishModel",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "rb",
+            "index",
+            "groupId",
+            "targetPos",
+            "fishPos",
+            "fish",
+            "isRob",
+            "itemCount",
+            "cardLv",
+            "isResult",
+            "mutantScale"
+          ],
+          "scalar_configuration": {
+            "index": 0,
+            "groupId": -1,
+            "isRob": 0,
+            "itemCount": 0,
+            "cardLv": "",
+            "isResult": 0,
+            "mutantScale": 0.0
+          },
+          "numeric_array_configuration": {},
+          "reference_fields": {
+            "rb": {
+              "m_FileID": 0,
+              "m_PathID": 5622950586891976878
+            },
+            "fishPos": {
+              "m_FileID": 0,
+              "m_PathID": 0
+            },
+            "fish": {
+              "m_FileID": 0,
+              "m_PathID": 0
+            }
+          }
+        },
+        {
+          "name": "AquariumCameraManager",
+          "path_id": -207390678774693714,
+          "game_object": "AquariumCameraRoot",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "cameraVirtual",
+            "followFishCameras",
+            "crossbowGo",
+            "followArrowCamera",
+            "crossbowCamera",
+            "handRoot",
+            "cameraOffset",
+            "startPosZ",
+            "moveTimeZ",
+            "cameraToFishDis",
+            "zoomFishExtraDistance",
+            "rt"
+          ],
+          "scalar_configuration": {
+            "startPosZ": -1.25,
+            "moveTimeZ": 0.5,
+            "cameraToFishDis": 2.0,
+            "zoomFishExtraDistance": 6.0
+          },
+          "numeric_array_configuration": {},
+          "reference_fields": {
+            "cameraVirtual": {
+              "m_FileID": 0,
+              "m_PathID": 4642329317976195246
+            },
+            "crossbowGo": {
+              "m_FileID": 0,
+              "m_PathID": -8359200148082638674
+            },
+            "followArrowCamera": {
+              "m_FileID": 0,
+              "m_PathID": -3344194954868211538
+            },
+            "crossbowCamera": {
+              "m_FileID": 0,
+              "m_PathID": -9043770888731606866
+            },
+            "handRoot": {
+              "m_FileID": 0,
+              "m_PathID": -3861345526071607122
+            },
+            "rt": {
+              "m_FileID": 7,
+              "m_PathID": 6039538658734163732
+            }
+          }
+        },
+        {
+          "name": "CrossbowArrow",
+          "path_id": 1504318406082117806,
+          "game_object": "prop_crossbowarrow_default",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "crossbow",
+            "animator",
+            "TopLine",
+            "EndLine",
+            "LineList"
+          ],
+          "scalar_configuration": {},
+          "numeric_array_configuration": {},
+          "reference_fields": {
+            "crossbow": {
+              "m_FileID": 0,
+              "m_PathID": -6254386386134286162
+            },
+            "animator": {
+              "m_FileID": 0,
+              "m_PathID": 8959041837427933358
+            },
+            "TopLine": {
+              "m_FileID": 0,
+              "m_PathID": 4650675540765917358
+            },
+            "EndLine": {
+              "m_FileID": 0,
+              "m_PathID": -4632258854433832786
+            }
+          }
+        },
+        {
+          "name": "AquariumObstacleManager",
+          "path_id": 5014251947032723630,
+          "game_object": "aquarium02",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "obstacleGo"
+          ],
+          "scalar_configuration": {},
+          "numeric_array_configuration": {},
+          "reference_fields": {}
+        }
+      ]
+    },
+    {
+      "file": "panelfp_assets_eventfishhuntingpanel_bdabe7b215f307fce974016e1339fbc3.bundle",
+      "bytes": 2598049,
+      "sha256": "31040d9c570709d962c3ebbb7082413347994d6ad4de44feeb9df1d551db5aea",
+      "types": {
+        "GameObject": 251,
+        "CanvasRenderer": 203,
+        "MonoBehaviour": 256,
+        "CanvasGroup": 61,
+        "RectTransform": 242,
+        "ParticleSystem": 58,
+        "ParticleSystemRenderer": 58,
+        "AnimationClip": 13,
+        "Animation": 8,
+        "Animator": 5,
+        "MonoScript": 24,
+        "Texture2D": 23,
+        "Sprite": 20,
+        "Material": 6,
+        "SpriteRenderer": 1,
+        "Transform": 9,
+        "Canvas": 1,
+        "AssetBundle": 1,
+        "Shader": 1,
+        "AnimatorController": 2,
+        "Camera": 1
+      },
+      "meshes": [],
+      "animations": [
+        {
+          "name": "Selected",
+          "path_id": -8757047979947688382
+        },
+        {
+          "name": "Disabled",
+          "path_id": -7240520735802819006
+        },
+        {
+          "name": "hunting_aim_appear",
+          "path_id": -5050860659976183418
+        },
+        {
+          "name": "hunting_aim_1",
+          "path_id": -3837716362142922136
+        },
+        {
+          "name": "hunting_aim_shoot",
+          "path_id": -332383567533035802
+        },
+        {
+          "name": "hunting_aim_2",
+          "path_id": 93057572899381749
+        },
+        {
+          "name": "Pressed",
+          "path_id": 720947460510219842
+        },
+        {
+          "name": "Highlighted",
+          "path_id": 1523327256759729730
+        },
+        {
+          "name": "Normal",
+          "path_id": 5190577432572362306
+        },
+        {
+          "name": "hunting_aim_3",
+          "path_id": 5389599791303569607
+        },
+        {
+          "name": "hunting_settlement",
+          "path_id": 5627165133654600870
+        },
+        {
+          "name": "hunting_aim_4",
+          "path_id": 8949344706362136466
+        },
+        {
+          "name": "hunting_aim_back",
+          "path_id": 9093292850958575946
+        }
+      ],
+      "textures": [
+        {
+          "name": "bg_square_mask",
+          "path_id": -8524046388167328060,
+          "width": 145,
+          "height": 46
+        },
+        {
+          "name": "kuang_aquarium_photo_mutated",
+          "path_id": -8460762258008289678,
+          "width": 871,
+          "height": 620
+        },
+        {
+          "name": "fx_tex_ui_jigsawpuzzlebuilding_complete_flash_01",
+          "path_id": -7230241886283719851,
+          "width": 1024,
+          "height": 512
+        },
+        {
+          "name": "frame_hunting_aim_3",
+          "path_id": -5709694973902771149,
+          "width": 1322,
+          "height": 1322
+        },
+        {
+          "name": "bg_aquarium_photo_2",
+          "path_id": -5483902141838793287,
+          "width": 871,
+          "height": 620
+        },
+        {
+          "name": "bg_bankheist_title",
+          "path_id": -4778419099930201912,
+          "width": 532,
+          "height": 144
+        },
+        {
+          "name": "bg_hunting_level_mutated",
+          "path_id": -4165880961836665772,
+          "width": 129,
+          "height": 148
+        },
+        {
+          "name": "bg_hunting_background",
+          "path_id": -3793178612387158816,
+          "width": 1952,
+          "height": 2048
+        },
+        {
+          "name": "bg_hunting_level",
+          "path_id": -2746830221335968960,
+          "width": 129,
+          "height": 148
+        },
+        {
+          "name": "frame_hunting_aim_mask",
+          "path_id": -8976600439205890,
+          "width": 1000,
+          "height": 1000
+        },
+        {
+          "name": "btn_questionmark",
+          "path_id": 526343504414520113,
+          "width": 120,
+          "height": 120
+        },
+        {
+          "name": "bg_aquarium_info",
+          "path_id": 1304004400408811138,
+          "width": 725,
+          "height": 232
+        },
+        {
+          "name": "btn_blue",
+          "path_id": 2844288483309104829,
+          "width": 498,
+          "height": 150
+        },
+        {
+          "name": "fx_tex_ui_fishingsettlement_hunt_mutated_01",
+          "path_id": 2991618954741668474,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "name": "bg_aquarium_info_mutated",
+          "path_id": 3066163107511962966,
+          "width": 725,
+          "height": 232
+        },
+        {
+          "name": "separate_hunting_aim_crossbow_default",
+          "path_id": 3729281938598071758,
+          "width": 1508,
+          "height": 1506
+        },
+        {
+          "name": "bg_hunting_extra",
+          "path_id": 4610584053006589904,
+          "width": 202,
+          "height": 420
+        },
+        {
+          "name": "icon_common_cash",
+          "path_id": 4943073969542930962,
+          "width": 256,
+          "height": 256
+        },
+        {
+          "name": "icon_event_hunting_aim",
+          "path_id": 5969997751013595325,
+          "width": 256,
+          "height": 256
+        },
+        {
+          "name": "bg_aquarium_photo_1",
+          "path_id": 6676549236692696385,
+          "width": 871,
+          "height": 620
+        },
+        {
+          "name": "frame_hunting_aim_2",
+          "path_id": 6980374843668586343,
+          "width": 1378,
+          "height": 1378
+        },
+        {
+          "name": "kuang_aquarium_photo_nml",
+          "path_id": 8064284958016081804,
+          "width": 871,
+          "height": 620
+        },
+        {
+          "name": "sp_battle_photo_line",
+          "path_id": 9140173915345008740,
+          "width": 570,
+          "height": 6
+        }
+      ],
+      "scripts": [
+        {
+          "name": "EventFishHuntingPanel",
+          "path_id": -8258121341015277273,
+          "game_object": "EventFishHuntingPanel",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name"
+          ],
+          "scalar_configuration": {},
+          "numeric_array_configuration": {},
+          "reference_fields": {}
+        },
+        {
+          "name": "EventFishHuntingAim",
+          "path_id": 7958033474261434663,
+          "game_object": "EventFishHuntingAim",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "animator",
+            "isFinish"
+          ],
+          "scalar_configuration": {
+            "isFinish": 0
+          },
+          "numeric_array_configuration": {},
+          "reference_fields": {
+            "animator": {
+              "m_FileID": 0,
+              "m_PathID": -1564613259045486297
+            }
+          }
+        }
+      ]
+    },
+    {
+      "file": "panelfp_assets_eventfishhuntingaim_00c9e86ec2c4e67ae79a4a990b9ee5cc.bundle",
+      "bytes": 314247,
+      "sha256": "d075dbaa479225e1209ec05800b55643b8c1e50fa581eaf1dab60efcde2fca87",
+      "types": {
+        "GameObject": 7,
+        "CanvasGroup": 4,
+        "RectTransform": 7,
+        "Texture2D": 4,
+        "CanvasRenderer": 4,
+        "AnimationClip": 7,
+        "MonoScript": 2,
+        "Sprite": 4,
+        "MonoBehaviour": 5,
+        "AssetBundle": 1,
+        "Animator": 1,
+        "AnimatorController": 1
+      },
+      "meshes": [],
+      "animations": [
+        {
+          "name": "hunting_aim_appear",
+          "path_id": -5050860659976183418
+        },
+        {
+          "name": "hunting_aim_1",
+          "path_id": -3837716362142922136
+        },
+        {
+          "name": "hunting_aim_shoot",
+          "path_id": -332383567533035802
+        },
+        {
+          "name": "hunting_aim_2",
+          "path_id": 93057572899381749
+        },
+        {
+          "name": "hunting_aim_3",
+          "path_id": 5389599791303569607
+        },
+        {
+          "name": "hunting_aim_4",
+          "path_id": 8949344706362136466
+        },
+        {
+          "name": "hunting_aim_back",
+          "path_id": 9093292850958575946
+        }
+      ],
+      "textures": [
+        {
+          "name": "frame_hunting_aim_3",
+          "path_id": -5709694973902771149,
+          "width": 1322,
+          "height": 1322
+        },
+        {
+          "name": "frame_hunting_aim_mask",
+          "path_id": -8976600439205890,
+          "width": 1000,
+          "height": 1000
+        },
+        {
+          "name": "separate_hunting_aim_crossbow_default",
+          "path_id": 3729281938598071758,
+          "width": 1508,
+          "height": 1506
+        },
+        {
+          "name": "frame_hunting_aim_2",
+          "path_id": 6980374843668586343,
+          "width": 1378,
+          "height": 1378
+        }
+      ],
+      "scripts": [
+        {
+          "name": "EventFishHuntingAim",
+          "path_id": -701740797160529226,
+          "game_object": "EventFishHuntingAim",
+          "serialized_keys": [
+            "m_GameObject",
+            "m_Enabled",
+            "m_Script",
+            "m_Name",
+            "animator",
+            "isFinish"
+          ],
+          "scalar_configuration": {
+            "isFinish": 0
+          },
+          "numeric_array_configuration": {},
+          "reference_fields": {
+            "animator": {
+              "m_FileID": 0,
+              "m_PathID": 3475566145630102198
+            }
+          }
+        }
+      ]
+    },
+    {
+      "file": "stages_assets_smallgameact_80159f3ab15238f142717a3b21241c8c.bundle",
+      "bytes": 2349,
+      "sha256": "a6d45159481cb673c7538b564c6f29c3e2c1093406ef09a8aa4796873ddee20f",
+      "types": {
+        "GameObject": 1,
+        "Transform": 1,
+        "MonoBehaviour": 1,
+        "MonoScript": 1,
+        "AssetBundle": 1
+      },
+      "meshes": [],
+      "animations": [],
+      "textures": [],
+      "scripts": []
+    }
+  ]
+}
