@@ -79,12 +79,12 @@ func set_grip_style(driving: bool,counter: bool=false) -> void:
 		var local=skeleton.get_bone_global_pose(parent).basis.inverse()*desired
 		skeleton.set_bone_pose_rotation(bone,local.orthonormalized().get_rotation_quaternion())
 		skeleton.force_update_all_bone_transforms()
-func pose(handle: Vector3,turning: bool,overhead: bool) -> void:
+func pose(handle: Vector3,turning: bool,overhead: bool,knob_offset: Vector3=Vector3(0,0,.035)) -> void:
 	helm_mode=false
 	# Balance the hold immediately above the reel seat, with the lower fingers
 	# beside its stem, rather than stretching the hand up the blank.
 	grip.position=Vector3(-.015,.135,.05)
-	winding.position=handle+Vector3(0,0,.035)
+	winding.position=handle+knob_offset
 	# Palm under the foregrip: fingers rise around it, rather than draping over it.
 	var rod_axis=Vector3(0,.47,-.882666).normalized()
 	var palm_up=Vector3(0,-rod_axis.z,rod_axis.y)

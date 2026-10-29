@@ -15,7 +15,7 @@ func checks():
   if picture.texture and "/fish/" in picture.texture.resource_path:portraits+=1
   if picture.texture and "/medals/" in picture.texture.resource_path:medals+=1
  for bar in ui.logbook.find_children("*","ProgressBar",true,false):bars+=1
- assert(portraits==5 and medals>=3 and bars>=6,"Collection has five portraits, earned medals and visible progress")
+ assert(portraits==game.World.FISH.size() and medals>=3 and bars>=6,"Collection has a portrait for each species, earned medals and visible progress")
  for label in ui.logbook.find_children("*","Label",true,false):
   if label.text=="9.6 kg":assert(label.get_line_count()==1,"Weight numbers stay together inside cards")
  ui.logbook.details("Yellowfin tuna");await process_frame;assert(ui.logbook.visible,"Fish details remain available without a text-heavy collection")

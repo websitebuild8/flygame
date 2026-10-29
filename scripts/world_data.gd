@@ -22,16 +22,18 @@ const FISH = [
  {"name":"Giant trevally","min":2.0,"max":14.0,"value":60,"fight":1.12},
  {"name":"Skipjack tuna","min":1.5,"max":8.0,"value":35,"fight":0.95},
  {"name":"Sailfish","min":8.0,"max":35.0,"value":90,"fight":1.45},
- {"name":"Mahi-mahi","min":2.0,"max":14.0,"value":55,"fight":1.2}
+ {"name":"Mahi-mahi","min":2.0,"max":14.0,"value":55,"fight":1.2},
+ {"name":"Rusty jobfish","local_name":"Rankarumas","scientific_name":"Aphareus rutilans","min":0.8,"max":6.0,"value":48,"fight":1.04},
+ {"name":"Giant grouper","local_name":"Mudu faana","scientific_name":"Epinephelus lanceolatus","min":3.0,"max":24.0,"value":110,"fight":1.34}
 ]
 const SPOTS = [
  {"id":"lagoon","name":"Kelaa Lagoon","at":Vector2(0,-45),"unlock":0,"fish":[0,1,2]},
- {"id":"reef","name":"Kelaa Outer Reef","at":Vector2(-80,-60),"unlock":0,"fish":[0,1,2,4]},
+ {"id":"reef","name":"Kelaa Outer Reef","at":Vector2(-80,-60),"unlock":0,"fish":[0,1,2,4,5]},
  {"id":"channel","name":"Vashafaru Channel","at":Vector2(-90,-260),"unlock":0,"fish":[0,1,2,4]},
- {"id":"east","name":"Filladhoo Dropoff","at":Vector2(330,-190),"unlock":3,"fish":[0,1,2,3,4]},
+ {"id":"east","name":"Filladhoo Dropoff","at":Vector2(330,-190),"unlock":3,"fish":[0,1,2,3,4,5,6]},
  {"id":"bluewater","name":"Haa Alif Bluewater","at":Vector2(430,-420),"unlock":6,"fish":[0,2,3,4]},
- {"id":"night","name":"Baarah Drift","at":Vector2(225,245),"unlock":3,"fish":[0,1,2,4]},
- {"id":"sunset","name":"Dhidhdhoo Reef","at":Vector2(-420,160),"unlock":4,"fish":[0,1,2,4]}
+ {"id":"night","name":"Baarah Drift","at":Vector2(225,245),"unlock":3,"fish":[0,1,2,4,6]},
+ {"id":"sunset","name":"Dhidhdhoo Reef","at":Vector2(-420,160),"unlock":4,"fish":[0,1,2,4,5,6]}
 ]
 const BOATS = [
  {"id":"skiff","name":"Scout 17 Centre Console","price":0,"unlock":0,"speed":18.0,"handling":1.15,"accel":1.15,"storage":14,"detail":"Real Scout hull · centre console · single outboard"},

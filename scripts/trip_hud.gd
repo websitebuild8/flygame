@@ -57,6 +57,7 @@ var catch_caption: Label
 var catch_stars: Control
 var catch_sparkles: Control
 var fishing_setup: PanelContainer
+var reference_preview: PanelContainer
 var setup_button: Button
 var tutorial_panel: PanelContainer
 var tutorial_text: Label
@@ -145,7 +146,8 @@ func build(owner_game: Node3D) -> void:
 	modal_scrim=ColorRect.new();modal_scrim.color=Color(.025,.07,.09,.52);modal_scrim.mouse_filter=Control.MOUSE_FILTER_STOP;add_child(modal_scrim);modal_scrim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);modal_scrim.visible=false
 	modal_scrim.gui_input.connect(func(event):
 		if (event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and event.pressed) or (event is InputEventScreenTouch and event.pressed):
-			if fishing_setup and fishing_setup.visible:fishing_setup.close()
+			if reference_preview and reference_preview.visible:reference_preview.close()
+			elif fishing_setup and fishing_setup.visible:fishing_setup.close()
 			elif menu_visible:toggle_menu()
 			elif map_visible:toggle_map()
 	)
@@ -316,6 +318,7 @@ func build(owner_game: Node3D) -> void:
 	build_preview_controls()
 	build_map()
 	fishing_setup=preload("res://scripts/fishing_setup_panel.gd").new();fishing_setup.game=game;add_child(fishing_setup)
+	reference_preview=preload("res://scripts/reference_asset_preview.gd").new();reference_preview.game=game;add_child(reference_preview)
 	build_tutorial(stage)
 	build_intro()
 	game.driving_controls.configure_models(game.boat_visual)
@@ -397,7 +400,7 @@ func build_menu() -> void:
 	adaptive.toggled.connect(func(on):game.performance_control.enabled=on;game.apply_graphics();game.save_trip())
 	var counter=CheckButton.new();counter.text="Show FPS and render scale";counter.button_pressed=game.show_performance;counter.custom_minimum_size.y=54;column.add_child(counter)
 	counter.toggled.connect(func(on):game.show_performance=on;game.save_trip())
-	column.add_child(label("Auto resolution responds to sustained slow frames. It keeps menus sharp and never changes fish difficulty.",15,MUTED))
+	column.add_child(label("Auto resolution responds to sustained slow frames. It keeps menus sharp and never changes fish difficulty." if OS.has_feature("mobile") else "Auto resolution preserves at least 85% clarity on High and 65% on Medium. Switch it off for fixed resolution.",15,MUTED))
 	column.add_child(label("Comfort & guidance",22))
 	var motion=CheckButton.new();motion.text="Reduce camera and reveal motion";motion.button_pressed=game.reduce_motion;motion.custom_minimum_size.y=54;column.add_child(motion)
 	motion.toggled.connect(func(on):game.reduce_motion=on;game.save_trip())
@@ -422,6 +425,7 @@ func build_menu() -> void:
 		)
 		column.add_child(toggle)
 	column.add_child(label("Your boat & trip",22))
+	action(column,"Fishing showcase",func():reference_preview.open())
 	game.upgrade_button = action(column,"Upgrade engine · MVR 100",game.buy_upgrade)
 	game.home_button = action(column,"Plot route to Kelaa harbour",func():
 		game.plot_home_course()
@@ -455,6 +459,7 @@ func build_menu() -> void:
 	credits.text+="\n\nHand With Gloves by [url=https://sketchfab.com/3d-models/hand-with-gloves-5a6a434b8ec943ffacc581358781eecb]JUST (@teenjust500)[/url] · [url=https://creativecommons.org/licenses/by/4.0/]CC BY 4.0[/url]\nAdapted: finger poses, fishing grips and two arm IK chains. Authored rod blank by Ergin ERYILDIR: live geometry alignment, bending material and right-hand reel conversion."
 	credits.text+="\n\nMarket customers: [url=https://quaternius.com/packs/ultimatemodularcharacters.html]Quaternius Ultimate Modular Men[/url] · CC0 1.0. Adapted: retained idle/walk/interact clips, GLB packing, scale and clothing colours.\nCash register: [url=https://kenney.nl/assets/mini-market]Kenney Mini Market[/url] · CC0 1.0.\nCurrency specimen artwork: [url=https://www.mma.gov.mv/Public%20Education/currency/RDF%20book/RDF%20booklet.pdf]Maldives Monetary Authority, Ran Dhihafaheh booklet[/url], pages 10–15, plus MMA’s currency-in-circulation images for MVR 5 and MVR 1/2 coins. Used as in-game payment props; not covered by the CC0 model licences."
 	credits.text+="\n\nIsland coastlines, roads and mapped footprints: [url=https://www.openstreetmap.org/copyright]© OpenStreetMap contributors[/url] · [url=https://opendatacommons.org/licenses/odbl/1-0/]ODbL 1.0[/url]. Compressed for gameplay; extra houses and architecture are fictional. Derived geometry and source information: assets/maps/kelaa/ and assets/maps/neighbours/."
+	credits.text+="\n\nSelected Fishing Travel yellowfin and Deep Blue equipment resources adapted from owner-authorized materials supplied by the user. Original skeletons and sampled animation retained; materials rebuilt for Godot."
 	credits.text+="\n\nFree saltwater lure: [url=https://sketchfab.com/3d-models/blue-fishing-lure-with-treble-hooks-1803688419f14b3eb961326006ea038b]Blue Fishing lure with Treble Hooks by davidg.dev[/url] · CC BY 4.0. Adapted scale, line-eye mount and mobile texture compression."
 	credits.text+="\n\nAdditional tackle: Fishing Rod (spinning reel) by [url=https://sketchfab.com/3d-models/fishing-rod-2445514b50494ae8a751e24b976b294d]Sobrom[/url] · CC BY 4.0. Adapted: right-hand retrieve, mesh separation and live reel pivots.\nLevel wind mechanism by [url=https://sketchfab.com/3d-models/level-wind-mechanism-baitcasting-fishing-reel-0d4a3f6123eb409a9ce6391ddcd72048]C. Yamahata[/url] · CC BY 4.0. Adapted: opaque housing, materials, wound line and moving spool/guide; combined with Ergin ERYILDIR’s imported crank. These are generic adapted reels."
 	credits.text+="\n\nMarine fishing-point buoy: [url=https://1designtool.com/3d/models/fishing-harbour-buoys]1DesignTool / StoicSoft[/url] · Free 3D library licence. Adapted: shared mesh batching, scale and wave motion."
@@ -530,6 +535,7 @@ func toggle_menu() -> void:
 	menu.visible = menu_visible
 	if not menu_visible and logbook:logbook.visible=false
 	if fishing_setup:fishing_setup.visible=false
+	if reference_preview and reference_preview.visible:reference_preview.close()
 	if menu_visible:
 		menu.move_to_front()
 	game.reeling = false

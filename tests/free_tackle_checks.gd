@@ -15,7 +15,8 @@ func checks():
 		game.feedback.cast_age=2
 		game.feedback.update_feedback(.1,true,true,.5,game.line_target())
 		assert(not crank.basis.is_equal_approx(crank_rest) and not rotor.basis.is_equal_approx(rotor_rest),"Crank and spool/bail animate independently")
-		assert(game.feedback.routed_line_points.size()==18,"Both reel types route line through the actual pickup or level wind")
+		var guides=game.feedback.equipment.get_meta("guide_points",preload("res://scripts/rod_curve.gd").guides(game.feedback.overhead))
+		assert(game.feedback.routed_line_points.size()==guides.size()+14,"Both reel types route line through their actual pickup and all rod guides")
 		if id!="saragosa":
 			var guide=reel.get_meta("level_wind") as Node3D
 			assert(guide.position.distance_to(guide.get_meta("rest_position"))>.001,"Level wind traverses while winding")

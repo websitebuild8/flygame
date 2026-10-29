@@ -50,7 +50,9 @@ static func label(parent: Node3D, text: String, pos: Vector3, size: int = 60) ->
 	return node
 
 static func fish(parent: Node3D, size: float = 1.0, species: String = "Yellowfin tuna") -> Node3D:
-	var script_path="res://scripts/trevally_fish.gd" if species=="Giant trevally" else "res://scripts/textured_fish.gd"
+	var script_path="res://scripts/trevally_fish.gd" if species=="Giant trevally" else "res://scripts/reference_yellowfin.gd"
+	if species=="Giant grouper":script_path="res://scripts/reference_grouper.gd"
+	if species=="Rusty jobfish":script_path="res://scripts/reference_jobfish.gd"
 	if species in ["Skipjack tuna","Sailfish","Mahi-mahi"]:
 		script_path="res://scripts/scanned_fish.gd"
 	var root = load(script_path).new() as Node3D
@@ -62,6 +64,7 @@ static func fish(parent: Node3D, size: float = 1.0, species: String = "Yellowfin
 	for part in root.find_children("*","MeshInstance3D",true,false):
 		var local=root.global_transform.affine_inverse()*part.global_transform
 		var box=local*part.get_aabb();bounds=box if first else bounds.merge(box);first=false
+	if root.has_method("canonical_bounds"):bounds=root.canonical_bounds()
 	root.set_meta("fish_bounds",bounds)
 	var mouth=Vector3(bounds.get_center().x,0,bounds.position.z+bounds.size.z*(.14 if species=="Sailfish" else .015))
 	root.set_meta("mouth_local",mouth)

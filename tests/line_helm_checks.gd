@@ -28,20 +28,24 @@ func checks():
 		feedback.bend_amount=bend;feedback.cast_age=2
 		feedback.update_feedback(0,true,true,.5,game.line_target())
 		var points=feedback.routed_line_points
-		assert(points.size()==18,"Continuous line includes spool, roller, four guides and outgoing line")
-		for i in range(4):
-			var expected=feedback.equipment.to_global(curve.point(curve.guides()[i],bend))
+		var guides=feedback.equipment.get_meta("guide_points",curve.guides())
+		assert(points.size()==guides.size()+14,"Continuous line includes spool, roller, every measured guide and outgoing line")
+		for i in range(guides.size()):
+			var expected=feedback.equipment.to_global(curve.point(guides[i],bend))
 			assert(points[i+2].distance_to(expected)<.0001,"Line follows each authored hole under rod bending")
 		assert(points[-1].distance_to(game.line_target())<.001,"Line reaches the lure/fish after the final tip guide")
 	var roller=feedback.equipment.get_meta("reel").get_meta("line_roller")
 	var before=roller.global_position
+	var axle=(feedback.rotor.global_basis*feedback.rotor.get_meta("spin_axis",Vector3.BACK)).normalized()
+	var offset=before-feedback.rotor.global_position
+	var radius=(offset-axle*offset.dot(axle)).length()
 	feedback.rotor.rotate_object_local(feedback.rotor.get_meta("spin_axis",Vector3.BACK),.6)
-	assert(roller.global_position.distance_to(before)>.005,"Line pickup travels with the rotating bail")
+	assert(absf(roller.global_position.distance_to(before)-2*radius*sin(.3))<.0001 and radius>.001,"Line pickup follows the physical bail radius through its rotation")
 	feedback.equip("ocea","grappler","powerpro");feedback.bend_amount=.6
 	feedback.update_feedback(0,true,true,.5,game.line_target())
 	assert(feedback.routed_line_points.size()==18,"Overhead line passes through the traversing level-wind guide")
 	for i in range(4):
 		var expected=feedback.equipment.to_global(curve.point(curve.guides(true)[i],.6))
 		assert(feedback.routed_line_points[i+2].distance_to(expected)<.0001,"Overhead line follows the upper-side guide holes")
-	print("PASS: all four POV helm grips, lever motion, camera visibility, spool/roller routing, all four bent guides and final fish endpoint")
+	print("PASS: all four POV helm grips, lever motion, camera visibility, spool/roller routing, all measured bent guides and final fish endpoint")
 	game.queue_free();await create_timer(.15).timeout;quit()

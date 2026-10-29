@@ -479,11 +479,14 @@ func _physics_process(delta: float) -> void:
 		var forward=-boat.basis.z
 		var view_target=camera.position+forward*12+Vector3(0,-0.6,0)
 		var focus=fight.position-camera.position if fishing and bite_announced else forward*12
-		var cast_pitch=feedback.cast_motion.camera_pitch()
+		var cast_pitch=0.0 if fishing and bite_announced else feedback.cast_motion.camera_pitch()
 		# Track angles rather than world offsets: close fish should stay in frame too.
 		var forward_distance=maxf(.15,focus.dot(forward))
 		var yaw=clampf(atan2(focus.dot(boat.basis.x),forward_distance),-.45,.45) if fishing and bite_announced else 0.0
-		var pitch=clampf(atan2(focus.y,forward_distance),-.55,.42) if fishing and bite_announced else -.05
+		# A lifted fish can sit above the eye at short range; track upward without
+		# forcing its centre out of frame under the normal fighting pitch limit.
+		var upper_pitch=.75 if fishing and fight.landing_lift>.55 else .42
+		var pitch=clampf(atan2(focus.y,forward_distance),-.55,upper_pitch) if fishing and bite_announced else -.05
 		var desired_look=Vector3(yaw,pitch,0)
 		fishing_camera_look=fishing_camera_look.lerp(desired_look,1-exp(-delta*5.0))
 		view_target=camera.position+forward*12+boat.basis.x*tan(fishing_camera_look.x)*12
@@ -521,6 +524,8 @@ func _physics_process(delta: float) -> void:
 		driving_controls.pov_wheel_radius=maxf(87,(transform*wheel_edge).distance_to(driving_controls.pov_wheel))
 		driving_controls.pov_lever=transform*camera.unproject_position(helm_hands.lever.to_global(helm_hands.lever_grip))
 	feedback.update_feedback(delta, fishing_view and not market_mode, pulling, tension if fishing else 0.0, line_target())
+	# Preserve the established first-person fight perspective.
+	camera.v_offset=0
 	helm_hands.update_pose(delta,first_person_driving and driving and not intro_visible,drive.steering)
 	refresh_gameplay_ui(delta)
 
@@ -610,6 +615,7 @@ func toggle_engine() -> void:
 
 func land_fish() -> void:
 	if not fishing: return
+	camera.v_offset=0
 	fishing = false
 	reeling = false
 	feedback.finish(true, line_target())
@@ -640,6 +646,7 @@ func land_fish() -> void:
 	if is_instance_valid(landed_actor):
 		landed_actor.reparent(camera,false);catch_model=landed_actor;catch_model.swim_intensity=.2
 	else:catch_model = Art.fish(camera,0.8*float(active_catch.size),species)
+	if catch_model.has_method("set_motion"):catch_model.set_motion("show")
 	catch_model.position = Vector3(-0.8,0,-3)
 	catch_model.basis = (Basis(Vector3(0,0,1),-PI/2) * Basis(Vector3.UP,PI/2)).scaled(Vector3.ONE*0.8*float(active_catch.get("size",1)))
 	catch_model.rotate(Vector3.UP,-0.24)
@@ -855,7 +862,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		interface.toggle_map()
 		get_viewport().set_input_as_handled()
 	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode==KEY_ESCAPE:
-		if interface.fishing_setup.visible:
+		if interface.reference_preview.visible:
+			interface.reference_preview.close()
+		elif interface.fishing_setup.visible:
 			interface.fishing_setup.close()
 		elif interface.map_visible:
 			interface.toggle_map()
@@ -1031,6 +1040,7 @@ func update_hooked_fish(delta: float) -> void:
 			var rotation_now=fish_actor.basis.orthonormalized().get_rotation_quaternion()
 			fish_actor.basis=Basis(rotation_now.slerp(desired,1-exp(-delta*7))).scaled(Vector3.ONE*.45*World.BOAT_SCALE*float(active_catch.get("size",1)))
 	fish_actor.swim_intensity=2.5 if fight.running else 1.4
+	if fish_actor.has_method("set_motion"):fish_actor.set_motion("pull" if fight.running else "swim")
 	fish_splash_timer-=delta
 	if fight.splash_event or (fight.running and fish_splash_timer<=0):
 		feedback.splash(Vector3(fight.position.x,-0.5,fight.position.z))
@@ -1049,7 +1059,7 @@ func camera_label() -> String:
 
 func apply_graphics() -> void:
 	# UI remains native resolution; only the 3D scene is scaled.
-	performance_control.configure(graphics_quality)
+	performance_control.configure(graphics_quality,OS.has_feature("mobile"))
 	get_viewport().scaling_3d_scale=performance_control.scale
 	Engine.max_fps=30 if graphics_quality==0 else 60
 	Engine.physics_ticks_per_second=30 if graphics_quality==0 else 60
@@ -1113,7 +1123,11 @@ func update_catch_presentation() -> void:
 	camera.fov=65
 	var reveal=1.0 if reduce_motion else smoothstep(0,.65,catch_show_age)
 	catch_model.position=Vector3(-.8,sin(catch_show_age*2)*(.0 if reduce_motion else .025),lerpf(-3.4,-3.0,reveal))
-	catch_model.rotation.z=-PI/2+sin(catch_show_age*2.7)*(.0 if reduce_motion else .025)
+	var display_bob=sin(catch_show_age*2.7)*(.0 if reduce_motion else .025)
+	if catch_model.has_method("canonical_bounds"):
+		# Present the tuna's patterned flank rather than its white belly.
+		catch_model.basis=(Basis(Vector3.BACK,-PI/2+display_bob)*Basis(Vector3.UP,PI/2)*Basis(Vector3.FORWARD,PI)).scaled(Vector3.ONE*.8*float(active_catch.get("size",1)))
+	else:catch_model.rotation.z=-PI/2+display_bob
 	interface.update_catch_reveal(catch_show_age)
 
 func apply_gear_styles():

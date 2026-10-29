@@ -52,8 +52,11 @@ func checks():
    assert(game.can_put_fish_on_boat(),"Landing button appears only after the complete fish is clear")
    assert(game.camera.position.y>game.surface.height(Vector2(game.camera.position.x,game.camera.position.z))+.23,"Fishing eye never dips into the sea")
    var screen=game.camera.unproject_position(game.fish_actor.position)
-   assert(Rect2(Vector2.ZERO,root.get_visible_rect().size).has_point(screen),"Hanging fish stays in frame on every boat")
+   assert(Rect2(Vector2.ZERO,root.get_visible_rect().size).has_point(screen),"Hanging fish stays in frame on every boat: "+boat_id+" / "+species.name+" / "+str(screen))
+   assert(is_zero_approx(game.camera.v_offset),"Hanging catch never shifts the render eye away from the hands")
+   assert(game.camera.fov<=77.1,"Landing retains the close fight lens rather than forcing a wide-angle view")
   game.land_fish();game._physics_process(.016)
+  assert(is_zero_approx(game.camera.v_offset),"Landing camera offset resets for the catch showcase")
   var bounds: AABB=game.catch_model.get_meta("fish_bounds")
   assert((game.catch_model.global_transform*bounds).position.y>game.surface.ceiling(),"Catch showcase remains wholly above the ocean")
   game.close_catch();game.leave_fishing()
@@ -82,5 +85,5 @@ func checks():
      var hub=item.prop.global_position
      assert(hub.y+item.radius<game.surface.height(Vector2(hub.x,hub.z))-.04,"Imported NPC propellers also remain submerged")
  game.queue_free();await create_timer(.2).timeout
- print("PASS: shader-matched water height at all qualities, five species hanging by the mouth on four boats, fully dry tails/showcases, safe fishing eye and two imported NPC vessels")
+ print("PASS: shader-matched water height at all qualities, seven species hanging by the mouth on four boats, fully dry tails/showcases, safe fishing eye and two imported NPC vessels")
  quit()

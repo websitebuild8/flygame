@@ -1,0 +1,87 @@
+{
+  "texture_limit": 512,
+  "source_bundle": "/home/ahusan/ft/split_UnityDataAssetPack/assets/fishfp_assets_packpreloadpack102_cecc21d7e3563593ffae959c1879f219.bundle",
+  "source_sha256": "8a71a218991a7aae49fba36de3d068e21811b6a2946107b092a97c7e99820f6a",
+  "output": "giant_grouper.glb",
+  "output_sha256": "5e9c19f92b84188d74bb0d85c0a449ba9adde267d6f05f3357d3951965567256",
+  "glb_bytes": 1797508,
+  "stats": [
+    {
+      "texture": "F_duskygrouper",
+      "role": "base",
+      "original": [
+        1024,
+        1024
+      ],
+      "converted": [
+        512,
+        512
+      ],
+      "png_bytes": 513309
+    },
+    {
+      "texture": "F_duskygrouper_n",
+      "role": "normal",
+      "original": [
+        1024,
+        1024
+      ],
+      "converted": [
+        512,
+        512
+      ],
+      "png_bytes": 446040
+    },
+    {
+      "texture": "F_duskygrouper_m",
+      "role": "metallic",
+      "original": [
+        1024,
+        1024
+      ],
+      "converted": [
+        512,
+        512
+      ],
+      "png_bytes": 128828
+    },
+    {
+      "mesh": "F_giantgrouper",
+      "vertices": 3414,
+      "triangles": 5582,
+      "bones": 32
+    },
+    {
+      "animation": "Pulling01",
+      "duration": 6.333333492279053,
+      "tracks": 129,
+      "excluded_unneeded_bindings": 12
+    },
+    {
+      "animation": "Swim01",
+      "duration": 0.8000000715255737,
+      "tracks": 129,
+      "excluded_unneeded_bindings": 12
+    },
+    {
+      "animation": "Show01",
+      "duration": 6.000000476837158,
+      "tracks": 129,
+      "excluded_unneeded_bindings": 12
+    },
+    {
+      "animation": "Jump01",
+      "duration": 2.0333335399627686,
+      "tracks": 129,
+      "excluded_unneeded_bindings": 12
+    },
+    {
+      "animation": "Hurt01",
+      "duration": 0.6666666865348816,
+      "tracks": 129,
+      "excluded_unneeded_bindings": 12
+    }
+  ],
+  "authorization": "User states app owner approved reuse; recorded in conversation. Not a public asset license.",
+  "conversion": "Selected skin, materials and animation. Coordinate reflection Z; UV V flip; PNG textures <=1024; streamed/dense/constant curves sampled at30Hz; quaternion continuity; no Unity shaders or code copied."
+}

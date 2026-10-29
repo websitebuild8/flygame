@@ -290,3 +290,23 @@ captain medals and livery milestones. Catch reveals now animate weight/value and
 celebrate records. Settings include first-trip tips, reduced motion, saved sound
 and vibration preferences, automatic 3D resolution and an optional FPS display.
 See [trip polish](docs/trip-polish.md) for behavior and phone-testing limits.
+
+## Converted fishing reference assets
+
+Yellowfin tuna now uses the owner-authorized reference model and recovered swim,
+fight and catch-display animation. **Settings → Fishing showcase** previews that
+fish and the Deep Blue rod/reel outfit, including casting and retrieval clips.
+The Deep Blue rod and reel are also live as the free starter set, with a seated
+mount, right-hand crank, independent bail/spool and eight routed guide holes.
+Boats, islands, species pool and catch prices are preserved. See
+[conversion notes](docs/reference-asset-conversion.md) for scope and validation.
+
+The recovered rusty jobfish (Rankarumas) is the sixth catchable species, found at
+Kelaa Outer Reef, Filladhoo Dropoff and Dhidhdhoo Reef. It has original rigged
+animations, variable individual weights/MVR values, a deep-pull fight profile
+and a journal portrait. Existing catalogue entries and saves retain their IDs.
+
+Giant grouper (Mudu faana) is the seventh species, with a compact animated model,
+variable 3–24 kg catches and MVR offers. Find it at Filladhoo Dropoff, Baarah
+Drift and Dhidhdhoo Reef. Angler’s Club → Spots now includes the optional
+Rankarumas specialist and Drop-off heavyweight trophy challenges (12 total).

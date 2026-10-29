@@ -74,7 +74,7 @@ func show_tab(value: String):
  scroll.reset_to(0 if celebration>0 or not challenge_celebration.is_empty() else float(scroll_positions.get(tab,0)))
 func collection():
  var progress=game.trip_progress
- summary(Art.medal(2),"%d / 5 species discovered"%progress.records.size(),"Catch · collect · earn your mastery medals",progress.records.size(),5)
+ summary(Art.medal(2),"%d / %d species discovered"%[progress.records.size(),game.World.FISH.size()],"Catch · collect · earn your mastery medals",progress.records.size(),game.World.FISH.size())
  var cards=grid(3 if get_viewport_rect().size.x>=1100 else 2)
  for fish in game.World.FISH:
   var record=progress.records.get(fish.name,{});var count=int(record.get("count",0));var body=card(cards)
@@ -99,6 +99,7 @@ func details(species: String):
  var record=game.trip_progress.records.get(species,{});var count=int(record.get("count",0));var body=card(content)
  var line=row(body);Art.picture(line,Art.fish(species),Vector2(300,170));var stats=VBoxContainer.new();stats.size_flags_horizontal=Control.SIZE_EXPAND_FILL;line.add_child(stats)
  label(stats,species,26);label(stats,game.trip_progress.mastery(species),17,Clay.SEA)
+ if fish_index>=0 and game.World.FISH[fish_index].has("local_name"):label(stats,game.World.FISH[fish_index].local_name+" · "+game.World.FISH[fish_index].scientific_name,14,Clay.MUTED)
  stat(stats,"weight","%.1f kg personal best"%record.get("best",0));stat(stats,"fish","%d landed"%count);stat(stats,"coin","MVR %d most valuable catch"%record.get("value",0))
  if count>0:stat(body,"pin",str(record.spot),16)
  var spots: Array[String]=[]
@@ -220,6 +221,9 @@ func spots():
   var timed=system.definition(point.id+"_timed")
   if not timed.is_empty():
    var event_button=action(body,"Timed event · Lv %d"%timed.level,func():event_details(timed.id));Art.button_icon(event_button,"calendar",21)
+  for extra in system.DEFINITIONS:
+   if extra.spot==point.id and extra.id!=entry.id and not extra.has("seconds"):
+    var bonus=action(body,extra.name,func():event_details(extra.id));Art.button_icon(bonus,"star",21)
 func event_details(id: String):
  if not detail_open:scroll_positions["Spots"]=scroll.scroll_vertical
  detail_open=true;scroll.reset_to()

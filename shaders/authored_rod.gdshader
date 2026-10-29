@@ -4,6 +4,9 @@ uniform sampler2D albedo_map : source_color, filter_linear_mipmap_anisotropic;
 uniform float bend=0.0;
 uniform bool overhead=false;
 uniform vec4 tint : source_color=vec4(1.0);
+uniform bool preserve_source_color=false;
+uniform bool has_normal=false;
+uniform sampler2D normal_map : hint_normal, filter_linear_mipmap;
 uniform bool custom_paint=false;
 uniform bool custom_special=false;
 uniform vec4 custom_color : source_color=vec4(1.);
@@ -31,11 +34,13 @@ void vertex(){
  mat3 turn=mat3(vec3(1.,0.,0.),vec3(0.,cos(angle),-sin(angle)),vec3(0.,sin(angle),cos(angle)));
  VERTEX=center+turn*offset;
  NORMAL=turn*NORMAL;
+ TANGENT=turn*TANGENT;
+ BINORMAL=turn*BINORMAL;
 }
 void fragment(){
  vec3 paint=texture(albedo_map,UV).rgb;
  float white_paint=step(.62,min(paint.r,min(paint.g,paint.b)));
- paint=mix(paint,paint*vec3(.19,.28,.36),white_paint);
+ if(!preserve_source_color){paint=mix(paint,paint*vec3(.19,.28,.36),white_paint);}
  vec3 base_paint=paint*tint.rgb;
  if(custom_paint){
   vec3 finish=custom_color.rgb;
@@ -43,6 +48,7 @@ void fragment(){
   base_paint=mix(base_paint,finish*(.65+dot(paint,vec3(.2126,.7152,.0722))*.35),smoothstep(.72,.9,rod_distance)*(1.-white_paint*.75));
  }
  ALBEDO=base_paint;
+ if(has_normal){NORMAL_MAP=texture(normal_map,UV).rgb;NORMAL_MAP_DEPTH=.45;}
  ROUGHNESS=.34;
  METALLIC=.28;
 }

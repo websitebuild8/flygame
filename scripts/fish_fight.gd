@@ -29,7 +29,9 @@ const BEHAVIOURS={
  "Giant trevally":{"run_rate":1.35,"threshold":.64,"distance":4.0,"sweep":1.15,"dart":1.2,"jump_cycle":8.0,"jump_height":0.0,"tip":"Short powerful pulls · watch the tension"},
  "Skipjack tuna":{"run_rate":1.6,"threshold":.70,"distance":3.0,"sweep":1.0,"dart":1.65,"jump_cycle":7.5,"jump_height":1.15,"tip":"Quick darts · keep a steady retrieve"},
  "Sailfish":{"run_rate":.85,"threshold":.48,"distance":6.0,"sweep":1.25,"dart":.9,"jump_cycle":6.2,"jump_height":2.5,"tip":"Wide runs and jumps · keep pressure between leaps"},
- "Mahi-mahi":{"run_rate":1.25,"threshold":.65,"distance":4.0,"sweep":1.15,"dart":1.4,"jump_cycle":5.3,"jump_height":2.1,"tip":"Fast turns and frequent jumps · avoid slack"}
+ "Mahi-mahi":{"run_rate":1.25,"threshold":.65,"distance":4.0,"sweep":1.15,"dart":1.4,"jump_cycle":5.3,"jump_height":2.1,"tip":"Fast turns and frequent jumps · avoid slack"},
+ "Rusty jobfish":{"run_rate":1.05,"threshold":.57,"distance":2.8,"sweep":.62,"dart":.85,"jump_cycle":10.5,"jump_height":0.0,"tip":"Deep, steady pulls · lift gently and keep pressure"},
+ "Giant grouper":{"run_rate":.58,"threshold":.35,"distance":3.3,"sweep":.42,"dart":.63,"jump_cycle":11.0,"jump_height":0.0,"tip":"Heavy pulls · ease pressure during long surges"}
 }
 var behaviour: Dictionary={}
 func set_species(species: String):behaviour=BEHAVIOURS.get(species,{}).duplicate()

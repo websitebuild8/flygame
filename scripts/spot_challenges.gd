@@ -10,7 +10,9 @@ const DEFINITIONS=[
  {"id":"sunset","spot":"sunset","name":"Reef mixed bag","count":2,"kg":12.0,"variety":2,"xp":120,"mvr":160,"silver":16.0,"gold":22.0},
  {"id":"lagoon_timed","spot":"lagoon","name":"Lagoon dash","count":2,"seconds":180,"level":2,"xp":90,"mvr":100},
  {"id":"reef_timed","spot":"reef","name":"Reef rush","count":3,"seconds":300,"level":3,"xp":110,"mvr":130},
- {"id":"channel_timed","spot":"channel","name":"Channel sprint","count":1,"kg":10.0,"seconds":300,"level":4,"xp":130,"mvr":160}
+ {"id":"channel_timed","spot":"channel","name":"Channel sprint","count":1,"kg":10.0,"seconds":300,"level":4,"xp":130,"mvr":160},
+ {"id":"reef_jobfish","spot":"reef","name":"Rankarumas specialist","species":"Rusty jobfish","count":1,"min_weight":2.0,"level":2,"xp":110,"mvr":120,"silver":3.5,"gold":5.0},
+ {"id":"east_grouper","spot":"east","name":"Drop-off heavyweight","species":"Giant grouper","count":1,"min_weight":8.0,"level":4,"xp":140,"mvr":180,"silver":14.0,"gold":20.0}
 ]
 var active: Dictionary={}
 var result: Dictionary={}

@@ -13,10 +13,13 @@ func checks():
 	game.coins=0
 	game.pending_payment=0
 	game.boat.position=game.SPOT
-	for index in [2,3,4]:
+	for index in [2,3,4,5,6]:
 		game.cast()
 		assert(game.fishing,"New species can enter the existing catch flow")
+		game.clear_hooked_fish()
 		game.active_species=World.FISH[index]
+		game.active_catch=preload("res://scripts/catch_profile.gd").roll(game.active_species,game.rng)
+		game.fish_actor=game.Art.fish(game,.1,game.active_species.name)
 		game.land_fish()
 		assert(game.inventory[-1].species==World.FISH[index].name,"Catch stores the new species identity")
 		assert(game.catch_model.species_name==World.FISH[index].name,"Landed display uses that species' model")
@@ -25,7 +28,7 @@ func checks():
 	game.sell()
 	assert(game.market_mode,"Imported catches can enter the island market")
 	var expected=game.hold_value
-	for index in [2,3,4]:
+	for index in [2,3,4,5,6]:
 		game.interface.refresh()
 		assert(game.market.shown_species==World.FISH[index].name,"Market counter shows the correct fish")
 		assert(game.market.displayed_fish.visible,"New fish is visible while offered for sale")
@@ -38,5 +41,5 @@ func checks():
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(game.save_path))
 	game.queue_free()
 	await create_timer(.3).timeout
-	print("PASS: skipjack, sailfish and mahi-mahi catch identities, showcase models, market previews and MVR sales")
+	print("PASS: skipjack, sailfish, mahi-mahi, jobfish and grouper catch identities, showcase models, market previews and MVR sales")
 	quit()

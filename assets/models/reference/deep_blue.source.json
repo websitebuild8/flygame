@@ -1,0 +1,105 @@
+{
+  "source_bundle": "/home/ahusan/ft/split_UnityDataAssetPack/assets/rodfp_assets_all_ca5981c375c5726cc4e53d389064853b.bundle",
+  "source_sha256": "c6302f7190cee8ce4170437bb70627a00976cf293dcf3484938f11849543380c",
+  "output": "deep_blue.glb",
+  "output_sha256": "5f7d9a50965dbf1d5ef6db9bea512c05a8763e65f8d6eda0dc2879045faf9f02",
+  "glb_bytes": 1835724,
+  "stats": [
+    {
+      "texture": "Reel_deepblue",
+      "role": "base",
+      "original": [
+        512,
+        512
+      ],
+      "converted": [
+        512,
+        512
+      ],
+      "png_bytes": 124167
+    },
+    {
+      "texture": "Reel_deepblue_n",
+      "role": "normal",
+      "original": [
+        512,
+        512
+      ],
+      "converted": [
+        512,
+        512
+      ],
+      "png_bytes": 179483
+    },
+    {
+      "mesh": "Reel_deepblue",
+      "vertices": 5105,
+      "triangles": 6896,
+      "bones": 5
+    },
+    {
+      "texture": "Rod_deepblue",
+      "role": "base",
+      "original": [
+        1024,
+        1024
+      ],
+      "converted": [
+        1024,
+        1024
+      ],
+      "png_bytes": 303921
+    },
+    {
+      "texture": "Rod_deepblue_n",
+      "role": "normal",
+      "original": [
+        512,
+        512
+      ],
+      "converted": [
+        512,
+        512
+      ],
+      "png_bytes": 211440
+    },
+    {
+      "mesh": "Rod_deepblue",
+      "vertices": 7353,
+      "triangles": 9302,
+      "bones": 12
+    },
+    {
+      "animation": "Waiting01",
+      "duration": 4.0,
+      "tracks": 57,
+      "excluded_unneeded_bindings": 228
+    },
+    {
+      "animation": "Pulling01",
+      "duration": 1.600000023841858,
+      "tracks": 57,
+      "excluded_unneeded_bindings": 216
+    },
+    {
+      "animation": "Throwing01",
+      "duration": 2.0,
+      "tracks": 57,
+      "excluded_unneeded_bindings": 216
+    },
+    {
+      "animation": "Reeling01",
+      "duration": 1.2000000476837158,
+      "tracks": 57,
+      "excluded_unneeded_bindings": 219
+    },
+    {
+      "animation": "Show01",
+      "duration": 1.0,
+      "tracks": 57,
+      "excluded_unneeded_bindings": 252
+    }
+  ],
+  "authorization": "User states app owner approved reuse; recorded in conversation. Not a public asset license.",
+  "conversion": "Selected skin, materials and animation. Coordinate reflection Z; UV V flip; PNG textures <=1024; streamed/dense/constant curves sampled at30Hz; quaternion continuity; no Unity shaders or code copied."
+}

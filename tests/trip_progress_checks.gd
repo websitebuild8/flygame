@@ -36,7 +36,7 @@ func checks():
    if fight.running:runs+=1
    if fight.jumping:jumps+=1
   traces.append("%d_%d_%s"%[runs,jumps,fight.position])
- assert(traces.size()==5 and traces[0]!=traces[1] and traces[2]!=traces[3] and traces[3]!=traces[4],"Species have distinct runs, sweeps and jump patterns")
+ assert(traces.size()==7 and traces[6] not in traces.slice(0,6) and traces[5] not in traces.slice(0,5) and traces[0]!=traces[1] and traces[2]!=traces[3] and traces[3]!=traces[4],"Species have distinct runs, sweeps and jump patterns")
  var file_path="user://progress-check.json";var file=FileAccess.open(file_path,FileAccess.WRITE)
  file.store_string(JSON.stringify({"coins":300,"inventory":[catch_item("Skipjack tuna",4)],"hold_value":120}));file.close()
  var game=load("res://scenes/main.tscn").instantiate();game.save_path=file_path;root.add_child(game);game.set_physics_process(false);game.interface.start_trip();game.drive.engine_running=false

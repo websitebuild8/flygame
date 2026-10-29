@@ -27,7 +27,7 @@ static func ring(parent: Node3D, at: Vector3, radius: float, tube: float, color:
 
 static func reel(parent: Node3D, kind: String, model: String = "island_reel") -> Node3D:
 	if kind=="spinning" and model=="island_reel":
-		return preload("res://scripts/imported_tackle.gd").reel(parent)
+		return preload("res://scripts/deep_blue_tackle.gd").reel(parent)
 	return preload("res://scripts/free_tackle.gd").build(parent,kind,model)
 
 static func rod(parent: Node3D, kind: String, reel_id: String, rod_id: String, braided: bool) -> Node3D:
@@ -35,7 +35,7 @@ static func rod(parent: Node3D, kind: String, reel_id: String, rod_id: String, b
 	parent.add_child(root)
 	var segments: Array[MeshInstance3D] = []
 	var rod_color={"island_rod":Color("237b99"),"grappler":Color("613c8f"),"offshore_rod":Color("b9523c")}.get(rod_id,Color("2b7665"))
-	var blank=preload("res://scripts/imported_tackle.gd").live_blank(root,rod_id)
+	var blank=preload("res://scripts/deep_blue_tackle.gd").rod(root) if rod_id=="island_rod" and kind=="spinning" else preload("res://scripts/imported_tackle.gd").live_blank(root,rod_id)
 	for surface in range(blank.mesh.get_surface_count()):
 		(blank.get_surface_override_material(surface) as ShaderMaterial).set_shader_parameter("overhead",kind=="overhead")
 	root.set_meta("authored_blank",blank)
@@ -47,7 +47,8 @@ static func rod(parent: Node3D, kind: String, reel_id: String, rod_id: String, b
 	equipment.position=seat-equipment.basis*foot
 	equipment.set_meta("mount_foot",foot)
 	root.set_meta("reel_seat",seat)
-	for offset in [-.045,.045]:ring(root,seat+rod_axis*offset,.023,.003,Color("aebfc4"),rod_axis)
+	if not root.get_meta("deep_blue",false):
+		for offset in [-.045,.045]:ring(root,seat+rod_axis*offset,.023,.003,Color("aebfc4"),rod_axis)
 	root.set_meta("segments",segments)
 	root.set_meta("reel",equipment)
 	root.set_meta("braided",braided)

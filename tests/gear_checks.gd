@@ -48,13 +48,13 @@ func checks() -> void:
 	var crank=imported.get_meta("crank") as Node3D
 	var rotor=imported.get_meta("rotor") as Node3D
 	var spool=imported.get_meta("spool") as MeshInstance3D
-	var body=imported.find_child("Object001_rod06_0",true,false) as MeshInstance3D
+	var body=imported.get_meta("body") as MeshInstance3D
 	var body_rest=body.global_transform
 	var spool_rest=spool.global_transform
 	var spool_center=spool.to_global(spool.get_aabb().get_center())
-	var shaft=rotor.global_basis.x.normalized()
+	var shaft=(rotor.global_basis*rotor.get_meta("spin_axis")).normalized()
 	check((spool_center-rotor.global_position).cross(shaft).length()<0.015,"Bail shaft stays aligned with the fixed spool centre")
-	check(absf(shaft.dot(crank.global_basis.z.normalized()))<0.01,"Handle shaft is perpendicular to spool shaft")
+	check(absf(shaft.dot((crank.global_basis*crank.get_meta("spin_axis")).normalized()))<0.01,"Handle shaft is perpendicular to spool shaft")
 	var rotor_mesh=rotor.get_child(0) as MeshInstance3D
 	var rotor_rest=rotor_mesh.global_transform
 	for step in range(24):

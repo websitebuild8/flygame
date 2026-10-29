@@ -8,7 +8,9 @@ const HABITS={
  "Giant trevally":{"lure":1,"depth":2,"hours":"Dusk / night","habitat":"Reef edges and drop-offs","weather":"Cloudy / showers","night":true,"cloud":true},
  "Skipjack tuna":{"lure":0,"depth":0,"hours":"Daylight","habitat":"Lagoon approaches and channels","weather":"Sunny","day":true},
  "Sailfish":{"lure":2,"depth":0,"hours":"Daylight","habitat":"Offshore bluewater","weather":"Sunny","day":true},
- "Mahi-mahi":{"lure":2,"depth":1,"hours":"Dawn / dusk","habitat":"Outer reefs and offshore drifts","weather":"Cloudy","dawn":true,"cloud":true}
+ "Mahi-mahi":{"lure":2,"depth":1,"hours":"Dawn / dusk","habitat":"Outer reefs and offshore drifts","weather":"Cloudy","dawn":true,"cloud":true},
+ "Rusty jobfish":{"lure":1,"depth":2,"hours":"Dawn / dusk","habitat":"Deep reef slopes and drop-offs","weather":"Cloudy","dawn":true,"cloud":true},
+ "Giant grouper":{"lure":1,"depth":2,"hours":"Dusk / night","habitat":"Deep reef ledges and drop-offs","weather":"Cloudy / showers","night":true,"cloud":true}
 }
 var lure=0
 var depth=1

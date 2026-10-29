@@ -42,6 +42,8 @@ var hook_rating_time=0.0
 var winding_speed=0.0
 var spool: Node3D
 var spool_rest=Vector3.ZERO
+var reel_phase=0.0
+var rod_guides=PackedVector3Array()
 var cast_motion=preload("res://scripts/lure_cast.gd").new()
 var lure: Node3D
 var effects_quality=2
@@ -222,7 +224,7 @@ func update_feedback(delta: float, active: bool, pulling: bool, tension: float, 
 		if overhead and pulling:
 			rig.rotation.x += sin(Time.get_ticks_msec()*0.009)*0.05
 		if landing>.55 and not get_parent().landing_to_boat:
-			var curve_tip=equipment.to_global(preload("res://scripts/rod_curve.gd").tip(bend_amount))
+			var curve_tip=equipment.to_global(preload("res://scripts/rod_curve.gd").point(equipment.get_meta("authored_tip",Vector3(0,1.229,-2.003)),bend_amount))
 			var minimum=get_parent().surface.ceiling()+get_parent().hanging_clearance()+.04
 			# Lift the entire rod/handle so both the short leader and the tail clear the sea.
 			rig.position.y+=maxf(0,minimum-curve_tip.y)
@@ -239,22 +241,28 @@ func update_feedback(delta: float, active: bool, pulling: bool, tension: float, 
 			for surface in range(authored.mesh.get_surface_count()):
 				(authored.get_surface_override_material(surface) as ShaderMaterial).set_shader_parameter("bend",bend_amount)
 		winding_speed=lerpf(winding_speed,(19.0 if power else 10.0) if pulling else 0.0,1-exp(-delta*15))
+		var active_reel=equipment.get_meta("reel") as Node3D
 		if winding_speed>.02:
+			reel_phase+=delta*winding_speed
 			crank.rotate_object_local(crank.get_meta("spin_axis",Vector3.RIGHT),delta*winding_speed*(1.0 if overhead else -1.0))
 			if overhead:
 				rotor.rotation.x += delta*winding_speed*1.8
 			else:
-				rotor.rotate_object_local(rotor.get_meta("spin_axis",Vector3.BACK),-delta*winding_speed*2.3)
-		var active_reel=equipment.get_meta("reel") as Node3D
+				rotor.rotate_object_local(rotor.get_meta("spin_axis",Vector3.BACK),-delta*winding_speed*float(active_reel.get_meta("rotor_ratio",2.3)))
+		if active_reel.has_meta("free_knob"):
+			var knob=active_reel.get_meta("free_knob") as Node3D
+			knob.basis=crank.basis.inverse()
 		if overhead and active_reel.has_meta("level_wind"):
 			var level_wind=active_reel.get_meta("level_wind") as Node3D
 			level_wind.position=level_wind.get_meta("rest_position")+Vector3.RIGHT*sin(cast_age*3)*.09*minf(winding_speed,1)
 		if spool and not overhead:
 			var spindle=(rotor.global_basis*rotor.get_meta("spin_axis",Vector3.BACK)).normalized()
-			var travel=spool.get_parent().global_basis.inverse()*spindle*.006
-			spool.position=spool_rest+travel*sin(cast_age*5)*minf(winding_speed,1)
+			var parent_frame=spool.get_parent().global_basis
+			if active_reel.get_meta("deep_blue",false):parent_frame=parent_frame.orthonormalized()
+			var travel=parent_frame.inverse()*spindle*float(active_reel.get_meta("spool_travel",.006))
+			spool.position=spool_rest+travel*(sin(reel_phase*.35) if active_reel.get_meta("deep_blue",false) else sin(cast_age*5)*minf(winding_speed,1))
 		if hands:
-			hands.pose(rig.to_local(crank.to_global(crank.get_meta("grip_point",Vector3.ZERO))),pulling,overhead)
+			hands.pose(rig.to_local(crank.to_global(crank.get_meta("grip_point",Vector3.ZERO))),pulling,overhead,active_reel.get_meta("grip_offset",Vector3(0,0,.035)))
 		if pulling and sound_enabled:
 			reel_audio.pitch_scale=lerpf(1.12,0.78,tension)
 			reel_audio.volume_db=lerpf(-14,-9,tension)
@@ -273,7 +281,7 @@ func update_feedback(delta: float, active: bool, pulling: bool, tension: float, 
 		routed_line_points.append(start)
 		if roller and (get_parent().bite_announced or cast_motion.state not in ["windup","flight"]):routed_line_points.append(roller.global_position)
 		var curve=preload("res://scripts/rod_curve.gd")
-		for guide in curve.guides(overhead):routed_line_points.append(equipment.to_global(curve.point(guide,bend_amount)))
+		for guide in rod_guides:routed_line_points.append(equipment.to_global(curve.point(guide,bend_amount)))
 		for span in range(routed_line_points.size()-1):
 			line_mesh.surface_add_vertex(routed_line_points[span])
 			line_mesh.surface_add_vertex(routed_line_points[span+1])
@@ -324,11 +332,12 @@ func equip(reel_id: String, rod_id: String, line_id: String) -> void:
 	overhead = definition.kind=="overhead"
 	equipment = preload("res://scripts/tackle_art.gd").rod(rig,definition.kind,reel_id,rod_id,line_id=="powerpro")
 	segments.assign(equipment.get_meta("segments"))
+	rod_guides=equipment.get_meta("guide_points",preload("res://scripts/rod_curve.gd").guides(overhead))
 	var reel = equipment.get_meta("reel") as Node3D
 	crank = reel.get_meta("crank")
 	rotor = reel.get_meta("rotor")
 	spool=reel.get_meta("spool")
-	spool_rest=spool.position
+	spool_rest=spool.position;reel_phase=0;winding_speed=0
 	if line:
 		(line.material_override as StandardMaterial3D).albedo_color = Color("82d0a9") if line_id=="powerpro" else Color("d5e4d5")
 

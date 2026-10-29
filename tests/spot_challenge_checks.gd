@@ -4,7 +4,7 @@ const XP=preload("res://scripts/angler_xp.gd")
 func _initialize():call_deferred("checks")
 func item(species: String="Yellowfin tuna",weight: float=8) -> Dictionary:return {"species":species,"weight":weight,"value":120}
 func checks():
- var system=Challenges.new();assert(system.DEFINITIONS.size()==10,"Seven permanent and three timed events exist")
+ var system=Challenges.new();assert(system.DEFINITIONS.size()==12,"Nine permanent and three timed events exist")
  assert(not system.start("lagoon_timed","lagoon",1,8,0),"Timed event respects its level gate")
  assert(system.start("lagoon_timed","lagoon",2,8,0));system.advance(10,"lagoon");assert(system.active.remaining==170,"Timer advances only by gameplay time")
  system.record(item(),"reef",8);assert(system.active.count==0,"Catches at another point do not count")
